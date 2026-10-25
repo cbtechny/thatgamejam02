@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://bphm0icqc2mrm"]
 
-[ext_resource type="Material" uid="uid://sovq6y7g4kpp" path="res://Art/Materials/box.tres" id="1_yscc3"]
-[ext_resource type="Material" uid="uid://bcyvg74mtcmeo" path="res://Art/Materials/background.tres" id="2_2lno3"]
-[ext_resource type="Material" uid="uid://3qbby20hfto6" path="res://Art/Materials/key.tres" id="2_xrl3a"]
-[ext_resource type="Material" uid="uid://d0ljc6l0h4h0n" path="res://Art/Materials/Stage.tres" id="3_ycvmc"]
-[ext_resource type="Material" uid="uid://cpi6shbcfrk6i" path="res://Art/Materials/BoxBackground.tres" id="4_j1abh"]
+[ext_resource type="Material" uid="uid://sovq6y7g4kpp" path="res://Art/Materials/M_Box.tres" id="1_jh155"]
+[ext_resource type="Material" uid="uid://3qbby20hfto6" path="res://Art/Materials/M_Key.tres" id="2_jh155"]
+[ext_resource type="Material" uid="uid://d0ljc6l0h4h0n" path="res://Art/Materials/M_Stage.tres" id="3_pc2cp"]
+[ext_resource type="Material" uid="uid://cpi6shbcfrk6i" path="res://Art/Materials/M_BoxBackground.tres" id="4_jh155"]
+[ext_resource type="Material" uid="uid://bcyvg74mtcmeo" path="res://Art/Materials/M_Background.tres" id="5_q4lop"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_irx6y"]
 
@@ -17,27 +17,27 @@ size = 1.236
 
 [node name="Box" type="MeshInstance3D" parent="." unique_id=1215886773]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0.30636263)
-material_override = ExtResource("1_yscc3")
+material_override = ExtResource("1_jh155")
 mesh = SubResource("PlaneMesh_irx6y")
 
 [node name="Key" type="MeshInstance3D" parent="." unique_id=514370116]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0.37697124)
-material_override = ExtResource("2_xrl3a")
+material_override = ExtResource("2_jh155")
 mesh = SubResource("PlaneMesh_irx6y")
 
 [node name="Stage" type="MeshInstance3D" parent="." unique_id=1526649340]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0.25449827)
-material_override = ExtResource("3_ycvmc")
+material_override = ExtResource("3_pc2cp")
 mesh = SubResource("PlaneMesh_irx6y")
 
 [node name="BoxBackground" type="MeshInstance3D" parent="." unique_id=806647808]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0.26532555)
-material_override = ExtResource("4_j1abh")
+material_override = ExtResource("4_jh155")
 mesh = SubResource("PlaneMesh_irx6y")
 
 [node name="BG" type="MeshInstance3D" parent="." unique_id=1004666218]
 transform = Transform3D(100, 0, 0, 0, -4.371139e-08, -100, 0, 1, -4.371139e-06, 0, 0, -2.924828)
-material_override = ExtResource("2_2lno3")
+material_override = ExtResource("5_q4lop")
 cast_shadow = 0
 mesh = SubResource("PlaneMesh_irx6y")
 
