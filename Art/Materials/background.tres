@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://bcyvg74mtcmeo"]
+
+[resource]
+transparency = 1
+disable_ambient_light = true
+albedo_color = Color(0.012617188, 0.012617188, 0.012617188, 1)
+albedo_texture_force_srgb = true

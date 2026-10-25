@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://sovq6y7g4kpp"]
+
+[ext_resource type="Texture2D" uid="uid://bug5gkxtcg8dw" path="res://Art/Textures/20261025_110309000_iOS.png" id="1_j3sxb"]
+
+[resource]
+transparency = 1
+albedo_texture = ExtResource("1_j3sxb")
+albedo_texture_force_srgb = true

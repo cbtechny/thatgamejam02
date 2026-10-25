@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://bphm0icqc2mrm"]
+
+[ext_resource type="Material" uid="uid://sovq6y7g4kpp" path="res://Art/Materials/box.tres" id="1_yscc3"]
+[ext_resource type="Material" uid="uid://bcyvg74mtcmeo" path="res://Art/Materials/background.tres" id="2_2lno3"]
+[ext_resource type="Material" uid="uid://3qbby20hfto6" path="res://Art/Materials/key.tres" id="2_xrl3a"]
+[ext_resource type="Material" uid="uid://d0ljc6l0h4h0n" path="res://Art/Materials/Stage.tres" id="3_ycvmc"]
+[ext_resource type="Material" uid="uid://cpi6shbcfrk6i" path="res://Art/Materials/BoxBackground.tres" id="4_j1abh"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_irx6y"]
+
+[node name="Node3D" type="Node3D" unique_id=2066314577]
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=290381019]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.0502348)
+fov = 40.0
+size = 1.236
+
+[node name="Box" type="MeshInstance3D" parent="." unique_id=1215886773]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0.30636263)
+material_override = ExtResource("1_yscc3")
+mesh = SubResource("PlaneMesh_irx6y")
+
+[node name="Key" type="MeshInstance3D" parent="." unique_id=514370116]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0.37697124)
+material_override = ExtResource("2_xrl3a")
+mesh = SubResource("PlaneMesh_irx6y")
+
+[node name="Stage" type="MeshInstance3D" parent="." unique_id=1526649340]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0.25449827)
+material_override = ExtResource("3_ycvmc")
+mesh = SubResource("PlaneMesh_irx6y")
+
+[node name="BoxBackground" type="MeshInstance3D" parent="." unique_id=806647808]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0.26532555)
+material_override = ExtResource("4_j1abh")
+mesh = SubResource("PlaneMesh_irx6y")
+
+[node name="BG" type="MeshInstance3D" parent="." unique_id=1004666218]
+transform = Transform3D(100, 0, 0, 0, -4.371139e-08, -100, 0, 1, -4.371139e-06, 0, 0, -2.924828)
+material_override = ExtResource("2_2lno3")
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_irx6y")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=450633431]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3.1061537)
+sky_mode = 1
