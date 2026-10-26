@@ -3,6 +3,9 @@ extends Node2D
 const PROGRESS_PER_REVOLUTION: float = 0.75
 const BACKGROUND_START_X: float = 6328.125
 const BACKGROUND_TRAVEL_X: float = 10736.25
+const WINDER_REVERSE_RADIANS_PER_SECOND: float = TAU
+const WINDER_FORWARD_PLAYBACK_SPEED_SCALE: float = 0.25
+const WINDER_REST_ROTATION: float = 1.5707964
 
 enum PlaybackPhase { REST, WINDING, FORWARD, RETURN }
 
@@ -11,6 +14,8 @@ enum PlaybackPhase { REST, WINDING, FORWARD, RETURN }
 @onready var _winder_area: Area2D = $MusicBox/WinderTwoBlade/WinderHitArea
 @onready var _forward_player: AudioStreamPlayer = $TGMTheme
 @onready var _backward_player: AudioStreamPlayer = $BackwardsLoop
+@onready var _crank_player: AudioStreamPlayer = $CrankSound
+@onready var _winder: Sprite2D = $MusicBox/WinderTwoBlade
 
 var _phase: PlaybackPhase = PlaybackPhase.REST
 var _phase_before_winding: PlaybackPhase = PlaybackPhase.REST
@@ -31,6 +36,12 @@ func _ready() -> void:
 		looped_stream.loop = true
 		_backward_player.stream = looped_stream
 
+	var crank_stream: AudioStreamOggVorbis = _crank_player.stream as AudioStreamOggVorbis
+	if crank_stream != null:
+		var looped_crank_stream: AudioStreamOggVorbis = crank_stream.duplicate() as AudioStreamOggVorbis
+		looped_crank_stream.loop = true
+		_crank_player.stream = looped_crank_stream
+
 	_winder_area.winding_started.connect(_on_winding_started)
 	_winder_area.crank_delta.connect(_on_crank_delta)
 	_winder_area.winding_released.connect(_on_winding_released)
@@ -41,6 +52,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_update_winder_animation(delta)
 	var duration: float = _forward_duration()
 	if duration <= 0.0:
 		_update_progress_color()
@@ -70,6 +82,7 @@ func _on_winding_started() -> void:
 		_forward_player.stream_paused = true
 	elif _phase_before_winding == PlaybackPhase.RETURN:
 		_backward_player.stream_paused = true
+		_crank_player.stream_paused = true
 
 	_phase = PlaybackPhase.WINDING
 	_update_progress_color()
@@ -78,6 +91,10 @@ func _on_winding_started() -> void:
 func _on_crank_delta(revolutions: float) -> void:
 	if _phase != PlaybackPhase.WINDING or is_zero_approx(revolutions):
 		return
+
+	_crank_player.stream_paused = false
+	if not _crank_player.playing:
+		_crank_player.play()
 
 	var previous_balance: float = _coin_balance
 	_set_coin_balance(_coin_balance + revolutions * PROGRESS_PER_REVOLUTION)
@@ -111,6 +128,7 @@ func _on_winding_released() -> void:
 				_phase = PlaybackPhase.REST
 				_backward_player.stream_paused = false
 				_backward_player.stop()
+				_reset_reverse_feedback()
 
 	_update_progress_color()
 
@@ -126,6 +144,7 @@ func _resume_previous_phase() -> void:
 			_forward_player.stop()
 			_backward_player.stream_paused = false
 			_backward_player.stop()
+			_reset_reverse_feedback()
 
 
 func _start_forward_playback() -> void:
@@ -134,6 +153,7 @@ func _start_forward_playback() -> void:
 		return
 
 	_phase = PlaybackPhase.FORWARD
+	_reset_reverse_feedback()
 	_backward_player.stream_paused = false
 	_backward_player.stop()
 	_forward_player.stream_paused = false
@@ -142,6 +162,7 @@ func _start_forward_playback() -> void:
 
 func _resume_forward_playback() -> void:
 	_phase = PlaybackPhase.FORWARD
+	_reset_reverse_feedback()
 	_backward_player.stream_paused = false
 	_backward_player.stop()
 	_forward_player.stream_paused = false
@@ -151,6 +172,7 @@ func _begin_return() -> void:
 	_forward_player.stop()
 	_backward_player.stream_paused = false
 	_phase = PlaybackPhase.RETURN
+	_start_reverse_feedback()
 	if _backward_player.stream != null and not _backward_player.playing:
 		_backward_player.play()
 
@@ -159,6 +181,8 @@ func _resume_return() -> void:
 	_phase = PlaybackPhase.RETURN
 	_forward_player.stop()
 	_backward_player.stream_paused = false
+	_crank_player.stream_paused = false
+	_start_reverse_feedback()
 
 
 func _finish_return() -> void:
@@ -167,6 +191,7 @@ func _finish_return() -> void:
 	_forward_player.stop()
 	_backward_player.stream_paused = false
 	_backward_player.stop()
+	_reset_reverse_feedback()
 
 
 func _on_forward_finished() -> void:
@@ -199,3 +224,32 @@ func _update_progress_color() -> void:
 		_progress_fill.bg_color = Color(0.72, 0.02, 0.03, 1.0).lerp(Color(1.0, 0.22, 0.22, 1.0), pulse)
 	else:
 		_progress_fill.bg_color = Color(0.10, 0.72, 0.20, 1.0)
+
+
+func _start_reverse_feedback() -> void:
+	_winder.rotation = WINDER_REST_ROTATION
+	_crank_player.stream_paused = false
+	if not _crank_player.playing:
+		_crank_player.play()
+
+func _reset_reverse_feedback() -> void:
+	_crank_player.stream_paused = false
+	_crank_player.stop()
+	_winder.rotation = WINDER_REST_ROTATION
+
+func _update_winder_animation(delta: float) -> void:
+	match _phase:
+		PlaybackPhase.FORWARD:
+			if not _forward_player.playing or _forward_player.stream_paused:
+				return
+			_winder.rotation -= WINDER_REVERSE_RADIANS_PER_SECOND * WINDER_FORWARD_PLAYBACK_SPEED_SCALE * delta
+			_ensure_crank_sound_playing()
+		PlaybackPhase.RETURN:
+			_winder.rotation -= WINDER_REVERSE_RADIANS_PER_SECOND * delta
+			_ensure_crank_sound_playing()
+
+
+func _ensure_crank_sound_playing() -> void:
+	_crank_player.stream_paused = false
+	if not _crank_player.playing:
+		_crank_player.play()

@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://dev/winder_test_1_time_scroll/music_box_timeline.gd" id="7_timeline"]
 [ext_resource type="Texture2D" uid="uid://by5wxmwhchoi8" path="res://dev/winder_test_1_time_scroll/assets/wide_day_and_night.webp" id="8_daynight"]
 [ext_resource type="AudioStream" path="res://dev/winder_test_1_time_scroll/assets/backwards.ogg" id="9_backward"]
+[ext_resource type="AudioStream" path="res://dev/winder_test_1_time_scroll/assets/winding_a_music_box.ogg" id="10_crank"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_winder"]
 size = Vector2(996, 365)
@@ -71,6 +72,9 @@ stream = ExtResource("5_km4nh")
 
 [node name="BackwardsLoop" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("9_backward")
+
+[node name="CrankSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("10_crank")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
