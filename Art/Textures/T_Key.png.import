@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://donso7bx54ac2"
-path.s3tc="res://.godot/imported/20261025_110435000_iOS.png-6ffef2fa81b062af8a67e85a09ab47ab.s3tc.ctex"
+path.s3tc="res://.godot/imported/T_Key.png-6f987b19ff7480039928348d4e2b8861.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Art/Textures/20261025_110435000_iOS.png"
-dest_files=["res://.godot/imported/20261025_110435000_iOS.png-6ffef2fa81b062af8a67e85a09ab47ab.s3tc.ctex"]
+source_file="res://Art/Textures/T_Key.png"
+dest_files=["res://.godot/imported/T_Key.png-6f987b19ff7480039928348d4e2b8861.s3tc.ctex"]
 
 [params]
 

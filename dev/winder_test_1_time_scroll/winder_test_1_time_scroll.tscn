@@ -1,15 +1,16 @@
 [gd_scene format=3 uid="uid://dmoyjl20wpca0"]
 
-[ext_resource type="Texture2D" uid="uid://bug5gkxtcg8dw" path="res://Art/Textures/20261025_110309000_iOS.png" id="1_3jtvv"]
-[ext_resource type="Texture2D" uid="uid://dffu55airaveo" path="res://Art/Textures/20261025_110549000_iOS.png" id="2_5ktsi"]
-[ext_resource type="Texture2D" uid="uid://c2xpnkjjrd5en" path="res://Art/Textures/20261025_110627000_iOS.png" id="3_km4nh"]
+[ext_resource type="Texture2D" uid="uid://bug5gkxtcg8dw" path="res://Art/Textures/T_Boxexterior.png" id="1_3jtvv"]
+[ext_resource type="Texture2D" uid="uid://dffu55airaveo" path="res://Art/Textures/T_BoxBackground.png" id="2_5ktsi"]
+[ext_resource type="Texture2D" uid="uid://c2xpnkjjrd5en" path="res://Art/Textures/T_Stage.png" id="3_km4nh"]
 [ext_resource type="Texture2D" uid="uid://bj4i23k6rni81" path="res://dev/winder_test_1_time_scroll/assets/winder_two_blade.png" id="4_5ktsi"]
 [ext_resource type="AudioStream" uid="uid://c4n7j7sxvm73o" path="res://dev/winder_test_1_time_scroll/assets/thatgamejam_theme_mp3_medium_audio_track.mp3" id="5_km4nh"]
-[ext_resource type="Script" path="res://dev/winder_test_1_time_scroll/winder_drag.gd" id="6_drag"]
-[ext_resource type="Script" path="res://dev/winder_test_1_time_scroll/music_box_timeline.gd" id="7_timeline"]
+[ext_resource type="Script" uid="uid://durmbooy3yupw" path="res://dev/winder_test_1_time_scroll/winder_drag.gd" id="6_drag"]
+[ext_resource type="Script" uid="uid://cudh8y2jpgmq6" path="res://dev/winder_test_1_time_scroll/music_box_timeline.gd" id="7_timeline"]
 [ext_resource type="Texture2D" uid="uid://by5wxmwhchoi8" path="res://dev/winder_test_1_time_scroll/assets/wide_day_and_night.webp" id="8_daynight"]
-[ext_resource type="AudioStream" path="res://dev/winder_test_1_time_scroll/assets/backwards.ogg" id="9_backward"]
-[ext_resource type="AudioStream" path="res://dev/winder_test_1_time_scroll/assets/winding_a_music_box.ogg" id="10_crank"]
+[ext_resource type="AudioStream" uid="uid://dpp41v30oonlb" path="res://dev/winder_test_1_time_scroll/assets/backwards.ogg" id="9_backward"]
+[ext_resource type="AudioStream" uid="uid://bu66e7gkhwayq" path="res://dev/winder_test_1_time_scroll/assets/winding_a_music_box.ogg" id="10_crank"]
+
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_winder"]
 size = Vector2(996, 365)

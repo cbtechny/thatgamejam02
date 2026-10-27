@@ -1,6 +1,7 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://cpi6shbcfrk6i"]
 
-[ext_resource type="Texture2D" uid="uid://c2xpnkjjrd5en" path="res://Art/Textures/20261025_110627000_iOS.png" id="1_vqr5f"]
+[ext_resource type="Texture2D" uid="uid://c2xpnkjjrd5en" path="res://Art/Textures/T_Stage.png" id="1_vqr5f"]
+
 
 [resource]
 transparency = 1

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2xpnkjjrd5en"
-path.s3tc="res://.godot/imported/20261025_110627000_iOS.png-8296763fecc5cb1486111b822f6f33f1.s3tc.ctex"
+uid="uid://dffu55airaveo"
+path.s3tc="res://.godot/imported/T_BoxBackground.png-180af8b9f0afef1fe8d1cfac87a9d7dc.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Art/Textures/20261025_110627000_iOS.png"
-dest_files=["res://.godot/imported/20261025_110627000_iOS.png-8296763fecc5cb1486111b822f6f33f1.s3tc.ctex"]
+source_file="res://Art/Textures/T_BoxBackground.png"
+dest_files=["res://.godot/imported/T_BoxBackground.png-180af8b9f0afef1fe8d1cfac87a9d7dc.s3tc.ctex"]
 
 [params]
 

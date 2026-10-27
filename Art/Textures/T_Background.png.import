@@ -2,21 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dffu55airaveo"
-path.s3tc="res://.godot/imported/20261025_110549000_iOS.png-7e8f8a120ee9fde58ff31cf1f1138f40.s3tc.ctex"
+uid="uid://dlk52lgdboeag"
+path="res://.godot/imported/T_Background.png-8f1b42dcb7ca07f9abad480fd0fbf7b0.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://Art/Textures/20261025_110549000_iOS.png"
-dest_files=["res://.godot/imported/20261025_110549000_iOS.png-7e8f8a120ee9fde58ff31cf1f1138f40.s3tc.ctex"]
+source_file="res://Art/Textures/T_Background.png"
+dest_files=["res://.godot/imported/T_Background.png-8f1b42dcb7ca07f9abad480fd0fbf7b0.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -24,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -38,4 +37,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1
