@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://ddf4qshc0dxfk"]
+
+[ext_resource type="Texture2D" uid="uid://bug5gkxtcg8dw" path="res://Art/Textures/T_Boxexterior.png" id="1_35vfi"]
+[ext_resource type="Texture2D" uid="uid://by5wxmwhchoi8" path="res://dev/winder_test_1_time_scroll/assets/wide_day_and_night.webp" id="1_a5iie"]
+[ext_resource type="Texture2D" uid="uid://dffu55airaveo" path="res://Art/Textures/T_BoxBackground.png" id="2_a5iie"]
+[ext_resource type="Texture2D" uid="uid://c2xpnkjjrd5en" path="res://Art/Textures/T_Stage.png" id="3_e0yp7"]
+[ext_resource type="Texture2D" uid="uid://bj4i23k6rni81" path="res://dev/winder_test_1_time_scroll/assets/winder_two_blade.png" id="4_l8642"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_winder"]
+size = Vector2(996, 365)
+
+[node name="PanoramaWindowTest" type="Node2D" unique_id=320456242]
+
+[node name="BoxWindow" type="Control" parent="." unique_id=720501311]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 294.0
+offset_top = 200.0
+offset_right = 1652.0
+offset_bottom = 970.0
+
+[node name="TextureRect" type="TextureRect" parent="BoxWindow" unique_id=1847459682]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_a5iie")
+expand_mode = 2
+stretch_mode = 1
+
+[node name="MusicBoxSpriteGroup" type="Node2D" parent="." unique_id=279331743]
+position = Vector2(959, 592.00006)
+scale = Vector2(2.06, 2.06)
+
+[node name="MusicBoxExteriorFrame" type="Sprite2D" parent="MusicBoxSpriteGroup" unique_id=990571965]
+texture = ExtResource("1_35vfi")
+
+[node name="MusicBoxInterior" type="Sprite2D" parent="MusicBoxSpriteGroup" unique_id=1528760731]
+visible = false
+texture = ExtResource("2_a5iie")
+
+[node name="MusicBoxInteriorFloor" type="Sprite2D" parent="MusicBoxSpriteGroup" unique_id=74669391]
+texture = ExtResource("3_e0yp7")
+
+[node name="WinderTwoBlade" type="Sprite2D" parent="MusicBoxSpriteGroup" unique_id=590038712]
+position = Vector2(18.3, 355.6)
+rotation = 1.5707964
+scale = Vector2(0.27586207, 0.27586207)
+texture = ExtResource("4_l8642")
+region_enabled = true
+region_rect = Rect2(270, 355, 996, 365)
+
+[node name="WinderHitArea" type="Area2D" parent="MusicBoxSpriteGroup/WinderTwoBlade" unique_id=1806168571]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MusicBoxSpriteGroup/WinderTwoBlade/WinderHitArea" unique_id=20570066]
+shape = SubResource("RectangleShape2D_winder")

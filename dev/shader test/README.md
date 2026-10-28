@@ -19,3 +19,8 @@ control marbling strength, playback deformation, centering, and one or two warp
 passes. The test-only timeline eases the palette and warp between these three
 states. Forward and return share the fast, strongly warped motion; winding
 returns to slow blue idle.
+
+The inset `TextureRect` uses the existing day/night panorama. Its original
+wide-canvas mapping is preserved inside a clipped viewport sized to the visible
+music-box opening. It stays still while resting or winding, pans forward with
+level progress, and pans backward as the level returns.

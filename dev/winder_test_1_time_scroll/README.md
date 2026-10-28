@@ -1,4 +1,4 @@
-# Winder Test 1: Time Scroll
+# Music Box Playback Test
 
 Run the project with **F5**, or open `winder_test_1_time_scroll.tscn` and run it with **F6**.
 

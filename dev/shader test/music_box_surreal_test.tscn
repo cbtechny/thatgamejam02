@@ -2,7 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://dmoyjl20wpca0" path="res://dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn" id="1_music_box"]
 [ext_resource type="Shader" uid="uid://c1wigbmnsydew" path="res://dev/shader test/music_box_surreal_test.gdshader" id="2_surreal_shader"]
-[ext_resource type="Script" path="res://dev/shader test/music_box_surreal_timeline.gd" id="3_shader_timeline"]
+[ext_resource type="Texture2D" uid="uid://by5wxmwhchoi8" path="res://dev/winder_test_1_time_scroll/assets/wide_day_and_night.webp" id="3_0eowy"]
+[ext_resource type="Script" uid="uid://bso2kq1emnnwi" path="res://dev/shader test/music_box_surreal_timeline.gd" id="3_shader_timeline"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_surreal_background"]
 shader = ExtResource("2_surreal_shader")
@@ -27,12 +28,40 @@ shader_parameter/quality = 2
 [node name="MusicBoxSurrealTest" unique_id=1522035031 instance=ExtResource("1_music_box")]
 script = ExtResource("3_shader_timeline")
 
-[node name="SurrealMarbledBackground" type="ColorRect" parent="." index="0" unique_id=67038969]
+[node name="BoxWindow" type="Control" parent="." index="0" unique_id=1077662814]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = 724.0
+offset_top = 384.0
+offset_right = 1201.0
+offset_bottom = 650.0
+
+[node name="TextureRect" type="TextureRect" parent="BoxWindow" index="0" unique_id=127764283]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_0eowy")
+expand_mode = 2
+stretch_mode = 1
+
+[node name="SurrealMarbledBackground" type="ColorRect" parent="." index="1" unique_id=67038969]
 z_index = -20
 material = SubResource("ShaderMaterial_surreal_background")
 offset_right = 1920.0
 offset_bottom = 1080.0
 mouse_filter = 2
 
-[node name="DayNightBackground" parent="." index="1"]
+[node name="DayNightBackground" parent="." index="2" unique_id=855527850]
 visible = false
+
+[node name="PlayerMarker" parent="HUD" index="1" unique_id=1092106714]
+visible = false
+
+[node name="MusicBoxInterior" parent="MusicBox" parent_id_path=PackedInt32Array(279331743) index="1" unique_id=1528760731]
+visible = false
+
+[editable path="MusicBox"]

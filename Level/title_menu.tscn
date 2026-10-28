@@ -1,0 +1,73 @@
+[gd_scene format=3 uid="uid://b8gbesbnyaaj0"]
+
+[ext_resource type="PackedScene" uid="uid://jo4n45oeyn1e" path="res://dev/winder_test_1_time_scroll/music_box_visuals_with_winder.tscn" id="1_mubnc"]
+
+[node name="Title" type="Control" unique_id=1263109973]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MusicBox" parent="." unique_id=279331743 instance=ExtResource("1_mubnc")]
+position = Vector2(1847, 739)
+
+[node name="ContentMargins" type="MarginContainer" parent="." unique_id=1106698621]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 100
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 100
+
+[node name="MainBdy" type="VBoxContainer" parent="ContentMargins" unique_id=1631450410]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="ContentMargins/MainBdy" unique_id=618025059]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7882353)
+theme_override_constants/shadow_offset_y = 14
+theme_override_font_sizes/font_size = 185
+text = "\"Clocks in Orange\""
+horizontal_alignment = 1
+
+[node name="SubTitle" type="Label" parent="ContentMargins/MainBdy" unique_id=2066669471]
+layout_mode = 2
+theme_override_font_sizes/font_size = 95
+text = "...or something like that..."
+horizontal_alignment = 1
+
+[node name="ButtonContainer" type="HBoxContainer" parent="ContentMargins/MainBdy" unique_id=222248355]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 10
+theme_override_constants/separation = 27
+
+[node name="PlayButton" type="Button" parent="ContentMargins/MainBdy/ButtonContainer" unique_id=540772408]
+custom_minimum_size = Vector2(400, 175)
+layout_mode = 2
+theme_override_font_sizes/font_size = 75
+text = "Play"
+
+[node name="RulesButton" type="Button" parent="ContentMargins/MainBdy/ButtonContainer" unique_id=2070983690]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 75
+text = "How to Play"
+
+[node name="ButtonContainer2" type="HBoxContainer" parent="ContentMargins/MainBdy" unique_id=2101558502]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 10
+theme_override_constants/separation = 27
+
+[node name="TeamButton" type="Button" parent="ContentMargins/MainBdy/ButtonContainer2" unique_id=2066961057]
+custom_minimum_size = Vector2(400, 175)
+layout_mode = 2
+theme_override_font_sizes/font_size = 75
+text = "Itch.io Game Jam Team"

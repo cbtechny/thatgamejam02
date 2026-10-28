@@ -18,6 +18,8 @@ enum PlaybackPhase { REST, WINDING, FORWARD, RETURN }
 @onready var _crank_player: AudioStreamPlayer = $CrankSound
 @onready var _winder: Sprite2D = $MusicBox/WinderTwoBlade
 @onready var _shader_material: ShaderMaterial = $SurrealMarbledBackground.material as ShaderMaterial
+@onready var _box_window: Control = $BoxWindow
+@onready var _box_window_texture: TextureRect = $BoxWindow/TextureRect
 
 var _phase: PlaybackPhase = PlaybackPhase.REST
 var _phase_before_winding: PlaybackPhase = PlaybackPhase.REST
@@ -32,9 +34,14 @@ var _shader_return_blend: float = 0.0
 var _shader_forward_blend: float = 0.0
 var _shader_idle_speed: float = 0.035
 var _shader_forward_speed_multiplier: float = 5.0
+var _box_window_scroll_range: float = 0.0
 
 
 func _ready() -> void:
+	# Clip the panorama to the box opening without changing its authored mapping.
+	_box_window.clip_contents = true
+	call_deferred("_cache_box_window_scroll_range")
+
 	# Capture the material's base speed before the playback phase drives it.
 	_shader_idle_speed = float(_shader_material.get_shader_parameter("motion_speed"))
 	_shader_forward_speed_multiplier = float(_shader_material.get_shader_parameter("forward_speed_scale"))
@@ -251,6 +258,22 @@ func _set_coin_balance(value: float) -> void:
 func _set_background_progress(value: float) -> void:
 	_background_progress = clampf(value, 0.0, 1.0)
 	_background.position.x = BACKGROUND_START_X - BACKGROUND_TRAVEL_X * _background_progress
+	# Pan the existing wide TextureRect through the clipped viewport unchanged.
+	_update_box_window_pan()
+
+
+func _cache_box_window_scroll_range() -> void:
+	# Full-rect anchors can collapse the TextureRect to the viewport's width.
+	# Restore its wide canvas from the texture's natural width for horizontal panning.
+	var panorama_width: float = float(_box_window_texture.texture.get_width())
+	if _box_window_texture.size.x <= _box_window.size.x:
+		_box_window_texture.size.x = maxf(panorama_width, _box_window.size.x)
+	_box_window_scroll_range = maxf(0.0, _box_window_texture.size.x - _box_window.size.x)
+	_update_box_window_pan()
+
+
+func _update_box_window_pan() -> void:
+	_box_window_texture.position.x = -_box_window_scroll_range * _background_progress
 
 
 func _update_progress_color() -> void:

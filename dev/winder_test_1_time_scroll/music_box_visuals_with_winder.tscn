@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://jo4n45oeyn1e"]
+
+[ext_resource type="Texture2D" uid="uid://bug5gkxtcg8dw" path="res://Art/Textures/T_Boxexterior.png" id="1_mxwwm"]
+[ext_resource type="Texture2D" uid="uid://dffu55airaveo" path="res://Art/Textures/T_BoxBackground.png" id="2_wy7o7"]
+[ext_resource type="Texture2D" uid="uid://c2xpnkjjrd5en" path="res://Art/Textures/T_Stage.png" id="3_v7ct5"]
+[ext_resource type="Texture2D" uid="uid://bj4i23k6rni81" path="res://dev/winder_test_1_time_scroll/assets/winder_two_blade.png" id="4_qihbi"]
+[ext_resource type="Script" uid="uid://durmbooy3yupw" path="res://dev/winder_test_1_time_scroll/winder_drag.gd" id="5_xpgjr"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_winder"]
+size = Vector2(996, 365)
+
+[node name="MusicBox" type="Node2D" unique_id=279331743]
+scale = Vector2(0.82, 0.82)
+
+[node name="MusicBoxExteriorFrame" type="Sprite2D" parent="." unique_id=990571965]
+texture = ExtResource("1_mxwwm")
+
+[node name="MusicBoxInterior" type="Sprite2D" parent="." unique_id=1528760731]
+texture = ExtResource("2_wy7o7")
+
+[node name="MusicBoxInteriorFloor" type="Sprite2D" parent="." unique_id=74669391]
+texture = ExtResource("3_v7ct5")
+
+[node name="WinderTwoBlade" type="Sprite2D" parent="." unique_id=590038712]
+position = Vector2(18.3, 355.6)
+rotation = 1.5707964
+scale = Vector2(0.27586207, 0.27586207)
+texture = ExtResource("4_qihbi")
+region_enabled = true
+region_rect = Rect2(270, 355, 996, 365)
+
+[node name="WinderHitArea" type="Area2D" parent="WinderTwoBlade" unique_id=1806168571]
+script = ExtResource("5_xpgjr")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WinderTwoBlade/WinderHitArea" unique_id=20570066]
+shape = SubResource("RectangleShape2D_winder")
+
+[connection signal="input_event" from="WinderTwoBlade/WinderHitArea" to="WinderTwoBlade/WinderHitArea" method="_on_input_event"]
