@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://dvorwsk3gxqxh"]
+
+[ext_resource type="PackedScene" uid="uid://dmoyjl20wpca0" path="res://dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn" id="1_music_box"]
+[ext_resource type="Shader" uid="uid://c1wigbmnsydew" path="res://dev/shader test/music_box_surreal_test.gdshader" id="2_surreal_shader"]
+[ext_resource type="Script" path="res://dev/shader test/music_box_surreal_timeline.gd" id="3_shader_timeline"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_surreal_background"]
+shader = ExtResource("2_surreal_shader")
+shader_parameter/ink_blue = Color(0.025, 0.08, 0.2, 1)
+shader_parameter/dusty_violet = Color(0.055, 0.27, 0.52, 1)
+shader_parameter/warm_paper = Color(0.36, 0.61, 0.78, 1)
+shader_parameter/motion_speed = 0.035
+shader_parameter/forward_speed_scale = 7.0
+shader_parameter/forward_yellow = Color(0.98, 0.7, 0.16, 1)
+shader_parameter/forward_orange = Color(0.96, 0.32, 0.08, 1)
+shader_parameter/return_ink_red = Color(0.3, 0.025, 0.055, 1)
+shader_parameter/return_violet_red = Color(0.68, 0.075, 0.12, 1)
+shader_parameter/return_paper_red = Color(0.95, 0.29, 0.25, 1)
+shader_parameter/return_blend = 0.0
+shader_parameter/forward_blend = 0.0
+shader_parameter/animation_time = 0.0
+shader_parameter/motion_intensity = 0.0
+shader_parameter/warp_strength = 0.10999999754128
+shader_parameter/focal_offset = Vector2(0, 0)
+shader_parameter/quality = 2
+
+[node name="MusicBoxSurrealTest" unique_id=1522035031 instance=ExtResource("1_music_box")]
+script = ExtResource("3_shader_timeline")
+
+[node name="SurrealMarbledBackground" type="ColorRect" parent="." index="0" unique_id=67038969]
+z_index = -20
+material = SubResource("ShaderMaterial_surreal_background")
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="DayNightBackground" parent="." index="1"]
+visible = false
