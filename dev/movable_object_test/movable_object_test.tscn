@@ -1,0 +1,212 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://dev/movable_object_test/movable_object_test.gd" id="1_test"]
+[ext_resource type="Script" path="res://Level/objects/winding_object_controller.gd" id="2_controller"]
+[ext_resource type="PackedScene" path="res://Level/objects/movable_object.tscn" id="3_movable"]
+[ext_resource type="Texture2D" path="res://Art/Textures/T_KeyFragmentBow.svg" id="4_bow"]
+[ext_resource type="Texture2D" path="res://Art/Textures/T_KeyFragmentShaft.svg" id="5_shaft"]
+[ext_resource type="Texture2D" path="res://Art/Textures/T_KeyFragmentTeeth.svg" id="6_teeth"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_barrier"]
+size = Vector2(32, 430)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fragment"]
+size = Vector2(62, 62)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_shaft"]
+size = Vector2(62, 12)
+
+[node name="MovableObjectTest" type="Node2D"]
+script = ExtResource("1_test")
+
+[node name="Background" type="Polygon2D" parent="."]
+color = Color(0.035, 0.055, 0.085, 1)
+polygon = PackedVector2Array(0, 0, 1920, 0, 1920, 1080, 0, 1080)
+
+[node name="WindingKey1" type="Node" parent="."]
+script = ExtResource("2_controller")
+
+[node name="WindingKey2" type="Node" parent="."]
+script = ExtResource("2_controller")
+stop_behavior = 1
+
+[node name="KeyFragmentBow" parent="." node_paths=PackedStringArray("winding_key") instance=ExtResource("3_movable")]
+position = Vector2(420, 360)
+points = PackedVector2Array(0, 0, 480, 0, 1020, 0)
+winding_key = NodePath("../WindingKey1")
+object_texture = ExtResource("4_bow")
+body_shape = SubResource("RectangleShape2D_fragment")
+
+[node name="KeyFragmentShaft" parent="." node_paths=PackedStringArray("winding_key") instance=ExtResource("3_movable")]
+position = Vector2(420, 520)
+points = PackedVector2Array(0, 0, 480, 0, 1020, 0)
+winding_key = NodePath("../WindingKey1")
+object_texture = ExtResource("5_shaft")
+body_shape = SubResource("RectangleShape2D_shaft")
+
+[node name="KeyFragmentTeeth" parent="." node_paths=PackedStringArray("winding_key") instance=ExtResource("3_movable")]
+position = Vector2(420, 680)
+points = PackedVector2Array(0, 0, 380, 0, 480, -45, 660, -45, 760, 0, 1020, 0)
+winding_key = NodePath("../WindingKey1")
+object_texture = ExtResource("6_teeth")
+body_shape = SubResource("RectangleShape2D_fragment")
+
+[node name="Decoration" parent="." node_paths=PackedStringArray("winding_key") instance=ExtResource("3_movable")]
+position = Vector2(420, 860)
+points = PackedVector2Array(0, 0, 1020, 0)
+default_color = Color(0.35, 0.83, 0.87, 0.35)
+winding_key = NodePath("../WindingKey2")
+object_color = Color(0.35, 0.83, 0.87, 1)
+
+[node name="Barrier" type="StaticBody2D" parent="."]
+position = Vector2(1000, 520)
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Barrier"]
+shape = SubResource("RectangleShape2D_barrier")
+
+[node name="Visual" type="Polygon2D" parent="Barrier"]
+color = Color(0.67, 0.35, 0.36, 1)
+polygon = PackedVector2Array(-16, -215, 16, -215, 16, 215, -16, 215)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Title" type="Label" parent="HUD"]
+offset_left = 160.0
+offset_top = 70.0
+offset_right = 1700.0
+offset_bottom = 130.0
+theme_override_colors/font_color = Color(0.95, 0.9, 0.78, 1)
+theme_override_font_sizes/font_size = 42
+text = "MOVABLE OBJECTS"
+
+[node name="Subtitle" type="Label" parent="HUD"]
+offset_left = 162.0
+offset_top = 138.0
+offset_right = 1760.0
+offset_bottom = 178.0
+theme_override_colors/font_color = Color(0.61, 0.69, 0.77, 1)
+theme_override_font_sizes/font_size = 22
+text = "270 degrees = one full path. All objects follow their winding key. Barriers can block their travel."
+
+[node name="Key1Button" type="Button" parent="HUD"]
+offset_left = 160.0
+offset_top = 204.0
+offset_right = 420.0
+offset_bottom = 258.0
+theme_override_font_sizes/font_size = 22
+focus_mode = 0
+text = "1   Release Key 1"
+
+[node name="Key2Button" type="Button" parent="HUD"]
+offset_left = 440.0
+offset_top = 204.0
+offset_right = 700.0
+offset_bottom = 258.0
+theme_override_font_sizes/font_size = 22
+focus_mode = 0
+text = "2   Release Key 2"
+
+[node name="BarrierButton" type="Button" parent="HUD"]
+offset_left = 720.0
+offset_top = 204.0
+offset_right = 1040.0
+offset_bottom = 258.0
+theme_override_font_sizes/font_size = 22
+focus_mode = 0
+text = "Space   Toggle barrier"
+
+[node name="ResetButton" type="Button" parent="HUD"]
+offset_left = 1060.0
+offset_top = 204.0
+offset_right = 1280.0
+offset_bottom = 258.0
+theme_override_font_sizes/font_size = 22
+focus_mode = 0
+text = "R   Reset"
+
+[node name="BarrierStatus" type="Label" parent="HUD"]
+offset_left = 1300.0
+offset_top = 214.0
+offset_right = 1760.0
+offset_bottom = 254.0
+theme_override_colors/font_color = Color(0.86, 0.56, 0.54, 1)
+theme_override_font_sizes/font_size = 22
+text = "BARRIER CLOSED"
+
+[node name="WindingAmount" type="HSlider" parent="HUD"]
+offset_left = 164.0
+offset_top = 280.0
+offset_right = 700.0
+offset_bottom = 300.0
+focus_mode = 0
+max_value = 270.0
+value = 270.0
+
+[node name="AmountLabel" type="Label" parent="HUD"]
+offset_left = 724.0
+offset_top = 272.0
+offset_right = 1250.0
+offset_bottom = 302.0
+theme_override_font_sizes/font_size = 20
+text = "WIND: 270 / 270 DEG"
+
+[node name="BowLabel" type="Label" parent="HUD"]
+offset_left = 164.0
+offset_top = 336.0
+offset_right = 390.0
+offset_bottom = 390.0
+theme_override_font_sizes/font_size = 22
+text = "BOW\nKey 1 progress"
+
+[node name="ShaftLabel" type="Label" parent="HUD"]
+offset_left = 164.0
+offset_top = 496.0
+offset_right = 390.0
+offset_bottom = 550.0
+theme_override_font_sizes/font_size = 22
+text = "SHAFT\nKey 1 progress"
+
+[node name="TeethLabel" type="Label" parent="HUD"]
+offset_left = 164.0
+offset_top = 656.0
+offset_right = 390.0
+offset_bottom = 710.0
+theme_override_font_sizes/font_size = 22
+text = "TEETH\nKey 1 progress"
+
+[node name="DecorationLabel" type="Label" parent="HUD"]
+offset_left = 164.0
+offset_top = 836.0
+offset_right = 390.0
+offset_bottom = 890.0
+theme_override_colors/font_color = Color(0.35, 0.83, 0.87, 1)
+theme_override_font_sizes/font_size = 22
+text = "DECORATION\nKey 2 progress"
+
+[node name="Key1Note" type="Label" parent="HUD"]
+offset_left = 1510.0
+offset_top = 450.0
+offset_right = 1800.0
+offset_bottom = 590.0
+theme_override_colors/font_color = Color(1, 0.78, 0.35, 1)
+theme_override_font_sizes/font_size = 22
+text = "KEY 1\nAt zero: hold 1.5 s,\nthen return in 0.5 s."
+
+[node name="Key2Note" type="Label" parent="HUD"]
+offset_left = 1510.0
+offset_top = 820.0
+offset_right = 1800.0
+offset_bottom = 930.0
+theme_override_colors/font_color = Color(0.35, 0.83, 0.87, 1)
+theme_override_font_sizes/font_size = 22
+text = "KEY 2\nAt zero: keep position.\nNext release: continue."
+
+[node name="Footer" type="Label" parent="HUD"]
+offset_left = 160.0
+offset_top = 984.0
+offset_right = 1760.0
+offset_bottom = 1020.0
+theme_override_colors/font_color = Color(0.61, 0.69, 0.77, 1)
+theme_override_font_sizes/font_size = 20
+text = "Keys lock during unwind and for 2 s after zero. Space toggles the test barrier. R resets the test."

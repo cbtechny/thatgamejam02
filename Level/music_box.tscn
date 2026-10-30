@@ -1,5 +1,29 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cs7qny7s6sidn"]
 
-[ext_resource type="PackedScene" path="res://dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn" id="1_winder_test"]
+[ext_resource type="PackedScene" uid="uid://dmoyjl20wpca0" path="res://dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn" id="1_winder_test"]
 
-[node name="MusicBoxPrototype" instance=ExtResource("1_winder_test")]
+[node name="MusicBoxPrototype" unique_id=1579215243 instance=ExtResource("1_winder_test")]
+
+[node name="KeyFragmentBow" parent="MovableObjects" index="0"]
+position = Vector2(744.00006, 406.00003)
+rotation = 0.6034133
+points = PackedVector2Array(148.20856, -30.90683, 59.56952, 74.24603, 114.11261, 136.13348, 149.4668, 51.231384, 247.11029, 151.38544, 322.87286, 74.85422, 313.4323, -2.868866)
+point_rotations_degrees = PackedFloat32Array(0, 126.00244, 47.30944, -35.842693)
+body_collision_layer = 0
+body_collision_mask = 0
+
+[node name="KeyFragmentShaft" parent="MovableObjects" index="1"]
+position = Vector2(992.00006, 431)
+rotation = 0.19731627
+points = PackedVector2Array(0, 0, -17.263916, 71.777176, -109.43829, 69.80867, -59.630005, 135.31541, -92.97473, 198.06993, -10, 234, 50, 262)
+point_rotations_degrees = PackedFloat32Array(0, -115.841736, -39.80742, 0, 69.8255)
+body_collision_layer = 0
+body_collision_mask = 0
+
+[node name="KeyFragmentTeeth" parent="MovableObjects" index="2"]
+position = Vector2(1119, 672)
+rotation = 0.63862514
+points = PackedVector2Array(0, 0, -86, 21, -79.76709, -88.98999, -213.1117, -18.639374, -106.92151, 65.67944, -165.24268, 131.39587, -264.13428, 108.91339, -271.05695, 175.08044)
+point_rotations_degrees = PackedFloat32Array(90.81352, 0, 40.602192, -34.078457, -135.81221, -119.17452, -28.8939, 115.66488)
+body_collision_layer = 0
+body_collision_mask = 0
