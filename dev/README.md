@@ -5,6 +5,7 @@ project's default launch path.
 
 | Scene | Purpose |
 | --- | --- |
+| `title/curtain.tscn` | Curtain with seven horizontal rows of two bones, edge controls, mesh weights, rest poses, RESET, and an editable animation. See `title/README.md`. |
 | `winder_test_1_time_scroll/winder_test_1_time_scroll.tscn` | Interactive music-box playback, crank, and level-flow test; this is what `Main.tscn` currently runs. |
 | `shader test/music_box_surreal_test.tscn` | Playback test with the isolated blue/forward-gold/return-red shader. Run directly with F6. |
 | `panorama_window_test/panorama_window_test.tscn` | Standalone panorama crop and music-box window alignment test. |
