@@ -5,7 +5,8 @@ adds a full-screen marbled `ColorRect` behind its artwork. The shader is an
 original implementation for this project; it uses two fixed, inexpensive
 coordinate warp passes and no texture samples or external dependencies.
 
-Open `music_box_surreal_test.tscn` and run it with **F6**. Compare it with
+Open `tests/music_box_surreal/music_box_surreal_test.tscn` and run it with
+**F6**. Compare it with
 `dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn`, also run with
 **F6**. The project default (`Main.tscn`) is unchanged.
 

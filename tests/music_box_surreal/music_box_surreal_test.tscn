@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://dvorwsk3gxqxh"]
 
 [ext_resource type="PackedScene" uid="uid://dmoyjl20wpca0" path="res://dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn" id="1_music_box"]
-[ext_resource type="Shader" uid="uid://c1wigbmnsydew" path="res://dev/shader test/music_box_surreal_test.gdshader" id="2_surreal_shader"]
+[ext_resource type="Shader" uid="uid://c1wigbmnsydew" path="res://tests/music_box_surreal/music_box_surreal_test.gdshader" id="2_surreal_shader"]
 [ext_resource type="Texture2D" uid="uid://by5wxmwhchoi8" path="res://dev/winder_test_1_time_scroll/assets/wide_day_and_night.webp" id="3_0eowy"]
-[ext_resource type="Script" uid="uid://bso2kq1emnnwi" path="res://dev/shader test/music_box_surreal_timeline.gd" id="3_shader_timeline"]
+[ext_resource type="Script" uid="uid://bso2kq1emnnwi" path="res://tests/music_box_surreal/music_box_surreal_timeline.gd" id="3_shader_timeline"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_surreal_background"]
 shader = ExtResource("2_surreal_shader")
