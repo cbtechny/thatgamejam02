@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
-[ext_resource type="PackedScene" path="res://dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn" id="1_music_box"]
+[ext_resource type="PackedScene" path="res://Level/title_menu.tscn" id="1_title"]
 
 [node name="Main" type="Node"]
 
-[node name="MusicBoxPrototype" parent="." instance=ExtResource("1_music_box")]
+[node name="TitleMenu" parent="." instance=ExtResource("1_title")]

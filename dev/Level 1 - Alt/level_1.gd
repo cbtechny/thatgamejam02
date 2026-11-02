@@ -19,6 +19,10 @@ const MIDDLE_KEY_TRAVEL: float = 105.0
 const MIDDLE_FAN_PULSE_PERIOD: float = 2.0
 const AUDIO_SAMPLE_RATE: int = 22050
 const FULL_KEY_TEXTURE: Texture2D = preload("res://Art/Textures/Resources/Key/key_full.tres")
+const CURTAIN_SCENE: PackedScene = preload("res://dev/title/curtain.tscn")
+const MENU_OVERLAY_SCRIPT: Script = preload("res://dev/Level 1 - Alt/menu_overlay.gd")
+const TITLE_SCENE_PATH: String = "res://Level/title_menu.tscn"
+signal title_transition_finished
 
 @onready var _key: RigidBody2D = $Key0 as RigidBody2D
 @onready var _key_sprite: Sprite2D = $Key0/Sprite2D as Sprite2D
@@ -63,6 +67,9 @@ var _key0_endpoint: Area2D
 var _key1_endpoint: Area2D
 var _sfx_players: Dictionary = {}
 var _crank_angle_since_tick: float = 0.0
+var _pause_menu_open: bool = false
+var _transitioning: bool = false
+var _title_transition_curtains_remaining: int = 0
 
 
 func _ready() -> void:
@@ -94,7 +101,12 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _released:
+	if event is InputEventKey and event.keycode == KEY_ESCAPE and event.pressed and not event.echo:
+		if not _released and not _transitioning and not _pause_menu_open:
+			_show_pause_menu()
+		get_viewport().set_input_as_handled()
+		return
+	if _released or _transitioning or _pause_menu_open:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -128,6 +140,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+
 func _physics_process(_delta: float) -> void:
 	if _released:
 		if _left_fan_active and not _key_snapped and not _missed:
@@ -157,6 +170,60 @@ func _key_is_out_of_bounds() -> bool:
 	return not bounds.has_point(_key.global_position)
 
 
+func _show_pause_menu() -> void:
+	_pause_menu_open = true
+	var backdrop: ColorRect = ColorRect.new()
+	backdrop.name = "PauseMenu"
+	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	backdrop.set_script(MENU_OVERLAY_SCRIPT)
+	backdrop.process_mode = Node.PROCESS_MODE_ALWAYS
+	backdrop.connect("resume_requested", _resume_from_pause)
+	_ui.add_child(backdrop)
+	var panel: VBoxContainer = VBoxContainer.new()
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	panel.offset_left = -190.0
+	panel.offset_top = -140.0
+	panel.offset_right = 190.0
+	panel.offset_bottom = 140.0
+	panel.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.add_theme_constant_override("separation", 14)
+	backdrop.add_child(panel)
+	var title: Label = Label.new()
+	title.text = "PAUSED"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 40)
+	panel.add_child(title)
+	var resume_button: Button = Button.new()
+	resume_button.text = "Resume"
+	resume_button.custom_minimum_size = Vector2(300.0, 64.0)
+	resume_button.pressed.connect(_resume_from_pause)
+	panel.add_child(resume_button)
+	var retry_button: Button = Button.new()
+	retry_button.text = "Retry"
+	retry_button.custom_minimum_size = Vector2(300.0, 64.0)
+	retry_button.pressed.connect(_retry_level)
+	panel.add_child(retry_button)
+	var title_button: Button = Button.new()
+	title_button.text = "Return to Title"
+	title_button.custom_minimum_size = Vector2(300.0, 64.0)
+	title_button.pressed.connect(_return_to_title)
+	panel.add_child(title_button)
+	_style_menu_buttons([resume_button, retry_button, title_button])
+	resume_button.call_deferred("grab_focus")
+	get_tree().paused = true
+
+
+func _resume_from_pause() -> void:
+	if not _pause_menu_open:
+		return
+	_pause_menu_open = false
+	get_tree().paused = false
+	var backdrop: Node = _ui.get_node_or_null("PauseMenu")
+	if backdrop != null:
+		backdrop.queue_free()
+
+
 func _show_miss_screen() -> void:
 	_missed = true
 	_play_sfx("miss")
@@ -165,32 +232,106 @@ func _show_miss_screen() -> void:
 	var backdrop: ColorRect = ColorRect.new()
 	backdrop.name = "MissScreen"
 	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
-	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_ui.add_child(backdrop)
 	var panel: VBoxContainer = VBoxContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.offset_left = -190.0
-	panel.offset_top = -80.0
+	panel.offset_top = -105.0
 	panel.offset_right = 190.0
-	panel.offset_bottom = 80.0
+	panel.offset_bottom = 105.0
 	panel.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.add_theme_constant_override("separation", 14)
 	backdrop.add_child(panel)
 	var title: Label = Label.new()
 	title.text = "MISSED!"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 40)
 	panel.add_child(title)
-	var redo_button: Button = Button.new()
-	redo_button.text = "Redo"
-	redo_button.pressed.connect(_redo_level)
-	panel.add_child(redo_button)
+	_add_terminal_menu_buttons(panel)
+	_set_terminal_menu_focus(backdrop)
 	_release_hint.text = "The key missed the target"
+	get_tree().paused = true
 
 
-func _redo_level() -> void:
+func _add_terminal_menu_buttons(panel: VBoxContainer) -> void:
+	var retry_button: Button = Button.new()
+	retry_button.text = "Retry"
+	retry_button.custom_minimum_size = Vector2(300.0, 64.0)
+	retry_button.pressed.connect(_retry_level)
+	panel.add_child(retry_button)
+	var title_button: Button = Button.new()
+	title_button.text = "Return to Title"
+	title_button.custom_minimum_size = Vector2(300.0, 64.0)
+	title_button.pressed.connect(_return_to_title)
+	panel.add_child(title_button)
+	_style_menu_buttons([retry_button, title_button])
+	retry_button.call_deferred("grab_focus")
+
+
+func _set_terminal_menu_focus(backdrop: Control) -> void:
+	backdrop.process_mode = Node.PROCESS_MODE_ALWAYS
+	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
+
+
+func _style_menu_buttons(buttons: Array[Button]) -> void:
+	for button: Button in buttons:
+		button.focus_mode = Control.FOCUS_ALL
+		var focus: StyleBoxFlat = StyleBoxFlat.new()
+		focus.bg_color = Color(0.95, 0.72, 0.3, 0.2)
+		focus.border_color = Color(1.0, 0.82, 0.42, 1.0)
+		focus.set_border_width_all(4)
+		focus.set_corner_radius_all(6)
+		button.add_theme_stylebox_override("focus", focus)
+
+
+func _retry_level() -> void:
+	_transitioning = true
+	get_tree().paused = false
 	get_tree().reload_current_scene()
 
+
+func _return_to_title() -> void:
+	if _transitioning:
+		return
+	_transitioning = true
+	get_tree().paused = true
+	var left_curtain: Node2D = CURTAIN_SCENE.instantiate() as Node2D
+	left_curtain.z_index = 100
+	_ui.add_child(left_curtain)
+	var right_anchor: Node2D = Node2D.new()
+	right_anchor.name = "RightCurtainAnchor"
+	right_anchor.position.x = get_viewport_rect().size.x
+	right_anchor.scale = Vector2(-1.0, 1.0)
+	right_anchor.z_index = 100
+	_ui.add_child(right_anchor)
+	var right_curtain: Node2D = CURTAIN_SCENE.instantiate() as Node2D
+	right_anchor.add_child(right_curtain)
+	var players: Array[AnimationPlayer] = [
+		left_curtain.get_node("AnimationPlayer") as AnimationPlayer,
+		right_curtain.get_node("AnimationPlayer") as AnimationPlayer,
+	]
+	_title_transition_curtains_remaining = players.size()
+	for player: AnimationPlayer in players:
+		player.process_mode = Node.PROCESS_MODE_ALWAYS
+		var library: AnimationLibrary = player.get_animation_library(&"").duplicate(true) as AnimationLibrary
+		library.get_animation(&"curtain").loop_mode = Animation.LOOP_NONE
+		player.remove_animation_library(&"")
+		player.add_animation_library(&"", library)
+		player.animation_finished.connect(_on_title_curtain_finished)
+		player.play(&"curtain")
+		player.seek(0.0, true)
+	await title_transition_finished
+	get_tree().paused = false
+	get_tree().change_scene_to_file(TITLE_SCENE_PATH)
+
+
+func _on_title_curtain_finished(animation_name: StringName) -> void:
+	if animation_name != &"curtain":
+		return
+	_title_transition_curtains_remaining -= 1
+	if _title_transition_curtains_remaining == 0:
+		title_transition_finished.emit()
 
 func _process(delta: float) -> void:
 	_left_fan.position.y = _left_fan_start_y + (_key.global_position.y - _key_start_y)
@@ -341,12 +482,16 @@ func _animate_final_assembly() -> void:
 	_play_sfx("win")
 	_keyhole_highlight.set_active(false)
 	_show_win_screen()
+	var win_pulses: Array[Tween] = []
 	for icon: Sprite2D in [_ui_key0, _ui_key1, _ui_key2]:
 		_reveal_ui_fragment(icon)
 		var win_pulse: Tween = create_tween()
 		win_pulse.tween_property(icon, "scale", icon.scale * 1.2, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		win_pulse.tween_property(icon, "scale", icon.scale, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-
+		win_pulses.append(win_pulse)
+	for win_pulse: Tween in win_pulses:
+		await win_pulse.finished
+	get_tree().paused = true
 
 func _reveal_ui_fragment(icon: Sprite2D) -> void:
 	icon.show()
@@ -359,18 +504,25 @@ func _show_win_screen() -> void:
 	var backdrop: ColorRect = ColorRect.new()
 	backdrop.name = "WinScreen"
 	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
-	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_ui.add_child(backdrop)
 	_ui.move_child(backdrop, 0)
+	var panel: VBoxContainer = VBoxContainer.new()
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	panel.offset_left = -270.0
+	panel.offset_top = -150.0
+	panel.offset_right = 270.0
+	panel.offset_bottom = 150.0
+	panel.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.add_theme_constant_override("separation", 18)
+	backdrop.add_child(panel)
 	var label: Label = Label.new()
 	label.text = "KEY COMPLETE!\nYou found the way home."
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 48)
-	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	backdrop.add_child(label)
-
+	panel.add_child(label)
+	_add_terminal_menu_buttons(panel)
+	_set_terminal_menu_focus(backdrop)
 
 func _setup_sfx() -> void:
 	_register_sfx("crank", "click", 0.075)

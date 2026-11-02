@@ -1,6 +1,7 @@
 extends Control
 
 const CURTAIN_ANIMATION: StringName = &"curtain"
+const LEVEL_ONE_PATH: String = "res://dev/Level 1 - Alt/level_1.tscn"
 
 @onready var _curtain_players: Array[AnimationPlayer] = [
 	$Curtain/AnimationPlayer,
@@ -13,7 +14,7 @@ var _curtain_playing := false
 var _curtains_remaining := 0
 
 func _ready() -> void:
-	# Play once in the menu while keeping the authored scene's looping preview.
+	# Keep the authored looping preview intact; this menu plays it once on demand.
 	for player in _curtain_players:
 		var library := player.get_animation_library(&"").duplicate(true) as AnimationLibrary
 		library.get_animation(CURTAIN_ANIMATION).loop_mode = Animation.LOOP_NONE
@@ -25,9 +26,22 @@ func _ready() -> void:
 		player.pause()
 	resized.connect(_update_right_curtain_anchor)
 	_update_right_curtain_anchor()
+	_play_button.focus_mode = Control.FOCUS_ALL
+	_play_button.grab_focus()
+	for button: Button in find_children("*", "Button", true, false):
+		button.focus_mode = Control.FOCUS_ALL
+		_apply_focus_style(button)
 
 func _update_right_curtain_anchor() -> void:
 	_right_curtain_anchor.position.x = size.x
+
+func _apply_focus_style(button: Button) -> void:
+	var focus := StyleBoxFlat.new()
+	focus.bg_color = Color(0.95, 0.72, 0.3, 0.18)
+	focus.border_color = Color(1.0, 0.82, 0.42, 1.0)
+	focus.set_border_width_all(5)
+	focus.set_corner_radius_all(8)
+	button.add_theme_stylebox_override("focus", focus)
 
 func _on_play_button_pressed() -> void:
 	if _curtain_playing:
@@ -40,10 +54,10 @@ func _on_play_button_pressed() -> void:
 		player.seek(0.0, true)
 
 func _on_curtain_animation_finished(animation_name: StringName) -> void:
-	if animation_name != CURTAIN_ANIMATION:
+	if animation_name != CURTAIN_ANIMATION or not _curtain_playing:
 		return
 	_curtains_remaining -= 1
 	if _curtains_remaining > 0:
 		return
-	_curtain_playing = false
-	_play_button.disabled = false
+	get_tree().paused = false
+	get_tree().change_scene_to_file(LEVEL_ONE_PATH)
