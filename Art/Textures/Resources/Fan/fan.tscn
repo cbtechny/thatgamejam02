@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://cap0sjxxwhvyq"]
+
+[ext_resource type="Texture2D" uid="uid://clxdeahpgh7oe" path="res://Art/Textures/Resources/Fan/fan0.tres" id="1_c3tyh"]
+[ext_resource type="Texture2D" uid="uid://dpnf52dwe8fiq" path="res://Art/Textures/Resources/Fan/blade0.tres" id="2_cgtqx"]
+[ext_resource type="Texture2D" uid="uid://bv04b3fj3icmc" path="res://Art/Textures/Resources/Fan/blade1.tres" id="3_am6q2"]
+[ext_resource type="Texture2D" uid="uid://bg5cli0orh7r" path="res://Art/Textures/Resources/Fan/blade2.tres" id="4_tai5o"]
+[ext_resource type="Texture2D" uid="uid://dp10bu3y1qdq2" path="res://Art/Textures/Resources/Fan/blade3.tres" id="5_6gwsr"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lfxu0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_cgtqx")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 15.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_cgtqx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_am6q2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_tai5o")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_6gwsr")
+}],
+"loop": 1,
+"name": &"spin",
+"speed": 15.0
+}]
+
+[node name="Fan" type="Node2D" unique_id=1296767138]
+
+[node name="Fan0" type="Sprite2D" parent="." unique_id=108384984]
+texture = ExtResource("1_c3tyh")
+centered = false
+
+[node name="Blades" type="AnimatedSprite2D" parent="." unique_id=86947980]
+position = Vector2(362, 266)
+scale = Vector2(1.3, 1.3)
+sprite_frames = SubResource("SpriteFrames_lfxu0")
+animation = &"spin"
+autoplay = "spin"
+frame_progress = 0.22388567

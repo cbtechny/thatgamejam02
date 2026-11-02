@@ -5,6 +5,8 @@
 [ext_resource type="Texture2D" uid="uid://dffu55airaveo" path="res://Art/Textures/T_BoxBackground.png" id="2_a5iie"]
 [ext_resource type="Texture2D" uid="uid://c2xpnkjjrd5en" path="res://Art/Textures/T_Stage.png" id="3_e0yp7"]
 [ext_resource type="Texture2D" uid="uid://bj4i23k6rni81" path="res://dev/winder_test_1_time_scroll/assets/winder_two_blade.png" id="4_l8642"]
+[ext_resource type="PackedScene" uid="uid://cap0sjxxwhvyq" path="res://Art/Textures/Resources/Fan/fan.tscn" id="6_3fa8r"]
+[ext_resource type="PackedScene" uid="uid://c2pl028wbcv7y" path="res://Art/Textures/Resources/Crank/crank_knob.tscn" id="6_sua26"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_winder"]
 size = Vector2(996, 365)
@@ -14,10 +16,10 @@ size = Vector2(996, 365)
 [node name="BoxWindow" type="Control" parent="." unique_id=720501311]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 294.0
-offset_top = 200.0
-offset_right = 1652.0
-offset_bottom = 970.0
+offset_left = 289.0
+offset_top = 24.0
+offset_right = 1647.0
+offset_bottom = 794.0
 
 [node name="TextureRect" type="TextureRect" parent="BoxWindow" unique_id=1847459682]
 layout_mode = 1
@@ -31,10 +33,11 @@ expand_mode = 2
 stretch_mode = 1
 
 [node name="MusicBoxSpriteGroup" type="Node2D" parent="." unique_id=279331743]
-position = Vector2(959, 592.00006)
+position = Vector2(954, 416.00006)
 scale = Vector2(2.06, 2.06)
 
 [node name="MusicBoxExteriorFrame" type="Sprite2D" parent="MusicBoxSpriteGroup" unique_id=990571965]
+z_index = 2
 texture = ExtResource("1_35vfi")
 
 [node name="MusicBoxInterior" type="Sprite2D" parent="MusicBoxSpriteGroup" unique_id=1528760731]
@@ -45,6 +48,7 @@ texture = ExtResource("2_a5iie")
 texture = ExtResource("3_e0yp7")
 
 [node name="WinderTwoBlade" type="Sprite2D" parent="MusicBoxSpriteGroup" unique_id=590038712]
+visible = false
 position = Vector2(18.3, 355.6)
 rotation = 1.5707964
 scale = Vector2(0.27586207, 0.27586207)
@@ -56,3 +60,17 @@ region_rect = Rect2(270, 355, 996, 365)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MusicBoxSpriteGroup/WinderTwoBlade/WinderHitArea" unique_id=20570066]
 shape = SubResource("RectangleShape2D_winder")
+
+[node name="LeftFan" parent="." unique_id=1296767138 instance=ExtResource("6_3fa8r")]
+position = Vector2(348.00003, 266)
+scale = Vector2(0.5476799, 0.5476799)
+
+[node name="MiddleFan" parent="." unique_id=886041687 instance=ExtResource("6_3fa8r")]
+position = Vector2(803, 872)
+rotation = -1.5707964
+scale = Vector2(0.5476799, 0.5476799)
+
+[node name="Crank" parent="." unique_id=352586324 instance=ExtResource("6_sua26")]
+z_index = 8
+position = Vector2(944, 808)
+scale = Vector2(0.27631277, 0.27631277)

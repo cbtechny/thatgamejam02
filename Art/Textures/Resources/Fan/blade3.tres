@@ -1,0 +1,7 @@
+[gd_resource type="AtlasTexture" format=3 uid="uid://dp10bu3y1qdq2"]
+
+[ext_resource type="Texture2D" uid="uid://flo5x1o5ytu" path="res://Art/Textures/Clean Two-Blade Fan Sprite Atlas.png" id="1_88wl1"]
+
+[resource]
+atlas = ExtResource("1_88wl1")
+region = Rect2(1248, 667, 62, 278)

@@ -130,7 +130,9 @@ func _add_row(controller: Node) -> void:
 	slider.value_changed.connect(func(degrees: float) -> void: key_degrees_changed.emit(controller, degrees))
 	value.value_changed.connect(func(degrees: float) -> void: key_degrees_changed.emit(controller, degrees))
 	slider.drag_started.connect(func() -> void: key_degrees_changed.emit(controller, slider.value))
-	controller.tree_exiting.connect(_remove_row.bind(controller.get_instance_id()))
+	var remove_row: Callable = _remove_row.bind(controller.get_instance_id())
+	if not controller.tree_exiting.is_connected(remove_row):
+		controller.tree_exiting.connect(remove_row)
 
 
 func _remove_row(id: int) -> void:
