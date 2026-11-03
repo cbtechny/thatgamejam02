@@ -1,5 +1,5 @@
 extends MusicBoxTimeline
-## Keep shader and panorama presentation on the same winding rules as Main.
+## Keep shader and panorama presentation on the winding prototype's rules.
 
 const SHADER_TRANSITION_RATE: float = 2.5
 

@@ -350,10 +350,9 @@ func _test_repeatability() -> void:
 
 
 func _test_music_box_input() -> void:
-	var scene: PackedScene = load("res://Main.tscn") as PackedScene
-	var main: Node = scene.instantiate()
-	root.add_child(main)
-	var timeline: MusicBoxTimeline = main.get_node("MusicBoxPrototype") as MusicBoxTimeline
+	var scene: PackedScene = load("res://dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn") as PackedScene
+	var timeline: MusicBoxTimeline = scene.instantiate() as MusicBoxTimeline
+	root.add_child(timeline)
 	var key: WindingObjectController = timeline.object_controller
 	key.full_unwind_duration = 1.0
 	var area: WinderDrag = timeline.get_node("MusicBox/WinderTwoBlade/WinderHitArea") as WinderDrag
@@ -401,12 +400,12 @@ func _test_music_box_input() -> void:
 	_expect(not area.is_input_enabled(), "The real winding key stays locked for 119 cooldown ticks")
 	await _ticks(1)
 	_expect(area.is_input_enabled() and key.phase == WindingObjectController.MotionPhase.IDLE and bow.get_distance_along_path() < 0.01, "At two seconds, the key unlocks and unobstructed objects are back at their start")
-	main.queue_free()
+	timeline.queue_free()
 	await process_frame
 
 
 func _test_shader_integration() -> void:
-	var scene: PackedScene = load("res://dev/shader test/music_box_surreal_test.tscn") as PackedScene
+	var scene: PackedScene = load("res://tests/music_box_surreal/music_box_surreal_test.tscn") as PackedScene
 	var timeline: MusicBoxTimeline = scene.instantiate() as MusicBoxTimeline
 	root.add_child(timeline)
 	var key: WindingObjectController = timeline.object_controller

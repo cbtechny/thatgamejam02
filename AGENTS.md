@@ -2,13 +2,13 @@
 
 ## Project Structure & Module Organization
 
-This is a Godot 4.7.2-stable project using standard GDScript and the GL Compatibility renderer. `project.godot` defines the project; `Main.tscn` launches the music-box playback prototype.
+This is a Godot 4.7.2-stable project using standard GDScript and the GL Compatibility renderer. `project.godot` defines the project; `Main.tscn` launches the title menu, whose Play button opens `dev/Level 1 - Alt/level_1.tscn`.
 
 - `Level/`: game scenes, including the title menu and music box.
 - `Art/Textures/` and `Art/Materials/`: shared artwork and Godot materials.
 - `dev/`: self-contained experiments with scripts, scenes, test media, and local READMEs. See `dev/README.md` for the scene index.
 - `dev/winder_test_1_time_scroll/`: crank input and playback logic.
-- `dev/shader test/` and `dev/panorama_window_test/`: visual comparison scenes.
+- `tests/music_box_surreal/` and `tests/panorama_window/`: visual comparison scenes. See `tests/README.md` for the manual test index.
 
 Keep new experiments in their own `dev/` subdirectory; reuse shared artwork rather than copying it.
 
@@ -20,7 +20,7 @@ Run commands from this repository directory. Examples assume `godot` resolves to
 godot --editor --path .                         # Open the editor
 godot --path .                                  # Run Main.tscn
 godot --headless --path . --editor --quit        # Import and check editor startup
-godot --path . "res://dev/shader test/music_box_surreal_test.tscn"
+godot --path . "res://tests/music_box_surreal/music_box_surreal_test.tscn"
 ```
 
 In the editor, use **F5** for the project and **F6** for the current scene. No export presets are checked in; configure a desktop export preset before producing a build.

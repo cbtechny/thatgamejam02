@@ -187,7 +187,8 @@ Input handler tests run without
 a window; rendered validation also sends mouse and keyboard events through
 Godot's input system and captures screenshots at 1920 x 1080.
 
-The return regression runner passes 30 checks against `Main.tscn` and the
+The return regression runner targets 30 checks against
+`dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn` and the
 currently authored `Level/music_box.tscn`. Each scene completes a 270-degree,
 135-degree, and another 270-degree release, restoring each fragment's position
 and rotation after every cycle. Add `-- --capture` and omit `--headless` to
