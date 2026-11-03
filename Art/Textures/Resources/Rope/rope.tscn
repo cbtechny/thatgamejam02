@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://42m6aq2qh4wj"]
+
+[ext_resource type="Texture2D" uid="uid://bk8dr3kj1m7ms" path="res://Art/Textures/Rope segment.png" id="1_88bgm"]
+
+[node name="Rope" type="Node2D" unique_id=2017157785]
+
+[node name="RopeLine" type="Line2D" parent="." unique_id=948835680]
+position = Vector2(38, 25)
+points = PackedVector2Array(0, 5, -8, 177, -8, 232, -4, 494)
+width = 50.0
+texture = ExtResource("1_88bgm")
+texture_mode = 1
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2

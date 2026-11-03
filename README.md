@@ -65,11 +65,14 @@ The supplied theme recording is optional. If used, it must stay unmodified and b
 ## Project structure
 
 ```text
-Main.tscn       Empty startup scene
+Main.tscn       Title menu; Play opens dev/Level 1 - Alt/level_1.tscn
 project.godot   Godot project and desktop display settings
+dev/            Fan level, winding prototype, curtain and movable-object tools
+tests/          Surreal shader and panorama manual comparison scenes
 ```
 
-There is no gameplay, audio, provided theme recording, generated art, or AI-generated asset in the repository yet.
+See [the development scene index](dev/README.md) and
+[the manual test index](tests/README.md) for runnable scenes.
 
 ## Working agreement
 

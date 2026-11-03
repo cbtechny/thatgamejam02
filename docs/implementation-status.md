@@ -2,6 +2,10 @@
 
 Date: 31 October 2026. Base code: `299e792`, with local winding-control and movable-object changes.
 
+This is a historical snapshot. As of the 3 November integration, `Main.tscn`
+launches the title menu and Play opens `dev/Level 1 - Alt/level_1.tscn`.
+Winding regression fixtures now instantiate the standalone winding prototype.
+
 The project has a music box test and three movable key fragments. The game has no key assembly system or level completion system.
 
 ## Technical Terms
@@ -89,5 +93,5 @@ See [Winding Debug in the Editor](global-debug.md) for the preview controls and 
 - [Movement and sound](../dev/winder_test_1_time_scroll/music_box_timeline.gd)
 - [Movable object](../Level/objects/movable_object.gd), [controller](../Level/objects/winding_object_controller.gd), and [collision test](../dev/movable_object_test/movable_object_test.tscn)
 - [Winding Debug editor plugin](../addons/winding_debug/plugin.gd) and [editor validation](../dev/global_debug/validate_editor_debug.ps1)
-- [Shader test](../dev/shader%20test/music_box_surreal_test.tscn)
+- [Shader test](../tests/music_box_surreal/music_box_surreal_test.tscn)
 - [Game entry](../Main.tscn) and [title menu](../Level/title_menu.tscn)

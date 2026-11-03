@@ -1,0 +1,7 @@
+[gd_resource type="AtlasTexture" format=3 uid="uid://d05ew15e30h6d"]
+
+[ext_resource type="Texture2D" uid="uid://ctot0pev5mmkx" path="res://Art/Textures/key and fragements.png" id="1_dvgxm"]
+
+[resource]
+atlas = ExtResource("1_dvgxm")
+region = Rect2(1517, 177, 236, 195)

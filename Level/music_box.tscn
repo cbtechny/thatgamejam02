@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://cs7qny7s6sidn"]
 
 [ext_resource type="PackedScene" uid="uid://dmoyjl20wpca0" path="res://dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn" id="1_winder_test"]
+[ext_resource type="PackedScene" uid="uid://42m6aq2qh4wj" path="res://Art/Textures/Resources/Rope/rope.tscn" id="2_hhxhg"]
+[ext_resource type="PackedScene" uid="uid://cap0sjxxwhvyq" path="res://Art/Textures/Resources/Fan/fan.tscn" id="3_3jtvv"]
 
 [node name="MusicBoxPrototype" unique_id=1579215243 instance=ExtResource("1_winder_test")]
 
@@ -27,3 +29,13 @@ points = PackedVector2Array(0, 0, -86, 21, -79.76709, -88.98999, -213.1117, -18.
 point_rotations_degrees = PackedFloat32Array(90.81352, 0, 40.602192, -34.078457, -135.81221, -119.17452, -28.8939, 115.66488)
 body_collision_layer = 0
 body_collision_mask = 0
+
+[node name="Node2D" type="Node2D" parent="." index="8" unique_id=2074720626]
+position = Vector2(33, 79)
+
+[node name="Rope" parent="Node2D" index="0" unique_id=2017157785 instance=ExtResource("2_hhxhg")]
+position = Vector2(429, 54)
+scale = Vector2(3.6000004, 2.2)
+
+[node name="Fan" parent="Node2D" index="1" unique_id=1296767138 instance=ExtResource("3_3jtvv")]
+position = Vector2(356, 304)

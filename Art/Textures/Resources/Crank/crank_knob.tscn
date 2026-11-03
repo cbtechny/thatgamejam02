@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://c2pl028wbcv7y"]
+
+[ext_resource type="Texture2D" uid="uid://bh0dmo2dc0yy4" path="res://Art/Textures/Resources/Crank/crank_base.tres" id="1_5ba8o"]
+[ext_resource type="Texture2D" uid="uid://dmvuy8k0i0g8o" path="res://Art/Textures/Resources/Crank/crank_handle1.tres" id="1_hc7uk"]
+[ext_resource type="Texture2D" uid="uid://digcpsl8qgiya" path="res://Art/Textures/Resources/Crank/crank_knob.tres" id="2_22u8m"]
+[ext_resource type="Texture2D" uid="uid://cx52qfdalk6ty" path="res://Art/Textures/Resources/Crank/crank_handle0.tres" id="3_22u8m"]
+
+[node name="Crank" type="Node2D" unique_id=352586324]
+
+[node name="Handle" type="Node2D" parent="." unique_id=992278804]
+
+[node name="CrankHandle1" type="Sprite2D" parent="Handle" unique_id=1456089595]
+position = Vector2(568, 2)
+texture = ExtResource("1_hc7uk")
+offset = Vector2(154, 9)
+
+[node name="CrankKnob2" type="Sprite2D" parent="Handle" unique_id=1571739508]
+self_modulate = Color(0.81725144, 0.27949095, 0.32969326, 1)
+position = Vector2(576, 0)
+texture = ExtResource("2_22u8m")
+
+[node name="CrankHandle0" type="Sprite2D" parent="Handle" unique_id=1480351851]
+texture = ExtResource("3_22u8m")
+offset = Vector2(279, -1)
+
+[node name="CrankBase" type="Sprite2D" parent="." unique_id=118286342]
+texture = ExtResource("1_5ba8o")
+
+[node name="CrankKnob" type="Sprite2D" parent="." unique_id=1296631690]
+self_modulate = Color(0.7019608, 1, 0.61960787, 1)
+texture = ExtResource("2_22u8m")

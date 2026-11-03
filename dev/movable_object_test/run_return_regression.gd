@@ -1,5 +1,5 @@
 extends SceneTree
-## Return regression for the main scene and the currently authored music-box paths.
+## Return regression for the winding prototype and currently authored music-box paths.
 ## Add -- --capture with a rendering driver to test real mouse input and save images.
 
 var _checks: int = 0
@@ -15,7 +15,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	for path: String in ["res://Main.tscn", "res://Level/music_box.tscn"]:
+	for path: String in ["res://dev/winder_test_1_time_scroll/winder_test_1_time_scroll.tscn", "res://Level/music_box.tscn"]:
 		var scene: Node = (load(path) as PackedScene).instantiate()
 		root.add_child(scene)
 		await _ticks(2)
