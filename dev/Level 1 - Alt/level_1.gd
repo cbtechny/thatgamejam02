@@ -18,6 +18,10 @@ const KEY_MAX_FLIGHT_SPEED: float = 900.0
 const MIDDLE_KEY_TRAVEL: float = 105.0
 const MIDDLE_FAN_PULSE_PERIOD: float = 2.0
 const AUDIO_SAMPLE_RATE: int = 22050
+# Centers of the three atlas pieces relative to the complete key, at 0.4 scale.
+const KEY_RING_ASSEMBLY_OFFSET: Vector2 = Vector2(-90.4, 0.4)
+const KEY_SHAFT_ASSEMBLY_OFFSET: Vector2 = Vector2(34.2, 2.2)
+const KEY_TEETH_ASSEMBLY_OFFSET: Vector2 = Vector2(114.8, 14.4)
 const FULL_KEY_TEXTURE: Texture2D = preload("res://Art/Textures/Resources/Key/key_full.tres")
 const CURTAIN_SCENE: PackedScene = preload("res://dev/title/curtain.tscn")
 const MENU_OVERLAY_SCRIPT: Script = preload("res://dev/Level 1 - Alt/menu_overlay.gd")
@@ -70,6 +74,12 @@ var _crank_angle_since_tick: float = 0.0
 var _pause_menu_open: bool = false
 var _transitioning: bool = false
 var _title_transition_curtains_remaining: int = 0
+var _crank_used: bool = false
+var _key_sparkles: CPUParticles2D
+var _middle_key_sparkles: CPUParticles2D
+var _third_piece_sparkles: CPUParticles2D
+var _assembly_tween: Tween
+var _flash_tween: Tween
 
 
 func _ready() -> void:
@@ -86,18 +96,31 @@ func _ready() -> void:
 	_middle_key_start_y = _middle_key.position.y
 	_create_endpoint_hitboxes()
 	_crank_highlight = _add_highlight($Crank/Handle/CrankKnob2 as Node2D, 150.0)
-	_fan_highlight = _add_highlight(_left_fan, 150.0)
+	_fan_highlight = _add_highlight(_left_fan_blades, 200.0)
 	_center_highlight = _add_highlight(_middle_key, 150.0)
-	_keyhole_highlight = _add_highlight(_keyhole, 220.0)
-	_third_piece_highlight = _add_highlight(_ui_key2, 150.0)
+	_keyhole_highlight = _add_highlight(_keyhole, 600.0)
+	_third_piece_highlight = _add_highlight(_key3_placeholder, 150.0)
 	_center_highlight.set_active(false)
 	_keyhole_highlight.set_active(false)
 	_third_piece_highlight.set_active(false)
-	_add_key_particles(_key)
-	_add_key_particles(_middle_key)
+	_key_sparkles = _add_key_particles(_key_sprite)
+	_middle_key_sparkles = _add_key_particles(_middle_key)
+	_third_piece_sparkles = _add_key_particles(_key3_placeholder)
+	_third_piece_sparkles.emitting = false
 	_create_flash_overlay()
 	_setup_sfx()
 	_update_tethered_rope()
+	_update_guidance()
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		_dragging_crank = false
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_dragging_crank = false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -113,7 +136,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			var knob_position: Vector2 = _crank.to_global(CRANK_KNOB_LOCAL_POSITION.rotated(_crank_handle.rotation))
 			if event.position.distance_to(knob_position) <= CRANK_HIT_RADIUS:
 				_dragging_crank = true
-				_crank_highlight.set_active(false)
 				_previous_crank_angle = (event.position - _crank.global_position).angle()
 				get_viewport().set_input_as_handled()
 		elif _dragging_crank:
@@ -124,6 +146,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		var angular_delta: float = wrapf(angle - _previous_crank_angle, -PI, PI)
 		_previous_crank_angle = angle
 		_crank_handle.rotation += angular_delta
+		if not _crank_used and absf(angular_delta) > 0.01:
+			_crank_used = true
+			_update_guidance()
 		_maybe_play_crank_tick(angular_delta)
 		var key_position: Vector2 = _key.global_position
 		key_position.y = clampf(
@@ -172,6 +197,7 @@ func _key_is_out_of_bounds() -> bool:
 
 func _show_pause_menu() -> void:
 	_pause_menu_open = true
+	_dragging_crank = false
 	var backdrop: ColorRect = ColorRect.new()
 	backdrop.name = "PauseMenu"
 	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
@@ -229,6 +255,11 @@ func _show_miss_screen() -> void:
 	_play_sfx("miss")
 	_key.freeze = true
 	_set_left_fan_active(false)
+	_set_middle_fan_active(false)
+	_clear_guidance_highlights()
+	_key_sparkles.emitting = false
+	_middle_key_sparkles.emitting = false
+	_third_piece_sparkles.emitting = false
 	var backdrop: ColorRect = ColorRect.new()
 	backdrop.name = "MissScreen"
 	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
@@ -287,6 +318,7 @@ func _style_menu_buttons(buttons: Array[Button]) -> void:
 
 func _retry_level() -> void:
 	_transitioning = true
+	_cancel_presentation_tweens()
 	get_tree().paused = false
 	get_tree().reload_current_scene()
 
@@ -295,6 +327,7 @@ func _return_to_title() -> void:
 	if _transitioning:
 		return
 	_transitioning = true
+	_cancel_presentation_tweens()
 	get_tree().paused = true
 	var left_curtain: Node2D = CURTAIN_SCENE.instantiate() as Node2D
 	left_curtain.z_index = 100
@@ -334,6 +367,9 @@ func _on_title_curtain_finished(animation_name: StringName) -> void:
 		title_transition_finished.emit()
 
 func _process(delta: float) -> void:
+	# A caught piece must stay put while the other pieces assemble around it.
+	if _key_snapped or _missed or _transitioning:
+		return
 	_left_fan.position.y = _left_fan_start_y + (_key.global_position.y - _key_start_y)
 	_middle_fan_pulse_time = fmod(_middle_fan_pulse_time + delta, MIDDLE_FAN_PULSE_PERIOD)
 	var pulse_phase: float = _middle_fan_pulse_time / MIDDLE_FAN_PULSE_PERIOD * TAU
@@ -351,6 +387,7 @@ func _release_key() -> void:
 	_crank_highlight.set_active(false)
 	_fan_highlight.set_active(false)
 	_center_highlight.set_active(true)
+	_update_guidance()
 	_set_left_fan_active(true)
 	_play_sfx("fan_start")
 	_key.freeze = false
@@ -419,79 +456,129 @@ func _set_middle_fan_active(active: bool) -> void:
 	else:
 		_middle_fan_blades.stop()
 	_set_fan_whirr_active("middle_fan_whirr", active)
-	_release_hint.text = "Middle fan pulses automatically: %s" % ("on" if active else "off")
+	_update_guidance()
+
+
+func _update_guidance() -> void:
+	if _center_highlight == null or _key_snapped or _missed:
+		return
+	_crank_highlight.set_active(not _crank_used and not _released)
+	_fan_highlight.set_active(_crank_used and not _released)
+	_center_highlight.set_active(_crank_used or _released)
+	_center_highlight.glow_color = Color(1.0, 0.84, 0.42, 0.9) if _middle_fan_active else Color(0.7, 0.42, 1.0, 0.85)
+	_middle_key_sparkles.emitting = _crank_used or _released
+	if _released:
+		_release_hint.text = "Catch the glowing piece!"
+	elif _crank_used:
+		_release_hint.text = "Space: release into the fan  ·  Watch the glowing piece  ·  Esc: menu"
+	else:
+		_release_hint.text = "Drag the glowing crank to lift the key  ·  Esc: menu"
+
+
+func _clear_guidance_highlights() -> void:
+	for highlight: HighlightPulse in [_crank_highlight, _fan_highlight, _center_highlight, _third_piece_highlight, _keyhole_highlight]:
+		highlight.set_active(false)
 
 
 func _celebrate_key_connection() -> void:
-	_center_highlight.set_active(false)
+	if _assembly_tween != null or _missed or _transitioning:
+		return
+	_set_left_fan_active(false)
+	_set_middle_fan_active(false)
+	_clear_guidance_highlights()
 	_third_piece_highlight.set_active(true)
+	_release_hint.text = "Nice catch! One last piece…"
 	_flash_screen()
 	_play_sfx("key_join")
-	_emit_key_burst(_key.global_position)
-	_emit_key_burst(_middle_key.global_position)
+	_emit_key_burst((_key0_endpoint.global_position + _key1_endpoint.global_position) * 0.5)
 	for icon: Sprite2D in [_ui_key0, _ui_key1]:
 		var original_scale: Vector2 = icon.scale
 		_reveal_ui_fragment(icon)
 		var pulse: Tween = create_tween()
-		pulse.tween_property(icon, "scale", original_scale * 1.18, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		pulse.tween_property(icon, "scale", original_scale, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(icon, "scale", original_scale * 1.1, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		pulse.tween_property(icon, "scale", original_scale, 0.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_animate_final_assembly()
 
 
 func _animate_final_assembly() -> void:
-	_reveal_ui_fragment(_ui_key2)
-	_third_world_piece = Sprite2D.new()
-	_third_world_piece.name = "Key2World"
-	_third_world_piece.texture = _ui_key2.texture
-	_third_world_piece.scale = Vector2(0.4, 0.4)
-	_third_world_piece.modulate = Color.WHITE
-	add_child(_third_world_piece)
-	_third_world_piece.global_position = _ui_key2.global_position
-	_add_key_particles(_third_world_piece)
-	var third_piece_gap: float = (
-		_middle_key.texture.get_width() * _middle_key.scale.x * 0.5
-		+ _third_world_piece.texture.get_width() * _third_world_piece.scale.x * 0.5
-	)
-	var third_piece_target: Vector2 = _middle_key.global_position + Vector2(third_piece_gap, 0.0)
-	var join_tween: Tween = create_tween().set_parallel(true)
-	join_tween.tween_property(_third_world_piece, "global_position", third_piece_target, 0.9).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	await join_tween.finished
-	_emit_key_burst(_third_world_piece.global_position)
+	# Freeze the caught shaft, align the ring, and bring in the existing teeth.
+	# Keeping the atlas centers aligned avoids the old 202-pixel sprite jump.
+	var assembly_center: Vector2 = _middle_key.global_position - KEY_SHAFT_ASSEMBLY_OFFSET
+	var ring_target: Vector2 = assembly_center + KEY_RING_ASSEMBLY_OFFSET
+	var body_target: Vector2 = _key.global_position + ring_target - _key_sprite.global_position
+	_third_world_piece = _key3_placeholder
+	_third_piece_sparkles.emitting = true
+	var delivery_target: Vector2 = _keyhole.global_position - Vector2(FULL_KEY_TEXTURE.get_width() * 0.4 * 0.5 - 8.0, 0.0)
+	_assembly_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_assembly_tween.tween_property(_key, "global_position", body_target, 0.16)
+	_assembly_tween.tween_property(_third_world_piece, "global_position", assembly_center + KEY_TEETH_ASSEMBLY_OFFSET, 0.48)
+	_assembly_tween.tween_callback(_finish_key_assembly.bind(assembly_center))
+	_assembly_tween.tween_interval(0.1)
+	_assembly_tween.tween_property(_key_sprite, "global_position", delivery_target, 0.72)
+	_assembly_tween.tween_callback(_finish_key_delivery)
+	# One parallel pulse group has one completion point; no waiting on signals
+	# from other tweens which may already have finished.
+	var icons: Array[Sprite2D] = [_ui_key0, _ui_key1, _ui_key2]
+	for index: int in range(icons.size()):
+		var step: PropertyTweener
+		if index == 0:
+			step = _assembly_tween.tween_property(icons[index], "scale", icons[index].scale * 1.1, 0.13)
+		else:
+			step = _assembly_tween.parallel().tween_property(icons[index], "scale", icons[index].scale * 1.1, 0.13)
+		step.set_trans(Tween.TRANS_SINE)
+	for index: int in range(icons.size()):
+		var step: PropertyTweener
+		if index == 0:
+			step = _assembly_tween.tween_property(icons[index], "scale", icons[index].scale, 0.2)
+		else:
+			step = _assembly_tween.parallel().tween_property(icons[index], "scale", icons[index].scale, 0.2)
+		step.set_trans(Tween.TRANS_SINE)
+	_assembly_tween.tween_callback(_finish_win_presentation)
+
+
+func _finish_key_assembly(assembly_center: Vector2) -> void:
+	_emit_key_burst(assembly_center + KEY_TEETH_ASSEMBLY_OFFSET)
 	_flash_screen()
 	_play_sfx("key_join")
 	_third_piece_highlight.set_active(false)
 	_keyhole_highlight.set_active(true)
 	_key_sprite.texture = FULL_KEY_TEXTURE
-	_key3_placeholder.hide()
-	_key_sprite.position = Vector2.ZERO
+	_key_sprite.global_position = assembly_center
 	_key_sprite.scale = Vector2(0.4, 0.4)
+	_key_sprite.rotation = 0.0
 	_middle_key.hide()
 	_third_world_piece.hide()
-	_release_hint.text = "Key assembled — moving to the keyhole"
-	var wiggle: Tween = create_tween()
-	for index: int in range(2):
-		wiggle.tween_property(_key_sprite, "rotation", -0.07, 0.09)
-		wiggle.tween_property(_key_sprite, "rotation", 0.07, 0.18)
-	wiggle.tween_property(_key_sprite, "rotation", 0.0, 0.09)
-	await wiggle.finished
-	var group_motion: Vector2 = _keyhole.global_position - _key.global_position
-	var finish_tween: Tween = create_tween()
-	finish_tween.tween_property(_key, "global_position", _key.global_position + group_motion, 1.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	await finish_tween.finished
+	_middle_key_sparkles.emitting = false
+	_third_piece_sparkles.emitting = false
+	_key_sparkles.emission_rect_extents = Vector2(120.0, 20.0)
+	_reveal_ui_fragment(_ui_key2)
+	_release_hint.text = "Key complete — into the lock!"
+
+
+func _finish_key_delivery() -> void:
 	_flash_screen()
 	_play_sfx("win")
+	_emit_key_burst(_keyhole.global_position)
 	_keyhole_highlight.set_active(false)
+	_key_sparkles.emitting = false
 	_show_win_screen()
-	var win_pulses: Array[Tween] = []
-	for icon: Sprite2D in [_ui_key0, _ui_key1, _ui_key2]:
-		_reveal_ui_fragment(icon)
-		var win_pulse: Tween = create_tween()
-		win_pulse.tween_property(icon, "scale", icon.scale * 1.2, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		win_pulse.tween_property(icon, "scale", icon.scale, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		win_pulses.append(win_pulse)
-	for win_pulse: Tween in win_pulses:
-		await win_pulse.finished
+
+
+func _finish_win_presentation() -> void:
 	get_tree().paused = true
+
+
+func _cancel_presentation_tweens() -> void:
+	for tween: Tween in [_assembly_tween, _flash_tween]:
+		if tween != null and tween.is_valid():
+			tween.kill()
+
+
+func _exit_tree() -> void:
+	_cancel_presentation_tweens()
+	for player: AudioStreamPlayer in _sfx_players.values():
+		player.stop()
+
 
 func _reveal_ui_fragment(icon: Sprite2D) -> void:
 	icon.show()
@@ -628,31 +715,37 @@ func _set_fan_whirr_active(player_name: String, active: bool) -> void:
 func _add_highlight(target: Node2D, glow_radius: float) -> HighlightPulse:
 	var highlight: HighlightPulse = HighlightPulse.new()
 	highlight.radius = glow_radius
-	highlight.z_index = -1
+	# Stay behind this sprite without falling behind the stage background.
+	highlight.z_index = 0
+	highlight.show_behind_parent = true
 	target.add_child(highlight)
 	return highlight
 
 
-func _add_key_particles(target: Node2D) -> void:
+func _add_key_particles(target: Node2D) -> CPUParticles2D:
 	var particles: CPUParticles2D = CPUParticles2D.new()
 	particles.name = "KeySparkles"
-	particles.amount = 12
-	particles.lifetime = 1.3
+	particles.amount = 10
+	particles.lifetime = 0.9
 	particles.explosiveness = 0.0
 	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
-	particles.emission_rect_extents = Vector2(35.0, 14.0)
+	# The emitter follows the visible sprite, with small glints in world pixels.
+	particles.scale = Vector2.ONE / target.global_scale.abs()
+	var sprite: Sprite2D = target as Sprite2D
+	particles.emission_rect_extents = sprite.texture.get_size() * target.global_scale.abs() * Vector2(0.36, 0.22)
 	particles.direction = Vector2.UP
 	particles.spread = 180.0
-	particles.initial_velocity_min = 7.0
-	particles.initial_velocity_max = 24.0
+	particles.initial_velocity_min = 8.0
+	particles.initial_velocity_max = 20.0
 	particles.gravity = Vector2(0.0, -5.0)
-	particles.scale_amount_min = 1.0
-	particles.scale_amount_max = 2.5
-	particles.color = Color(1.0, 0.88, 0.56, 0.72)
+	particles.scale_amount_min = 0.2
+	particles.scale_amount_max = 0.45
+	particles.color = Color(1.0, 0.88, 0.56, 0.9)
 	particles.texture = _make_sparkle_texture()
 	target.add_child(particles)
 	particles.position = Vector2.ZERO
 	particles.emitting = true
+	return particles
 
 
 func _make_sparkle_texture() -> Texture2D:
@@ -660,7 +753,9 @@ func _make_sparkle_texture() -> Texture2D:
 	for y: int in range(16):
 		for x: int in range(16):
 			var distance: float = Vector2(x - 7.5, y - 7.5).length() / 7.5
-			var alpha: float = clampf(1.0 - distance, 0.0, 1.0)
+			var core: float = clampf(1.0 - distance * 2.0, 0.0, 1.0)
+			var ray: float = clampf(1.0 - minf(absf(x - 7.5), absf(y - 7.5)), 0.0, 1.0)
+			var alpha: float = maxf(core, ray) * clampf(1.0 - distance, 0.0, 1.0)
 			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
 	return ImageTexture.create_from_image(image)
 
@@ -670,37 +765,40 @@ func _emit_key_burst(world_position: Vector2) -> void:
 	burst.name = "KeyConnectionBurst"
 	burst.one_shot = true
 	burst.emitting = false
-	burst.amount = 36
-	burst.lifetime = 0.65
+	burst.amount = 24
+	burst.lifetime = 0.45
 	burst.explosiveness = 1.0
 	burst.direction = Vector2.ZERO
 	burst.spread = 180.0
-	burst.initial_velocity_min = 65.0
-	burst.initial_velocity_max = 180.0
+	burst.initial_velocity_min = 45.0
+	burst.initial_velocity_max = 120.0
 	burst.gravity = Vector2.ZERO
-	burst.scale_amount_min = 2.0
-	burst.scale_amount_max = 4.0
-	burst.color = Color.WHITE
+	burst.scale_amount_min = 0.24
+	burst.scale_amount_max = 0.5
+	burst.color = Color(1.0, 0.9, 0.6, 1.0)
 	burst.texture = _make_sparkle_texture()
 	_ui.add_child(burst)
 	burst.global_position = world_position
+	burst.process_mode = Node.PROCESS_MODE_ALWAYS
+	burst.finished.connect(burst.queue_free)
 	burst.emitting = true
-	get_tree().create_timer(1.0).timeout.connect(burst.queue_free)
 
 
 func _create_flash_overlay() -> void:
 	_flash_overlay = ColorRect.new()
 	_flash_overlay.name = "SuccessFlash"
-	_flash_overlay.color = Color(1.0, 1.0, 1.0, 0.0)
+	_flash_overlay.color = Color(1.0, 0.94, 0.76, 0.0)
 	_flash_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_flash_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_ui.add_child(_flash_overlay)
 
 
 func _flash_screen() -> void:
-	var flash: Tween = create_tween()
-	flash.tween_property(_flash_overlay, "color:a", 0.42, 0.06)
-	flash.tween_property(_flash_overlay, "color:a", 0.0, 0.28)
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(_flash_overlay, "color:a", 0.16, 0.05)
+	_flash_tween.tween_property(_flash_overlay, "color:a", 0.0, 0.2)
 
 
 func _update_tethered_rope() -> void:

@@ -1,0 +1,82 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://dev/level_2_ocean/level_2_ocean.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Art/Textures/Resources/Crank/crank_knob.tscn" id="2_crank"]
+[ext_resource type="PackedScene" path="res://Art/Textures/Resources/Fan/fan.tscn" id="3_fan"]
+[ext_resource type="Texture2D" path="res://Art/Textures/Resources/Key/key0.tres" id="4_key"]
+
+[node name="Level2Ocean" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Title" type="Label" parent="."]
+offset_left = 12.0
+offset_top = 4.0
+offset_right = 348.0
+offset_bottom = 16.0
+theme_override_font_sizes/font_size = 8
+text = "LEVEL 2: OCEAN"
+mouse_filter = 2
+
+[node name="Crank" parent="." instance=ExtResource("2_crank")]
+position = Vector2(45, 52)
+scale = Vector2(0.03125, 0.03125)
+
+[node name="CrankLabel" type="Label" parent="."]
+offset_left = 14.0
+offset_top = 85.0
+offset_right = 81.0
+offset_bottom = 96.0
+theme_override_font_sizes/font_size = 5
+text = "Drag crank"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Fan" parent="." instance=ExtResource("3_fan")]
+position = Vector2(237, 25)
+scale = Vector2(0.045, 0.045)
+
+[node name="Fragment" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(30, 142.5)
+scale = Vector2(0.045, 0.045)
+texture = ExtResource("4_key")
+
+[node name="FireButton" type="Button" parent="."]
+offset_left = 218.0
+offset_top = 62.0
+offset_right = 280.0
+offset_bottom = 77.0
+theme_override_font_sizes/font_size = 6
+focus_mode = 0
+text = "Press fan [Space]"
+
+[node name="ResetButton" type="Button" parent="."]
+offset_left = 289.0
+offset_top = 62.0
+offset_right = 348.0
+offset_bottom = 77.0
+theme_override_font_sizes/font_size = 6
+focus_mode = 0
+text = "Reset [R]"
+
+[node name="TitleButton" type="Button" parent="."]
+offset_left = 287.0
+offset_top = 4.0
+offset_right = 348.0
+offset_bottom = 19.0
+theme_override_font_sizes/font_size = 6
+focus_mode = 0
+text = "Return to Title"
+
+[node name="Feedback" type="Label" parent="."]
+offset_left = 12.0
+offset_top = 184.0
+offset_right = 348.0
+offset_bottom = 199.0
+theme_override_font_sizes/font_size = 7
+horizontal_alignment = 1
+mouse_filter = 2
+
+[connection signal="pressed" from="FireButton" to="." method="fire_fan"]
+[connection signal="pressed" from="ResetButton" to="." method="reset_level"]
+[connection signal="pressed" from="TitleButton" to="." method="_return_to_title"]

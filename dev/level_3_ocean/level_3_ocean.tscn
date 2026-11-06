@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://dev/level_3_ocean/ocean_music_box.gd" id="1_presentation"]
+[ext_resource type="PackedScene" path="res://dev/level_3_ocean/ocean_room.tscn" id="2_room"]
+[ext_resource type="Texture2D" path="res://Art/Textures/T_Boxexterior.png" id="3_box"]
+
+[node name="Level3OceanMusicBox" type="Node2D"]
+script = ExtResource("1_presentation")
+
+[node name="MusicBox" type="Node2D" parent="."]
+
+[node name="InteriorBackdrop" type="Polygon2D" parent="MusicBox"]
+color = Color(0.0627451, 0.168627, 0.231373, 1)
+polygon = PackedVector2Array(460, 340, 1070, 340, 1070, 730, 460, 730)
+
+[node name="RoomClip" type="Control" parent="MusicBox"]
+clip_contents = true
+offset_left = 520.0
+offset_top = 456.0
+offset_right = 1016.0
+offset_bottom = 704.0
+mouse_filter = 2
+
+[node name="Room" parent="MusicBox/RoomClip" instance=ExtResource("2_room")]
+
+[node name="MusicBoxExteriorFrame" type="Sprite2D" parent="MusicBox"]
+z_index = 10
+texture = ExtResource("3_box")
+centered = false

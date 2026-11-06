@@ -11,3 +11,17 @@ scripts. Open a scene and run it with **F6**. The project default remains
 
 The surreal test's shader and timeline script are kept beside its scene. The
 playback prototype and shared artwork remain under `dev/`.
+
+## Ocean automated regression
+
+Run `godot --headless --path . --script res://tests/level_2_ocean/run_ocean_tests.gd`.
+Use the same command without `--headless` and append `-- --capture` to save
+rendered input checks under `.godot/ocean_qa/`. See
+[the Ocean README](../dev/level_2_ocean/README.md) for coverage and manual controls.
+
+## Level 1 presentation regression
+
+Run `godot --headless --path . --script res://tests/level_1_polish/run_level_1_polish.gd`.
+Omit `--headless` and append `-- --capture` for rendered gameplay and assembly
+captures under `.godot/level1_polish_qa/`. Checks use real crank/release physics,
+phase-specific guidance, assembly alignment, pause/resume, miss/retry, and exit cleanup.
