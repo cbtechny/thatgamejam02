@@ -1,97 +1,70 @@
-# Game Implementation Status
+# 当前实现状态
 
-Date: 31 October 2026. Base code: `299e792`, with local winding-control and movable-object changes.
+核对：2026-11-06。依据本地代码、关卡 README 和 Git 记录；本次没有运行游戏或重跑测试。“已有”不等于最终验收通过。
 
-This is a historical snapshot. As of the 3 November integration, `Main.tscn`
-launches the title menu and Play opens `dev/Level 1 - Alt/level_1.tscn`.
-Winding regression fixtures now instantiate the standalone winding prototype.
-
-The project has a music box test and three movable key fragments. The game has no key assembly system or level completion system.
-
-## Technical Terms
-
-- Winding key: The control that the player turns.
-- Key fragment: One of three parts of the complete key.
-- Complete key: The object that the three key fragments form.
-- Movable object: A key fragment, a decoration, or an object with a game function.
-- Energy: The remaining winding amount, from 0 to 270 degrees, shown by the bar.
-- Shader: A program that changes an image.
-
-## Completed Work
-
-| Item | Current function |
-| --- | --- |
-| Input | Hold the left mouse button and drag around the key center. Clockwise movement winds the key; counterclockwise movement reduces the angle. The key stays between 0 and 270 degrees. Release starts the unwind. |
-| Winding control | The key returns smoothly from its wound angle to its exact start. Input is locked during unwind and for 2 seconds after zero. A zero-charge release has no cooldown. |
-| Movement | A 270-degree release advances a full unobstructed path; 135 degrees advances half a full path. A full unwind takes 4 seconds by default, set on each controller. |
-| Movable objects | Three key fragments follow separate editable paths with the same normalized winding progress. Each responds to one controller. There is no per-object Speed setting. |
-| Path editing | Select an object and drag its line points in the 2D editor. Set each point's angle under Path Rotations, or use the Edit Path Rotation toolbar button and orange handles. The sprite and collider interpolate their rotation along each segment. |
-| Editor debug | The Winding Debug bottom dock previews all winding keys or one controller at 0..270 degrees without running the game. Zero is the path start; 270 is the end. Preview follows position and angle edits, is not saved, and clears before play. |
-| Collision | Objects stop at solid obstacles and other objects. They continue when the path clears. Blocked time does not add travel distance. Return movement also checks collision. |
-| Object stop modes | When Key 1 reaches its starting angle, its objects hold for 1.5 seconds, then return in 0.5 seconds if clear. Key 2 mode keeps objects in place and adds travel on later releases. |
-| Sound | The scene plays theme music, a winding sound, and a return sound. |
-| Display | The scene has music box artwork and an energy bar. |
-| Shader test | A separate test uses blue at rest, gold during forward movement, and red during return. |
-| Title menu | The title menu has buttons. The buttons do not start the game. |
-
-## Required Work
-
-Do the P0 work first, then P1, then P2.
-
-| Priority | Item | Required change |
+| 内容 | 已有证据 | 交付缺口 |
 | --- | --- | --- |
-| P0 | Key assembly | Count correct assembly only when all movable objects stop. Require 1 second of correct assembly. Do not count movement or return. Stop all objects after success. |
-| P0 | Level completion | Let the player collect the complete key and open the next level. |
-| P0 | Pause and retry | Use Esc to pause or continue the game. Add Retry to reset the full level. |
-| P0 | Repeat test | Fixed-tick winding and object tests pass. Check repeated full-level input after assembly and level systems are complete. |
-| P1 | Levels | Use only Winding Key 1 in Levels 1–3. Use both winding keys after Level 3. Use each collected key as the next level's winding key. |
-| P1 | Winding Key 2 | Object stop and continue behavior, and separate controller groups, are complete. Add the second interactive winding key to later levels. |
-| P1 | Special objects | Use Space to move barriers aside for a set time. Add use limits and delays. Make Retry reset these values. |
-| P2 | Game entry | Connect Play to Level 1. Add curtains that open on entry and change between levels. |
-| P2 | Hints | Make the winding key glow on first entry. Show a drag hint if the player does not turn the winding key for 30 seconds. |
-| P2 | Success display | Make the complete key glow. Remove the active winding key. |
-| P2 | Game end | Show the complete music box. Open the curtains fully. Play the full theme song. |
+| 标题 | 幕布播放后进入 Level 1 Alt | 完整流程、制作名单和基本设置 |
+| 第一关 | 阶段提示、接取、拼合入锁、成功界面及暂停相关逻辑 | 人工验证引导与节奏；下一关出口；统一菜单 |
+| 第二关 | 水位、浮木、风扇、岩石困住、重试、动作音效、音乐盒缩放入场 | 正式美术、落点提示、成功演出、暂停与下一关 |
+| 第三关 | 夜海、柔光、碎片灯、三浮木两岩石、音乐盒入场 | 暗部可读性、正式美术、统一暂停与终场 |
+| 声音 | 各关动作反馈，海洋关卡复用／适配第一关合成音效 | 人工试听、混音、音乐安排及转场行为 |
+| 测试 | tests 下有 level_1_polish、level_2_ocean、level_3_ocean 脚本 | 重跑并记录，跨关与导出包验证 |
+| 发布 | 1920×1080 基准与画布缩放配置 | 根目录未发现 export_presets.cfg；需导出配置与独立运行验证 |
 
-## Differences from the Design
+## 版本与本地工作
 
-| Item | Design requirement | Current operation |
-| --- | --- | --- |
-| Game entry | Click Play to open the curtains and enter Level 1. | The project starts the winding key test directly. |
+- 本地有 `4fba32d` 三关回归测试、`75246e8` 第三关音乐盒与运行器提交；程序消息中的“未提交”已不能代表本地状态，本次未核实远端。
+- 现已接通第一关 → 第二关 → 第三关 → 音乐盒终场／署名，终场可重开或返回标题。二三关共用 Esc 暂停菜单。完整人工游玩验收仍待完成。
+- 存在未提交／未跟踪的 3D 内景、3D 组件、测试及文档，还有 project.godot 与导入配置改动。整合前需确认归属；本轮仅调整文档。
+- 程序报告测试通过并有截图；本次未取得消息附件或复核运行结果。
 
-## Open Decisions
+## 文档使用顺序
 
-Set these values:
+1. [当前游戏方案](game-design.md)：规则和范围。
+2. [全游戏完成计划](completion-plan.md)：任务、交付物与验收。
+3. 各关 README、tests/README.md：运行方式与覆盖。
+4. archive/pre-ocean-plan：历史资料，不再产生需求。
 
-- Key assembly tolerance.
-- Final object paths and each winding key's full unwind duration.
-- Barrier movement time, use limits, and delays.
-- The visual effect that removes the winding key.
+movable-objects、global-debug、box-interior-3d 是组件／实验说明，不代表最终游戏必须采用这些系统。
 
-## Checks
+## 本轮流程整合（2026-11-06）
 
-The main, title, shader, panorama, and movable-object test scenes each ran for 30 frames without a window.
-The winding and movable-object runner passed 68 checks with real 2D physics at 60 fixed frames per second. Checks include the 270-degree limit, circular drag directions, radial motion, center crossing, pointer angle wrapping, visual unwind, 2-second input lock, proportional path travel, partial ticks, collisions, per-point rotation and full turns, reverse rotation during return, rotated collider blocking and reopening, return from contact between rotated movers, separate controllers, reset, freeze, repeated input, and shader playback.
-The authored return regression passed 30 checks in Main and the edited music-box scene, with 270/135/270-degree releases and restored position and rotation after every cycle. Rendered validation passed 32 checks with actual mouse winding and 1920 x 1080 captures. A rotation precheck that previously stopped touching fragments from retreating now tests translation and rotation together.
-The editor debug runner passed 40 checks inside the Godot editor without starting the game. Checks include global and individual controls, immediate preview positions and rotations, clamping, live path and transform edits, point rotation handles, undo/redo/cancel, new point fields, separate groups, collision bypass, scene switching, plugin disabling, pre-play restoration, and saving authored angles without preview transforms. Validation uses a disposable project copy.
-The rendered editor run passed 44 checks, including real mouse dragging with Shift snapping after editor pan and zoom, and 1920 x 1080 captures of the debug dock and rotation handles. The runtime debug overlay and autoload have been removed.
-Rendered mouse checks passed for clockwise winding to the 270-degree limit, counterclockwise reduction, release, automatic unwind, input lock, timed object return, and three repeated 135-degree circular drags with matching results. Rendered keyboard checks passed for separate sandbox keys, collision blocking, barrier reopening, reset, and two half windings reaching a kept object's endpoint. Main, sandbox, and shader screenshots were checked at 1920 x 1080.
-The final validation logs contain no script errors.
+- 第一关成功界面增加继续到海洋，修改为阶段性成功文案。
+- 第二、三关送达后提供继续、重试、返回标题；暂停菜单冻结整个舞台，Esc 可继续。重试清除成功菜单与暂停状态，延迟成功回调会核对当前状态。
+- 新增音乐盒全景背景终场、团队署名、重开及返回标题。当前为基础静态终场，正式机关／光效／音乐演出尚未完成。
+- Godot 4.7.2 headless 实测：Level 1 polish 47/47、Ocean 1007/1007、Level3 1116/1116；新增 campaign 测试通过三关切换、暂停冻结潮汐、终场和返回 Main。Main 与终场启动冒烟通过。
+- 命令：`--headless --path . --script res://tests/campaign/run_campaign_tests.gd`；现有三关命令见 tests/README.md。
+- 编辑器导入时出现一次配置 safe-save 权限错误；运行测试通过，未将其视为发布验收通过。未验证正式导出包、音量设置、完整人工操作与多分辨率视觉效果；B1/B2/B3 仍需按完成计划逐状态人工验收。
 
-Full-level input tests and repeated full-level input tests are not complete.
-See [Winding Keys and Movable Objects](movable-objects.md) for use, editing, collision setup, and test commands.
-See the [270-degree winding screenshot](images/winding-270-degrees.png) and [collision screenshot](images/movable-object-blocking.png).
-See the [point rotation editor screenshot](images/editor-path-rotation.png).
-See the [authored fragments after return](images/movable-object-return.png).
-See [Winding Debug in the Editor](global-debug.md) for the preview controls and screenshot.
+### 第一关鼠标问题修复（更正）
 
-## Sources
+成功界面恢复 ALWAYS 输入处理，修复暂停后下一关按钮无响应。
+此前将抖动误判为手柄翻转，现已撤回拖动捕获、坐标换算和轴心死区改动，恢复原有鼠标操作。
+实际问题是左风扇从冻结钥匙刚体读取高度，物理同步会回写旧位姿，造成风扇位置回跳。现将转柄累积高度独立保存，转动时风扇使用该高度，释放钥匙后恢复物理跟随；物理帧和释放时同步钥匙位置。
+新增回归覆盖顺转、逆转、松开鼠标后的左风扇高度，以及成功暂停时真实点击下一关。修复前风扇高度检查失败；修复后通过，原有第一关 47 项检查通过。
+### 三关视口与入场统一
 
-- [ASD-STE100 Issue 9](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf)
-- [Game Design](game-design.md)
-- [Core Loop](core-loop.md)
-- [Mouse input](../dev/winder_test_1_time_scroll/winder_drag.gd)
-- [Movement and sound](../dev/winder_test_1_time_scroll/music_box_timeline.gd)
-- [Movable object](../Level/objects/movable_object.gd), [controller](../Level/objects/winding_object_controller.gd), and [collision test](../dev/movable_object_test/movable_object_test.tscn)
-- [Winding Debug editor plugin](../addons/winding_debug/plugin.gd) and [editor validation](../dev/global_debug/validate_editor_debug.ps1)
-- [Shader test](../tests/music_box_surreal/music_box_surreal_test.tscn)
-- [Game entry](../Main.tscn) and [title menu](../Level/title_menu.tscn)
+三关共用 `Level/music_box_presentation.gd`：0.35 秒全景、1.8 秒缓动推近、舞台占屏 0.76、同一音乐盒开口与裁切。标题及终场重开进入 `Level/level_1_music_box.tscn`；原 `dev/Level 1 - Alt/level_1.tscn` 保留为独立机关回归原型。新入口用固定坐标子视口承载去掉重复外框的 `level_1_room.tscn`，保留发条、碎片、接取与拼合原坐标。入场锁定输入；暂停菜单及成功按钮可跨子视口响应，重试重新播放入场。
+
+验证：新入口真实鼠标命中发条、转动抬升、松手、暂停恢复、重试、成功点击进入第二关通过；1920×1080、1280×720、方形窗口舞台边界检查通过。三关原回归分别 47/47、1007/1007、1116/1116。保存全景、缩放中、可操作三张截图至 `.godot/level1-entrance-*.png`。
+
+旧 `dev/title/validate_menu_curtain.gd` 在第 41 行失败：它仍要求幕布结束后恢复菜单按钮以供重播，而当前标题会切换关卡。该旧断言不符合现有标题流程，本轮未将它计为通过。
+
+### 第一关全屏整体缩小修复
+
+此前统一入场时把 1920×1080 原生第一关整体按海洋关卡的 0.76 占屏参数缩放，实测玩法宽高仅占屏幕 0.76／0.7506；并非全屏切换未刷新。共用入场脚本现支持每关原生参考尺寸。第一关指定 1920×1080、占屏 1.0，子视口改为等比缩放并居中；海洋关卡保留原有参考尺寸和参数。入场停留与时长保持一致。
+
+真实渲染实测窗口→全屏→窗口均为 1.0／1.0，占屏回归修复前 3 处失败、修复后 0 失败。新视口输入／暂停／重试／通关检查通过；边界检测允许 0.5 像素浮点舍入误差。全屏截图：`.godot/level1-fullscreen-fixed.png`。部分 headless 退出偶有资源释放警告，未据此声称所有控制台输出均无警告。
+
+### 三关缩放一致性更正
+
+撤回上一轮只将第一关设为 100% 占屏的更改，该更改违反了按第二三关统一的要求。第一关现直接继承共用入场脚本默认参考尺寸及 0.76 占屏，子视口映射至与海洋关卡完全相同的舞台矩形。移除第一关独立占屏参数覆盖。
+
+`tests/campaign/run_fullscreen_scale.gd` 现逐关比较 1920×1080、1280×720、方形视口的入场初始／中段／结束摄像变换，并比较最终舞台边界及真实全屏变换，全部通过。第一关新视口输入、暂停、重试、成功点击检查通过。
+
+### 2026-11-07 第一关全屏遮罩修复
+
+暂停／失败／成功菜单此前挂在第一关游戏子视口的 UI，受到舞台裁切与 76% 缩放限制。现在这些模态菜单由主场景的独立 CanvasLayer 承载，覆盖主视口，保持游戏世界与普通 HUD 的原有缩放。菜单层随关卡场景销毁，暂停期间仍接受输入。
+
+新增回归修复前 3 处失败、修复后通过：三个菜单均使用主视口，并在 1920×1080、1280×720、方形窗口下覆盖整屏；继续按钮真实鼠标切关、暂停恢复通过。第一关视口操作测试及原有 47 项回归通过。已渲染核对全屏成功遮罩截图。

@@ -1,51 +1,37 @@
-# Game Design
+# 当前游戏方案
 
-## Game Overview
+更新：2026-11-06。本文件取代旧方案；旧文件保存在 `archive/pre-ocean-plan/`，不再作为需求来源。
 
-The player turns a winding key to move Movable Objects inside a box. Movable Objects include key fragments, decorative objects, and functional objects. Assemble the key fragments into a complete key to complete the level. The new key opens the next level. It also serves as the winding key for that level. Use the mouse and keyboard to play. Each Movable Object follows its winding key's progress along an authored path. Later levels add barriers that the player can move aside for a short time. A second winding key becomes available after Level 3.
+## 体验与范围
 
-## Controls
+玩家操作音乐盒中的转柄和风扇，让钥匙碎片穿过机关、抵达目标。三个舞台依次为风扇机关、白昼海洋、夜晚海洋。制作目标是完整成品：玩法、引导、场景美术、动画、声音、转场、终场及发布质量都要完成。
 
-- Hold the left mouse button on the winding key and drag around its center. Clockwise movement winds the key.
-- While holding the key, drag counterclockwise around its center to reduce its winding angle.
-- Release the left mouse button after winding: Release the key and move the Movable Objects.
-- Click the completed key: Collect the key and open the next level.
-- Press Space: Move special objects aside for a short time. This action key may have more functions later.
-- Press Esc: Pause or resume the game.
+| 关卡 | 当前玩法基线 | 完成方向 |
+| --- | --- | --- |
+| 第一关 | 拖转柄抬升碎片，Space 释放进入风扇，按提示接取碎片；三片拼合后送入锁孔 | 建立操作语言，完善阶段提示与接取反馈，成功后进入第二关 |
+| 第二关 | 转柄改变水位，木头随波浮动；风扇将碎片送往前方第一个可达平台；低岩石会困住碎片 | 完成海洋美术，清楚表达落点、高度和失败原因，补齐送达演出 |
+| 第三关 | 延续水位与风扇规则；三浮木、两处低岩石、高处目标；转柄同时移动柔光，碎片自带小灯 | 在熟悉规则上增加观察挑战，保证暗部可读性，形成最终高潮 |
 
-## How Winding Keys Work
+二、三关的可达性取决于距离与高度差；风扇不是自由瞄准。重试恢复谜题初始状态。转柄在不同关卡改变的对象不同，必须给出本关提示。
 
-- Movable Objects stay still while you wind the key. When you release the key, the Movable Objects move along set paths.
-- The winding angle stays between 0° and 270°. The more you wind the key, the farther its Movable Objects travel after release.
-- A full 270° wind advances each unobstructed object by one full path. A 135° wind advances it by half its full path length. Objects do not have a separate Speed setting. Different path lengths use the same normalized winding progress.
-- On release, the key turns back smoothly from its wound angle to its starting angle. The default full unwind takes 4 seconds; a 135° unwind takes 2 seconds. This duration is set per winding key.
-- You cannot operate the winding key while it unwinds. Wait until the key returns to its starting position. Then wait 2 seconds before you use it again.
-- The same actions must always produce the same results.
-- Collisions stop an object without stopping its winding key. Blocked winding travel is lost. If the obstacle clears before the key reaches zero, the object continues with the remaining winding progress without catching up.
+## 全游戏流程目标
 
-### Winding Key 1
+标题 → 幕布开场 → 第一关 → 成功与转场 → 第二关 → 成功与转场 → 第三关 → 音乐盒终场 → 制作名单／返回标题／重新开始。
 
-This is the starting winding key. When the key finishes unwinding, the Movable Objects it controls stay still for 1.5 seconds. These Movable Objects then return to their starting positions in 0.5 seconds.
+保留第一关三片拼合、二三关单片送达的现有胜利条件。统一用“目标送达—锁孔反馈—舞台切换”串联，不额外增加跨关碎片库存。二三关入锁演出尚需制作。
 
-Return movement also checks collisions. A blocked return waits for the obstacle to clear and can take longer than 0.5 seconds. The winding key's 2-second input delay still starts when the key reaches its starting angle.
+所有关卡统一提供 Esc 暂停、继续、重试和返回标题；二三关保留 R / Reset。入场和成功演出期间锁定谜题输入；失焦结束拖拽；暂停冻结相关运动和计时。
 
-### Winding Key 2
+## 视听方向
 
-You get this winding key after Level 3. When the key finishes unwinding, the Movable Objects it controls stay in place. When you use this key again, these Movable Objects continue from those positions.
+- 音乐盒是共同空间，统一手绘风格、机关材质、字体、按钮和反馈。第二三关共用海洋资产，通过夜色与照明形成区别。
+- 第一关突出机械动作与拼合，第二关突出水面与漂浮，第三关突出搜索与抵达。暗处保留关键轮廓，不能以看不清制造难度。
+- 每关都有入场、可操作、动作中、失败、成功和离场状态；失败原因与恢复方式明确，重试简短。
+- 终场建议回到音乐盒全景，用完成状态、机关运动、光和音乐收束，再展示署名。具体分镜和时长属于待制作任务。
+- 音乐需有全程安排；主题录音使用前确认授权条件，不预设可剪辑或重新编排。
 
-### Rules for Both Winding Keys
+## 不再沿用的要求
 
-The first three levels use only Winding Key 1. Later levels use both winding keys. Each winding key controls a different set of Movable Objects. Each Movable Object responds to only one winding key. After you assemble a complete key, the active winding key disappears. *We still need to decide how to show the winding key disappear.*
+旧文档的 270° 路径推进、第二把发条、静止一秒拼合、临时障碍次数等不再作为当前交付需求。底层实验可以保留。现有 3D 内景是另一条本地工作线，不将三关迁移到 3D 作为完成前提。
 
-## Completing a Level and Retrying
-
-1. Make the key fragments form a complete key after the Movable Objects stop.
-2. Keep the key assembled for 1 second to trigger success.
-3. Click the key.
-
-Assembly does not count while the Movable Objects move or return to their starting positions. This rule prevents automatic success each time the player fully winds the key. After success, all Movable Objects stop. You can collect the key at any time.
-
-To retry:
-
-1. Press Esc to open the pause menu.
-2. Select **Retry** to restart the current level.
+具体执行见 [全游戏完成计划](completion-plan.md)，已有证据见 [实现状态](implementation-status.md)。

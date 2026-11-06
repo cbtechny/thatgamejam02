@@ -48,6 +48,7 @@ var _crank_angle_since_tick: float = 0.0
 var _exiting: bool = false
 var _presentation_locked: bool = false
 var _sfx_players: Dictionary = {}
+var _campaign_menu: CanvasLayer
 
 
 func _ready() -> void:
@@ -56,6 +57,10 @@ func _ready() -> void:
 	_prepare_controls()
 	_setup_sfx()
 	reset_level()
+	_campaign_menu = preload("res://Level/campaign_menu.gd").new()
+	_campaign_menu.room = self
+	_campaign_menu.next_scene = "res://dev/level_3_ocean/level_3_ocean.tscn"
+	add_child(_campaign_menu)
 
 
 func _prepare_controls() -> void:
@@ -185,6 +190,8 @@ func _land() -> void:
 			_fire_button.disabled = true
 			_show_feedback("Delivered to the keyhole. Level complete!", true)
 			_play_sfx("win")
+			_dragging_crank = false
+			_campaign_menu.show_menu.call_deferred(true)
 
 
 func _show_feedback(message: String, persistent: bool = false) -> void:
@@ -193,6 +200,9 @@ func _show_feedback(message: String, persistent: bool = false) -> void:
 
 
 func reset_level() -> void:
+	if is_instance_valid(_campaign_menu) and _campaign_menu.completed:
+		_campaign_menu.resume()
+		_campaign_menu.completed = false
 	if _exiting:
 		return
 	_state = State.RESTING
@@ -298,7 +308,6 @@ func _exit_tree() -> void:
 
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, REFERENCE_SIZE), Color("102b3b"))
 	var water: PackedVector2Array = PackedVector2Array()
 	for x: int in range(0, 361, 3):
 		water.append(Vector2(float(x), _water_y(float(x))))

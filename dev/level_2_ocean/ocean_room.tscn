@@ -1,4 +1,6 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Level/ocean_ornaments.gd" id="5_ornaments"]
 
 [ext_resource type="Script" path="res://dev/level_2_ocean/level_2_ocean.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://Art/Textures/Resources/Crank/crank_knob.tscn" id="2_crank"]
@@ -7,6 +9,10 @@
 
 [node name="Level2Ocean" type="Node2D"]
 script = ExtResource("1_script")
+
+[node name="BackgroundOrnaments" type="Node2D" parent="."]
+script = ExtResource("5_ornaments")
+night_mode = false
 
 [node name="Title" type="Label" parent="."]
 offset_left = 12.0

@@ -1,7 +1,7 @@
 extends Control
 
 const CURTAIN_ANIMATION: StringName = &"curtain"
-const LEVEL_ONE_PATH: String = "res://dev/Level 1 - Alt/level_1.tscn"
+const LEVEL_ONE_PATH: String = "res://Level/level_1_music_box.tscn"
 
 @onready var _curtain_players: Array[AnimationPlayer] = [
 	$Curtain/AnimationPlayer,

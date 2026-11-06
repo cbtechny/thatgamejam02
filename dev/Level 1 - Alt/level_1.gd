@@ -45,6 +45,7 @@ signal title_transition_finished
 @onready var _keyhole: Sprite2D = $UI/KeyHole as Sprite2D
 @onready var _key3_placeholder: Sprite2D = $UI/Key3 as Sprite2D
 
+var _presentation_locked: bool = false
 var _dragging_crank: bool = false
 var _released: bool = false
 var _left_fan_active: bool = false
@@ -58,6 +59,7 @@ var _middle_fan_pulse_time: float = 0.0
 var _key_snapped: bool = false
 var _missed: bool = false
 var _key_start_y: float = 0.0
+var _wound_key_y: float = 0.0
 var _left_fan_start_y: float = 0.0
 var _middle_key_start_y: float = 0.0
 var _crank_highlight: HighlightPulse
@@ -71,6 +73,7 @@ var _key0_endpoint: Area2D
 var _key1_endpoint: Area2D
 var _sfx_players: Dictionary = {}
 var _crank_angle_since_tick: float = 0.0
+var _menu_ui: CanvasLayer
 var _pause_menu_open: bool = false
 var _transitioning: bool = false
 var _title_transition_curtains_remaining: int = 0
@@ -92,6 +95,7 @@ func _ready() -> void:
 	_set_left_fan_active(false)
 	_configure_rope_line()
 	_key_start_y = _key.global_position.y
+	_wound_key_y = _key_start_y
 	_left_fan_start_y = _left_fan.position.y
 	_middle_key_start_y = _middle_key.position.y
 	_create_endpoint_hitboxes()
@@ -123,7 +127,15 @@ func _notification(what: int) -> void:
 		_dragging_crank = false
 
 
+func set_presentation_locked(locked: bool) -> void:
+	_presentation_locked = locked
+	if locked:
+		_dragging_crank = false
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if _presentation_locked:
+		return
 	if event is InputEventKey and event.keycode == KEY_ESCAPE and event.pressed and not event.echo:
 		if not _released and not _transitioning and not _pause_menu_open:
 			_show_pause_menu()
@@ -152,10 +164,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_maybe_play_crank_tick(angular_delta)
 		var key_position: Vector2 = _key.global_position
 		key_position.y = clampf(
-			key_position.y - angular_delta * KEY_PIXELS_PER_RADIAN,
+			_wound_key_y - angular_delta * KEY_PIXELS_PER_RADIAN,
 			KEY_MIN_Y,
 			KEY_MAX_Y
 		)
+		_wound_key_y = key_position.y
 		_key.global_position = key_position
 		_key.force_update_transform()
 		_update_tethered_rope()
@@ -187,12 +200,28 @@ func _physics_process(_delta: float) -> void:
 				_key.linear_velocity = _key.linear_velocity.limit_length(KEY_MAX_FLIGHT_SPEED)
 		_update_swinging_rope()
 	else:
+		_key.global_position.y = _wound_key_y
 		_update_tethered_rope()
 
 
 func _key_is_out_of_bounds() -> bool:
 	var bounds: Rect2 = get_viewport_rect().grow(20.0)
 	return not bounds.has_point(_key.global_position)
+
+
+func _get_menu_ui() -> CanvasLayer:
+	if is_instance_valid(_menu_ui):
+		return _menu_ui
+	if get_viewport() == get_tree().root:
+		_menu_ui = _ui
+	else:
+		# Modal UI belongs to the screen, not the scaled/clipped puzzle viewport.
+		_menu_ui = CanvasLayer.new()
+		_menu_ui.name = "ScreenMenus"
+		_menu_ui.layer = 100
+		_menu_ui.process_mode = Node.PROCESS_MODE_ALWAYS
+		get_tree().current_scene.add_child(_menu_ui)
+	return _menu_ui
 
 
 func _show_pause_menu() -> void:
@@ -205,7 +234,7 @@ func _show_pause_menu() -> void:
 	backdrop.set_script(MENU_OVERLAY_SCRIPT)
 	backdrop.process_mode = Node.PROCESS_MODE_ALWAYS
 	backdrop.connect("resume_requested", _resume_from_pause)
-	_ui.add_child(backdrop)
+	_get_menu_ui().add_child(backdrop)
 	var panel: VBoxContainer = VBoxContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.offset_left = -190.0
@@ -245,7 +274,7 @@ func _resume_from_pause() -> void:
 		return
 	_pause_menu_open = false
 	get_tree().paused = false
-	var backdrop: Node = _ui.get_node_or_null("PauseMenu")
+	var backdrop: Node = _get_menu_ui().get_node_or_null("PauseMenu")
 	if backdrop != null:
 		backdrop.queue_free()
 
@@ -264,7 +293,7 @@ func _show_miss_screen() -> void:
 	backdrop.name = "MissScreen"
 	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_ui.add_child(backdrop)
+	_get_menu_ui().add_child(backdrop)
 	var panel: VBoxContainer = VBoxContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.offset_left = -190.0
@@ -320,7 +349,7 @@ func _retry_level() -> void:
 	_transitioning = true
 	_cancel_presentation_tweens()
 	get_tree().paused = false
-	get_tree().reload_current_scene()
+	get_tree().reload_current_scene.call_deferred()
 
 
 func _return_to_title() -> void:
@@ -370,7 +399,9 @@ func _process(delta: float) -> void:
 	# A caught piece must stay put while the other pieces assemble around it.
 	if _key_snapped or _missed or _transitioning:
 		return
-	_left_fan.position.y = _left_fan_start_y + (_key.global_position.y - _key_start_y)
+	# Winding is authored motion; frozen-body synchronization can report an older pose.
+	var follow_y: float = _key.global_position.y if _released else _wound_key_y
+	_left_fan.position.y = _left_fan_start_y + (follow_y - _key_start_y)
 	_middle_fan_pulse_time = fmod(_middle_fan_pulse_time + delta, MIDDLE_FAN_PULSE_PERIOD)
 	var pulse_phase: float = _middle_fan_pulse_time / MIDDLE_FAN_PULSE_PERIOD * TAU
 	var fan_should_be_active: bool = cos(pulse_phase) > 0.0
@@ -380,8 +411,10 @@ func _process(delta: float) -> void:
 
 
 func _release_key() -> void:
-	if _released:
+	if _released or _presentation_locked:
 		return
+	_key.global_position.y = _wound_key_y
+	_key.force_update_transform()
 	_released = true
 	_dragging_crank = false
 	_crank_highlight.set_active(false)
@@ -590,10 +623,11 @@ func _show_win_screen() -> void:
 	_release_hint.text = "WIN!"
 	var backdrop: ColorRect = ColorRect.new()
 	backdrop.name = "WinScreen"
+	_set_terminal_menu_focus(backdrop)
 	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_ui.add_child(backdrop)
-	_ui.move_child(backdrop, 0)
+	_get_menu_ui().add_child(backdrop)
+	_get_menu_ui().move_child(backdrop, 0)
 	var panel: VBoxContainer = VBoxContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.offset_left = -270.0
@@ -604,12 +638,26 @@ func _show_win_screen() -> void:
 	panel.add_theme_constant_override("separation", 18)
 	backdrop.add_child(panel)
 	var label: Label = Label.new()
-	label.text = "KEY COMPLETE!\nYou found the way home."
+	label.text = "KEY COMPLETE!\nThe ocean awaits."
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 48)
 	panel.add_child(label)
+	var continue_button := Button.new()
+	continue_button.text = "Continue to the ocean"
+	continue_button.custom_minimum_size = Vector2(300, 64)
+	continue_button.pressed.connect(_continue_campaign)
+	panel.add_child(continue_button)
+	_style_menu_buttons([continue_button])
 	_add_terminal_menu_buttons(panel)
-	_set_terminal_menu_focus(backdrop)
+	continue_button.call_deferred("grab_focus")
+
+func _continue_campaign() -> void:
+	if _transitioning:
+		return
+	_transitioning = true
+	_cancel_presentation_tweens()
+	get_tree().paused = false
+	get_tree().change_scene_to_file.call_deferred("res://dev/level_2_ocean/level_2_ocean.tscn")
 
 func _setup_sfx() -> void:
 	_register_sfx("crank", "click", 0.075)
