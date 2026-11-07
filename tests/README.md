@@ -1,5 +1,11 @@
 # Manual scene tests
 
+For current release checks and Windows packaging, see
+[release tools](../dev/release/README.md). The release behavior regression is
+`godot --headless --path . --script res://tests/campaign/run_release_tests.gd`.
+The real-input scripted solve is `tests/campaign/run_playthrough.gd`; it is not
+an uncoached human acceptance test.
+
 These Godot scenes are manual visual and interaction tests, not automated test
 scripts. Open a scene and run it with **F6**. The project default remains
 `Main.tscn`, which launches the title menu; Play opens the fan level.

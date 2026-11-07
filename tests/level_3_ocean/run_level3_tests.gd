@@ -28,6 +28,10 @@ func _press(key: Key) -> void:
 
 
 func _run() -> void:
+	if _capture:
+		# Window managers may clamp --resolution to the desktop work area.
+		root.size = Vector2i(1920, 1080)
+		await process_frame
 	var box: Node2D = BOX.instantiate()
 	root.add_child(box)
 	box.set_process(false)
@@ -64,6 +68,7 @@ func _run() -> void:
 		var right_water := Vector2(291.0, 154.0)
 		_expect(_luminance(left, scene, left_water) > 0.12 and _luminance(left, scene, right_water) < 0.01, "Left sweep reveals water only on the left")
 		_expect(_luminance(right, scene, left_water) < 0.01 and _luminance(right, scene, right_water) > 0.12, "Right sweep reveals water only on the right")
+		_expect(_luminance(left, scene, scene._deck_at(Ocean.Platform.GOAL, 0.0)) > 0.05, "Night landing edge remains visible outside the beam")
 		scene.reset_level()
 		scene._process(Ocean.SWEEP_PERIOD * 0.105)
 		await _save_capture("lighthouse-center.png")

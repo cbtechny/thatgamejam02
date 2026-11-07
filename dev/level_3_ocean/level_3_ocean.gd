@@ -16,6 +16,9 @@ func _ready() -> void:
 	_next_scene = "res://Level/ending.tscn"
 	_beam_material.set_shader_parameter(&"lamp_position", LAMP)
 	super._ready()
+	var navigation := preload("res://Level/night_navigation.gd").new()
+	navigation.name = "NightNavigation"
+	add_child(navigation)
 
 
 func _deck_at(platform: int, time: float) -> Vector2:

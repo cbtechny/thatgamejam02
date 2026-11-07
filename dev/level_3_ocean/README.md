@@ -4,7 +4,8 @@ Open `level_3_ocean.tscn` and press **F6** to play the music-box entrance
 and stage. `ocean_room.tscn` opens the room directly.
 
 The lighthouse sweeps across the water on its own clock. The beam reveals
-the key, platforms and jump dots as it passes. Drag the crank or hold
+the key, platform artwork and jump dots as it passes. Dim landing edges,
+platform captions and the crank ring stay visible outside the beam. Drag the crank or hold
 **Left / Right** to adjust the tide, then press **Space** to fire the fan
 mounted on the current platform. Watch the motion of the three drifting
 boards, cross the stone breakwater and reach the keyhole. **R** retries

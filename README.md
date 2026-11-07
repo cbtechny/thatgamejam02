@@ -1,4 +1,4 @@
-# thatgamejam #02
+# Clocks in Orange — thatgamejam #02
 
 A music-box puzzle game built with Godot 4.7.2-stable (GDScript, GL Compatibility).
 
@@ -10,12 +10,19 @@ Three stages: a crank-and-fan mechanism, a daytime ocean puzzle, and a night oce
 - [Full-game completion plan](docs/completion-plan.md)
 - [Implementation status and limitations](docs/implementation-status.md)
 - [Current gameplay loop](docs/core-loop.md)
+- [Release handoff and remaining acceptance](docs/release/status.md)
+- [Windows build instructions](dev/release/README.md)
 
 These documents replace the earlier design. Old documents are retained under `docs/archive/pre-ocean-plan/` for historical reference only.
 
 ## Run
 
-Import `project.godot` in Godot 4.7.2-stable and press F5. Main opens the title menu. Play starts Level 1 through `Level/level_1_music_box.tscn` with the same wide-to-room entrance as the ocean stages; completion continues to the day ocean, night ocean, and a music-box ending with credits and restart/title controls. Ocean stages support Esc pause/resume/retry/title. Final artwork, audio, and human acceptance remain in progress.
+Import `project.godot` in Godot 4.7.2-stable and press F5. Main opens the title menu. Play starts Level 1 through `Level/level_1_music_box.tscn` with the same wide-to-room entrance as the ocean stages; completion continues to the day ocean, night ocean, and a music-box ending with credits and restart/title controls. All stages support pause, retry, return to title, mute and exit. How to Play and Credits are available from the title; full credits also appear at the ending. One theme player persists across scenes and pauses with the game. Human playtesting and listening remain separate acceptance steps.
+
+Drag the crank; press **Space** to release the key/fire the ocean fan. Ocean **R** resets a stage; **Esc** pauses/resumes. Set the tide and time shots onto the drifting boards; cross the pier and breakwater to reach each keyhole. A missed landing needs Reset or Retry. Level 1 pieces join automatically when their ends meet. Mute affects all audio and persists for the current application run.
+
+Game page: [anthrop0.itch.io/clockwork-orange](https://anthrop0.itch.io/clockwork-orange).
+This integration includes the new curtain, plank and rock artwork, timed ferry crossings, and the independent lighthouse sweep. Release validation must use this combined version.
 
 From this repository in the supplied Windows workspace:
 

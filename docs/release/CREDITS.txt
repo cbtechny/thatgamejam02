@@ -1,0 +1,23 @@
+CLOCKS IN ORANGE — thatgamejam #02
+
+Lilith — Writing, concept and hand-drawn art
+Chris — Programming and technical setup
+Packy — Production, coordination, technical art and animation
+
+Theme music composed by Jason Grace.
+The supplied theme recording is included unmodified for this jam entry only.
+It is not licensed for reuse in other projects or future non-jam releases.
+Jam rules: https://itch.io/jam/thatgamejam02
+
+AI disclosure
+AI tools assisted programming. The painted ball, drum, spiral and star background
+ornament cutouts were created with imagegen from contributor-supplied hand-painted
+artwork. The remaining asset provenance must be checked with the team before
+claiming this is a complete list of AI-assisted assets.
+
+Team-created code and assets remain the property of their respective creators.
+No general repository or asset reuse license is granted.
+
+Made with Godot Engine, licensed under the MIT license.
+The engine and bundled third-party notices are included in Godot-NOTICES.txt.
+https://godotengine.org/license/
