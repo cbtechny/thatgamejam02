@@ -16,6 +16,8 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [autoload]
 
+SceneFade="*res://Level/scene_fade.gd"
+
 ReleaseSession="*res://Level/release_session.gd"
 
 [display]

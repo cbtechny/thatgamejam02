@@ -52,7 +52,9 @@ func show_menu(won: bool) -> void:
 	heading.add_theme_font_size_override("font_size", 36)
 	column.add_child(heading)
 	var primary := add_button(column, "Continue" if won else "Resume", advance if won else resume)
-	add_button(column, "Retry Stage", retry)
+	var retry_button := add_button(column, "Retry Stage", retry)
+	var retry_prompt: Node = preload("res://Level/restart_prompt.gd").attach(retry_button)
+	retry_prompt.set_active(room.get("_state") in [2, 4])
 	add_button(column, "Return to Title", func(): go("res://Level/title_menu.tscn"))
 	add_release_controls(column)
 	primary.grab_focus()
@@ -148,7 +150,7 @@ func go(path: String) -> void:
 	_change_scene.call_deferred(path)
 
 func _change_scene(path: String) -> void:
-	if get_tree().change_scene_to_file(path) != OK:
+	if get_node("/root/SceneFade").go(path) != OK:
 		switching = false
 		push_error("Unable to open scene: " + path)
 

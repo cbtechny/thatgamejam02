@@ -10,6 +10,7 @@ const SWEEP_PERIOD: float = 13.0
 
 
 func _ready() -> void:
+	_middle_fragment_platform = Platform.BREAKWATER
 	_platform_names = ["Shore", "Drift I", "Drift II", "Breakwater", "Drift III", "Keyhole"]
 	_floating_platforms = [Platform.LOG_1, Platform.LOG_2, Platform.LOG_3]
 	_platform_fans = [$Fan/Blades, $FanDriftI/Blades, $FanDriftII/Blades, $FanBreakwater/Blades, $FanDriftIII/Blades]

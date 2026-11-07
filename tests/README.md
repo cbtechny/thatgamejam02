@@ -78,3 +78,16 @@ Run without headless and append `-- --capture` for miss/closing/closed/reopened
 captures at 1920x1080 and 1280x720 under `.godot/level1-restart-qa/`.
 For an isolated exported-PCK run, append `-- --campaign-only` to omit the
 standalone development scene, which is intentionally excluded from the export.
+
+## Ocean key fragments and failure restart cues
+
+`godot --headless --path . --script res://tests/campaign/run_ocean_fragments.gd`
+checks collection on successful landings, missed landings, dim/filled HUD states,
+pause and entrance locks, Reset, Retry and completion in both ocean stages.
+Omit `--headless` and append `-- --capture` for both window sizes in
+`.godot/fragments-*.png`.
+
+`godot --headless --path . --script res://tests/campaign/run_restart_cues.gd`
+checks failure-only restart glow, stable input bounds, very quiet beep settings,
+paused Retry cues and restart cleanup across all three stages. Omit `--headless`
+for captures at both window sizes in `.godot/restart-*.png`.

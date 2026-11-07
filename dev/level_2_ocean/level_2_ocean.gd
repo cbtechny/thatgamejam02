@@ -4,6 +4,7 @@ enum Platform { START, LOG_1, ROCK, LOG_2, GOAL }
 
 
 func _ready() -> void:
+	_middle_fragment_platform = Platform.ROCK
 	_platform_names = ["Shore", "Ferry I", "Pier", "Ferry II", "Keyhole"]
 	_floating_platforms = [Platform.LOG_1, Platform.LOG_2]
 	_platform_fans = [$Fan/Blades, $FanFerryI/Blades, $FanPier/Blades, $FanFerryII/Blades]

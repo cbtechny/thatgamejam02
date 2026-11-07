@@ -11,10 +11,20 @@ const TEXTURES: Array[Texture2D] = [
 const DAY_CENTERS: Array[Vector2] = [Vector2(108, 44), Vector2(173, 73), Vector2(294, 40), Vector2(69, 113)]
 const NIGHT_CENTERS: Array[Vector2] = [Vector2(102, 40), Vector2(173, 68), Vector2(287, 36), Vector2(265, 103)]
 const SIZES: Array[float] = [57.6, 83.2, 52.8, 59.2]
+var _sky: Control
 var _sprites: Array[Sprite2D] = []
 
 func _ready() -> void:
 	show_behind_parent = true
+	_sky = preload("res://Level/living_backdrop.tscn").instantiate()
+	_sky.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_sky.show_behind_parent = true
+	var sky_material: ShaderMaterial = _sky.material as ShaderMaterial
+	sky_material.set_shader_parameter("sky_mode", true)
+	sky_material.set_shader_parameter("tint", Color.WHITE)
+	sky_material.set_shader_parameter("motion_speed", 0.08)
+	sky_material.set_shader_parameter("motion_amount", 0.022)
+	add_child(_sky)
 	var unlit := CanvasItemMaterial.new()
 	unlit.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
 	for index: int in range(TEXTURES.size()):
@@ -29,13 +39,15 @@ func _ready() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	draw_rect(Rect2(0, 0, 360, 200), Color("102b3b"))
+	pass
 
 func _process(_delta: float) -> void:
 	_update_pose()
 
 func _update_pose() -> void:
 	var room: Node = get_parent()
+	_sky.position = room._scenery_bounds.position
+	_sky.size = room._scenery_bounds.size
 	var time: float = room.get("_elapsed_time")
 	var crank_angle: float = room.get("_crank_angle")
 	for index: int in range(_sprites.size()):

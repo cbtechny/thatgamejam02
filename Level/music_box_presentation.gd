@@ -18,11 +18,25 @@ const ROOM_RECT: Rect2 = Rect2(520.0, 456.0, 496.0, 248.0)
 @export var room_path: NodePath = ^"MusicBox/RoomClip/Room"
 @onready var _room: Node = get_node(room_path)
 
+var _outside_backdrop: Control
 var _entrance_elapsed: float = 0.0
 var _entrance_finished: bool = false
 
 
 func _ready() -> void:
+	var backdrop_layer := CanvasLayer.new()
+	backdrop_layer.layer = -10
+	add_child(backdrop_layer)
+	var fallback := ColorRect.new()
+	fallback.color = Color("12151e")
+	fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fallback.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	fallback.z_index = -101
+	backdrop_layer.add_child(fallback)
+	var outside: Control = preload("res://Level/living_backdrop.tscn").instantiate()
+	_outside_backdrop = outside
+	outside.z_index = -100
+	backdrop_layer.add_child(outside)
 	get_viewport().size_changed.connect(_fit_viewport)
 	_room.set_presentation_locked(true)
 	_fit_viewport()
@@ -35,6 +49,8 @@ func _process(delta: float) -> void:
 	_fit_viewport()
 	if _entrance_elapsed >= establishing_hold + zoom_duration:
 		_entrance_finished = true
+		if is_instance_valid(_outside_backdrop):
+			_outside_backdrop.queue_free()
 		_room.set_presentation_locked(false)
 
 
@@ -57,4 +73,4 @@ func _apply_layout(viewport_size: Vector2) -> void:
 
 
 func _draw() -> void:
-	draw_rect(get_viewport_rect(), Color("12151e"))
+	pass

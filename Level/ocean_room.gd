@@ -54,6 +54,9 @@ var _exiting: bool = false
 var _presentation_locked: bool = false
 var _sfx_players: Dictionary = {}
 var _campaign_menu: CanvasLayer
+var _reset_prompt: Node
+var _key_collection: Node2D
+var _middle_fragment_platform: int = -1
 
 
 func _ready() -> void:
@@ -69,10 +72,15 @@ func _ready() -> void:
 	_label_backing = _make_label_backing(GOLD.darkened(0.3))
 	_target_backing = _make_label_backing(GOLD)
 	_setup_sfx()
+	_reset_prompt = preload("res://Level/restart_prompt.gd").attach($ResetButton, 1.5)
 	_campaign_menu = preload("res://Level/campaign_menu.gd").new()
 	_campaign_menu.room = self
 	_campaign_menu.next_scene = _next_scene
 	add_child(_campaign_menu)
+	_key_collection = preload("res://Level/ocean_key_collection.gd").new()
+	_key_collection.name = "KeyCollection"
+	_key_collection.middle_platform = _middle_fragment_platform
+	add_child(_key_collection)
 	reset_level()
 
 
@@ -82,11 +90,11 @@ func _prepare_controls() -> void:
 	for child: Node in get_children():
 		if child is Control:
 			var control: Control = child as Control
+			var reference_size: Vector2 = control.size
+			var font_size: int = control.get_theme_font_size("font_size")
 			control.theme = room_theme
 			if control is Button:
 				control.focus_mode = Control.FOCUS_ALL
-			var reference_size: Vector2 = control.size
-			var font_size: int = control.get_theme_font_size("font_size")
 			control.add_theme_font_size_override("font_size", int(font_size * UI_RESOLUTION))
 			control.scale = Vector2.ONE / UI_RESOLUTION
 			control.size = reference_size * UI_RESOLUTION
@@ -157,7 +165,7 @@ func _resolve_landing() -> int:
 
 
 func _on_landing() -> void:
-	pass
+	_key_collection.collect_on_landing(_current_platform)
 
 
 func _reset_mechanisms() -> void:
@@ -217,6 +225,7 @@ func _process(delta: float) -> void:
 				_update_guidance()
 		State.RESTING, State.COMPLETED:
 			_fragment.position = _platform_anchor(_current_platform) + FRAGMENT_OFFSET
+	_key_collection.refresh()
 	queue_redraw()
 	_guide.queue_redraw()
 
@@ -258,6 +267,7 @@ func _update_guidance() -> void:
 				_feedback.text = "In flight…"
 			_:
 				_feedback.text = _hint()
+	_reset_prompt.set_active(not _presentation_locked and _state in [State.FAILED, State.FALLING])
 	_guide.queue_redraw()
 
 
@@ -281,6 +291,7 @@ func reset_level() -> void:
 	_set_crank_angle(initial_crank_angle)
 	_fragment.rotation = 0.0
 	_fragment.show()
+	_key_collection.reset()
 	_stop_fan()
 	for player: AudioStreamPlayer in _sfx_players.values():
 		player.stop()
@@ -381,7 +392,7 @@ func _return_to_title() -> void:
 	if _exiting:
 		return
 	_exiting = true
-	get_tree().change_scene_to_file(TITLE_SCENE_PATH)
+	get_node("/root/SceneFade").go(TITLE_SCENE_PATH)
 
 
 func _exit_tree() -> void:
@@ -424,15 +435,17 @@ func _draw_guide() -> void:
 	pass
 
 
-func _draw_caption(center: Vector2, caption: String, selected: bool = false) -> void:
+func _draw_caption(center: Vector2, caption: String, selected: bool = false, canvas: Node2D = null) -> void:
+	if canvas == null:
+		canvas = _guide
 	var font: Font = ThemeDB.fallback_font
 	var width: float = font.get_string_size(caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 32).x / UI_RESOLUTION
 	var color: Color = GOLD if selected else UI_THEME.CREAM
 	var backing: StyleBoxFlat = _target_backing if selected else _label_backing
-	_guide.draw_style_box(backing, Rect2(center - Vector2(width * 0.5 + 3.5, 5.0), Vector2(width + 7.0, 10.0)))
-	_guide.draw_set_transform(center + Vector2(-width * 0.5, 2.0), 0.0, Vector2.ONE / UI_RESOLUTION)
-	_guide.draw_string(font, Vector2.ZERO, caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 32, color)
-	_guide.draw_set_transform(Vector2.ZERO)
+	canvas.draw_style_box(backing, Rect2(center - Vector2(width * 0.5 + 3.5, 5.0), Vector2(width + 7.0, 10.0)))
+	canvas.draw_set_transform(center + Vector2(-width * 0.5, 2.0), 0.0, Vector2.ONE / UI_RESOLUTION)
+	canvas.draw_string(font, Vector2.ZERO, caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 32, color)
+	canvas.draw_set_transform(Vector2.ZERO)
 
 
 func _draw_keyhole(platform: int) -> void:

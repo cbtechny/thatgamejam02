@@ -16,6 +16,10 @@ var _information_menu: CanvasLayer
 
 func _ready() -> void:
 	get_tree().paused = false
+	var backdrop: Control = preload("res://Level/living_backdrop.tscn").instantiate()
+	backdrop.z_index = -10
+	add_child(backdrop)
+	move_child(backdrop, 0)
 	theme = preload("res://Level/music_box_theme.gd").create()
 	_information_menu = preload("res://Level/campaign_menu.gd").new()
 	add_child(_information_menu)
@@ -74,4 +78,4 @@ func _on_curtain_animation_finished(animation_name: StringName) -> void:
 	if _curtains_remaining > 0:
 		return
 	get_tree().paused = false
-	get_tree().change_scene_to_file(LEVEL_ONE_PATH)
+	get_node("/root/SceneFade").go(LEVEL_ONE_PATH)

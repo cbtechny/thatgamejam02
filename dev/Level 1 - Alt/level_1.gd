@@ -60,6 +60,7 @@ var _middle_fan_active: bool = false
 var _middle_fan_pulse_time: float = 0.0
 var _key_snapped: bool = false
 var _missed: bool = false
+var _failure_restart: Button
 var _key_start_y: float = 0.0
 var _wound_key_y: float = 0.0
 var _left_fan_start_y: float = 0.0
@@ -236,6 +237,9 @@ func _show_pause_menu() -> void:
 	if _pause_menu_open or _transitioning or _key_snapped:
 		return
 	_pause_menu_open = true
+	if is_instance_valid(_failure_restart):
+		_failure_restart.hide()
+		_failure_restart.get_node("RestartPrompt").set_active(false)
 	_dragging_crank = false
 	var backdrop: ColorRect = ColorRect.new()
 	backdrop.theme = preload("res://Level/music_box_theme.gd").create()
@@ -277,6 +281,8 @@ func _show_pause_menu() -> void:
 	panel.add_child(title_button)
 	CAMPAIGN_MENU.add_release_controls(panel)
 	_style_menu_buttons([resume_button, retry_button, title_button])
+	var retry_prompt: Node = preload("res://Level/restart_prompt.gd").attach(retry_button)
+	retry_prompt.set_active(_missed)
 	resume_button.call_deferred("grab_focus")
 	get_tree().paused = true
 
@@ -285,6 +291,9 @@ func _resume_from_pause() -> void:
 	if not _pause_menu_open:
 		return
 	_pause_menu_open = false
+	if is_instance_valid(_failure_restart) and not _transitioning:
+		_failure_restart.show()
+		_failure_restart.get_node("RestartPrompt").set_active(_missed)
 	_dragging_crank = false
 	get_tree().paused = false
 	var backdrop: Node = _get_menu_ui().get_node_or_null("PauseMenu")
@@ -304,6 +313,23 @@ func _mark_missed() -> void:
 	_middle_key_sparkles.emitting = false
 	_third_piece_sparkles.emitting = false
 	_release_hint.text = "Hit R to restart"
+	_show_failure_restart()
+
+
+func _show_failure_restart() -> void:
+	_failure_restart = Button.new()
+	_failure_restart.name = "FailureRestart"
+	_failure_restart.text = "Restart [R]"
+	_failure_restart.pressed.connect(_retry_level)
+	_style_menu_buttons([_failure_restart])
+	_get_menu_ui().add_child(_failure_restart)
+	_failure_restart.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_failure_restart.offset_left = -210.0
+	_failure_restart.offset_right = 210.0
+	_failure_restart.offset_top = -268.0
+	_failure_restart.offset_bottom = -206.0
+	var cue: Node = preload("res://Level/restart_prompt.gd").attach(_failure_restart)
+	cue.set_active(true)
 
 
 func _finish_missed_flight() -> void:
@@ -344,6 +370,9 @@ func _retry_level() -> void:
 	if _transitioning:
 		return
 	_transitioning = true
+	if is_instance_valid(_failure_restart):
+		_failure_restart.get_node("RestartPrompt").set_active(false)
+		_failure_restart.hide()
 	_dragging_crank = false
 	_cancel_presentation_tweens()
 	get_tree().paused = false
@@ -405,7 +434,7 @@ func _return_to_title() -> void:
 		player.seek(0.0, true)
 	await title_transition_finished
 	get_tree().paused = false
-	get_tree().change_scene_to_file(TITLE_SCENE_PATH)
+	get_node("/root/SceneFade").go(TITLE_SCENE_PATH)
 
 
 func _on_title_curtain_finished(animation_name: StringName) -> void:
@@ -684,7 +713,7 @@ func _continue_campaign() -> void:
 	_transitioning = true
 	_cancel_presentation_tweens()
 	get_tree().paused = false
-	get_tree().change_scene_to_file.call_deferred("res://dev/level_2_ocean/level_2_ocean.tscn")
+	get_node("/root/SceneFade").go.call_deferred("res://dev/level_2_ocean/level_2_ocean.tscn")
 
 func _setup_sfx() -> void:
 	_register_sfx("crank", "click", 0.075)

@@ -1,44 +1,44 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://bu27mj4pcqyba"]
 
-[ext_resource type="Script" path="res://Level/ocean_ornaments.gd" id="5_ornaments"]
-
-[ext_resource type="Script" path="res://dev/level_3_ocean/level_3_ocean.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://Art/Textures/Resources/Crank/crank_knob.tscn" id="2_crank"]
-[ext_resource type="PackedScene" path="res://Art/Textures/Resources/Fan/fan.tscn" id="3_fan"]
-[ext_resource type="Texture2D" path="res://Art/Textures/Resources/Key/key0.tres" id="4_key"]
-
-[ext_resource type="Shader" path="res://dev/level_3_ocean/lighthouse_mask.gdshader" id="6_mask"]
+[ext_resource type="Script" uid="uid://c501a0umt3fwc" path="res://dev/level_3_ocean/level_3_ocean.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://c2pl028wbcv7y" path="res://Art/Textures/Resources/Crank/crank_knob.tscn" id="2_crank"]
+[ext_resource type="PackedScene" uid="uid://cap0sjxxwhvyq" path="res://Art/Textures/Resources/Fan/fan.tscn" id="3_fan"]
+[ext_resource type="Texture2D" uid="uid://j4slrladcdim" path="res://Art/Textures/Resources/Key/key0.tres" id="4_key"]
+[ext_resource type="Script" uid="uid://dr5yerlf2vlto" path="res://Level/ocean_ornaments.gd" id="5_ornaments"]
+[ext_resource type="Shader" uid="uid://1v5yrfbxtnr1" path="res://dev/level_3_ocean/lighthouse_mask.gdshader" id="6_mask"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mask"]
 resource_local_to_scene = true
 shader = ExtResource("6_mask")
+shader_parameter/mask_origin = Vector2(-2, -2)
+shader_parameter/mask_size = Vector2(364, 204)
+shader_parameter/stage_floor_y = 200.0
+shader_parameter/beam_slope = 0.0
+shader_parameter/lamp_position = Vector2(180, 22)
 
-[node name="Level3Ocean" type="Node2D"]
+[node name="Level3Ocean" type="Node2D" unique_id=1280186356]
 script = ExtResource("1_script")
 
-[node name="BackgroundOrnaments" type="Node2D" parent="."]
+[node name="BackgroundOrnaments" type="Node2D" parent="." unique_id=1054897828]
 script = ExtResource("5_ornaments")
 night_mode = true
 
-[node name="Title" type="Label" parent="."]
+[node name="Title" type="Label" parent="." unique_id=1318364007]
 z_index = 11
-
 offset_left = 12.0
 offset_top = 4.0
 offset_right = 348.0
 offset_bottom = 17.0
 theme_override_font_sizes/font_size = 8
 text = "LEVEL 3: LIGHTHOUSE"
-mouse_filter = 2
 
-[node name="Crank" parent="." instance=ExtResource("2_crank")]
+[node name="Crank" parent="." unique_id=2134137877 instance=ExtResource("2_crank")]
 z_index = 11
 position = Vector2(45, 52)
 scale = Vector2(0.03125, 0.03125)
 
-[node name="CrankLabel" type="Label" parent="."]
+[node name="CrankLabel" type="Label" parent="." unique_id=1667567176]
 z_index = 11
-
 offset_left = 14.0
 offset_top = 85.0
 offset_right = 81.0
@@ -46,11 +46,9 @@ offset_bottom = 96.0
 theme_override_font_sizes/font_size = 5
 text = "Drag / ← →"
 horizontal_alignment = 1
-mouse_filter = 2
 
-[node name="TideReadout" type="Label" parent="."]
+[node name="TideReadout" type="Label" parent="." unique_id=962374753]
 z_index = 11
-
 offset_left = 83.0
 offset_top = 28.0
 offset_right = 209.0
@@ -58,93 +56,85 @@ offset_bottom = 42.0
 theme_override_colors/font_color = Color(1, 0.86, 0.58, 1)
 theme_override_font_sizes/font_size = 9
 text = "TIDE   0%"
-mouse_filter = 2
 
-[node name="MechanismReadout" type="Label" parent="."]
+[node name="MechanismReadout" type="Label" parent="." unique_id=45097513]
 z_index = 11
-
 offset_left = 83.0
 offset_top = 44.0
 offset_right = 209.0
 offset_bottom = 56.0
 theme_override_font_sizes/font_size = 7
 text = "Watch the sweeping beam"
-mouse_filter = 2
 
-[node name="Fan" parent="." instance=ExtResource("3_fan")]
+[node name="Fan" parent="." unique_id=1867037272 instance=ExtResource("3_fan")]
 rotation = -0.63
 scale = Vector2(0.022, 0.022)
 
-[node name="FanDriftI" parent="." instance=ExtResource("3_fan")]
+[node name="FanDriftI" parent="." unique_id=873874049 instance=ExtResource("3_fan")]
 rotation = -0.63
 scale = Vector2(0.022, 0.022)
 
-[node name="FanBreakwater" parent="." instance=ExtResource("3_fan")]
+[node name="FanBreakwater" parent="." unique_id=1520265748 instance=ExtResource("3_fan")]
 rotation = -0.63
 scale = Vector2(0.022, 0.022)
 
-[node name="FanDriftIII" parent="." instance=ExtResource("3_fan")]
+[node name="FanDriftIII" parent="." unique_id=13467138 instance=ExtResource("3_fan")]
 rotation = -0.63
 scale = Vector2(0.022, 0.022)
 
-[node name="FanDriftII" parent="." instance=ExtResource("3_fan")]
+[node name="FanDriftII" parent="." unique_id=381639080 instance=ExtResource("3_fan")]
 rotation = -0.63
 scale = Vector2(0.022, 0.022)
 
-[node name="Fragment" type="Sprite2D" parent="."]
+[node name="Fragment" type="Sprite2D" parent="." unique_id=1326965469]
 z_index = 2
 position = Vector2(30, 142.5)
 scale = Vector2(0.045, 0.045)
 texture = ExtResource("4_key")
 
-[node name="FireButton" type="Button" parent="."]
+[node name="FireButton" type="Button" parent="." unique_id=1001687997]
 z_index = 11
-
 offset_left = 214.0
 offset_top = 43.0
 offset_right = 279.0
 offset_bottom = 58.0
-theme_override_font_sizes/font_size = 6
 focus_mode = 0
+theme_override_font_sizes/font_size = 6
 text = "Press fan [Space]"
 
-[node name="ResetButton" type="Button" parent="."]
+[node name="ResetButton" type="Button" parent="." unique_id=379353198]
 z_index = 11
-
 offset_left = 283.0
 offset_top = 43.0
 offset_right = 348.0
 offset_bottom = 58.0
-theme_override_font_sizes/font_size = 6
 focus_mode = 0
+theme_override_font_sizes/font_size = 6
 text = "Reset [R]"
 
-[node name="TitleButton" type="Button" parent="."]
+[node name="TitleButton" type="Button" parent="." unique_id=487121557]
 z_index = 11
-
 offset_left = 283.0
 offset_top = 24.0
 offset_right = 348.0
 offset_bottom = 39.0
-theme_override_font_sizes/font_size = 6
 focus_mode = 0
+theme_override_font_sizes/font_size = 6
 text = "Return to Title"
 
-[node name="Feedback" type="Label" parent="."]
+[node name="Feedback" type="Label" parent="." unique_id=635400639]
 z_index = 11
-
 offset_left = 12.0
 offset_top = 184.0
 offset_right = 348.0
 offset_bottom = 199.0
 theme_override_font_sizes/font_size = 7
 horizontal_alignment = 1
-mouse_filter = 2
 
-[node name="NightMask" type="Node2D" parent="."]
+[node name="NightMask" type="Node2D" parent="." unique_id=1500388910]
 z_index = 10
 
-[node name="Darkness" type="ColorRect" parent="NightMask"]
+[node name="Darkness" type="ColorRect" parent="NightMask" unique_id=916099676]
 material = SubResource("ShaderMaterial_mask")
 offset_left = -2.0
 offset_top = -2.0

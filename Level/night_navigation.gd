@@ -22,9 +22,6 @@ func _draw() -> void:
 		draw_line(anchor - Vector2(width * 0.5, 0), anchor + Vector2(width * 0.5, 0), edge, 0.65, true)
 		# Align with the room captions instead of introducing a second label row.
 		var caption: String = room._platform_names[platform]
-		var text_width: float = ThemeDB.fallback_font.get_string_size(caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 32).x / room.UI_RESOLUTION
-		draw_set_transform(anchor + Vector2(-text_width * 0.5, 14.0), 0.0, Vector2.ONE / room.UI_RESOLUTION)
-		draw_string(ThemeDB.fallback_font, Vector2.ZERO, caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 32, Color("b5cbd8"))
-		draw_set_transform(Vector2.ZERO)
+		room._draw_caption(anchor + Vector2(0.0, 12.0), caption, false, self)
 	var knob: Vector2 = to_local(room._crank.to_global(room.CRANK_KNOB_LOCAL_POSITION.rotated(room._crank_handle.rotation)))
 	draw_arc(knob, 5.5, 0.0, TAU, 32, Color("d6bd7a"), 0.6, true)
