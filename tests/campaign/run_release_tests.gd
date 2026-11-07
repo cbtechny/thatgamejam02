@@ -1,5 +1,5 @@
 extends SceneTree
-## Release behavior only: real menu input, session audio, pause, retry and traps.
+## Release behavior: real menu input, session audio, pause, retry and missed landings.
 
 var checks: int = 0
 var failures: int = 0
@@ -119,22 +119,25 @@ func run() -> void:
 		await process_frame
 		if number == 3:
 			var navigation: Node2D = room.get_node("NightNavigation")
-			check((navigation.material as CanvasItemMaterial).light_mode == CanvasItemMaterial.LIGHT_MODE_UNSHADED, "Night interaction markers remain visible outside the moving light")
+			check((navigation.material as CanvasItemMaterial).light_mode == CanvasItemMaterial.LIGHT_MODE_UNSHADED, "Night markers use unshaded material")
+			check(navigation.z_index > room.get_node("NightMask").z_index, "Navigation renders above the lighthouse mask")
 		room.reset_level()
-		# Reach a dead-end rock using the actual low-tide route.
-		for step: int in range(3):
-			room.fire_fan()
-			room._process(room.hop_duration + 0.01)
-		check(room._state == 2, "Low-tide route strands the key")
+		# A mistimed shot misses the drifting deck in both redesigned rooms.
+		room.set_process(false)
+		room._process(3.0 if number == 3 else 1.35)
+		room.fire_fan()
+		room._process(room._flight_duration + 0.01)
+		room._process(0.4)
+		check(room._state == 2 and not room._fragment.visible, "Mistimed shot misses the ferry")
 		room._campaign_menu.show_menu(false)
 		await process_frame
-		await capture("level%d-stranded-pause" % number)
+		await capture("level%d-missed-pause" % number)
 		room._campaign_menu.retry()
 		room._campaign_menu.retry()
 		await process_frame
 		await process_frame
 		room = current_scene._room
-		check(not paused and room._current_platform == 0 and not room._dragging_crank, "Retry escapes rock and clears state")
+		check(not paused and room._current_platform == 0 and not room._dragging_crank, "Retry restores shore and clears state")
 		check(not room._fan_active, "Retry stops old fan loop")
 	await open_scene("res://Level/ending.tscn")
 	var credits: Button = current_scene.find_child("CreditsButton", true, false)

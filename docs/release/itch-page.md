@@ -20,8 +20,8 @@ Made by Lilith, Chris and Packy for thatgamejam #02.
 
 - Drag the crank with the mouse.
 - In Level 1, press **Space** to release the key. Time the release to meet the moving piece; the pieces join automatically.
-- In the ocean levels, adjust the tide and press **Space** or click the fan to hop to the first reachable platform ahead.
-- Rocks are dead ends. Press **R** in ocean levels or choose **Retry** from the pause menu.
+- In the ocean levels, set the tide and press **Space** or click **Fire fan**. Time each shot onto the drifting boards; cross the pier by day and the breakwater under the lighthouse at night.
+- A missed landing ends the run. Press **R** in ocean levels or choose **Retry** from the pause menu to restart from shore.
 - **Esc** pauses/resumes. Menus include Retry, Return to Title, Mute and Exit.
 - **Tab / arrows** move menu focus; **Enter** selects.
 
@@ -32,9 +32,9 @@ Keep the `.pck` file beside the executable. No Godot installation is needed.
 
 ### Credits
 
-Lilith — Writing, concept and hand-drawn art  
-Chris — Programming and technical setup  
-Packy — Production, coordination, technical art and animation  
+Lilith — Writing, concept and hand-drawn art<br>
+Chris — Programming and technical setup<br>
+Packy — Production, coordination, technical art and animation<br>
 Theme music composed by Jason Grace. The supplied recording is used unmodified,
 only within this jam entry. Made with Godot Engine.
 

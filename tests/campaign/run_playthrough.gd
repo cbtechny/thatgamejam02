@@ -97,17 +97,31 @@ func hop(room: Node) -> void:
 		await physics_frame
 	check(false, "Hop did not land")
 
-func raise_tide(room: Node) -> void:
+func set_tide(room: Node, target: float) -> void:
 	var crank: Node2D = room._crank
 	var angle: float = room._crank_angle
+	var delta: float = wrapf(target - angle, -PI, PI)
+	if absf(delta) < 0.001:
+		return
 	mouse(crank.to_global(Vector2.from_angle(angle) * 576), true)
-	for step: int in range(1, 31):
+	# Finish small adjustments before the next launch window in the night route.
+	for step: int in range(1, 9):
 		var motion := InputEventMouseMotion.new()
-		motion.position = crank.to_global(Vector2.from_angle(angle + PI * float(step) / 30.0) * 576)
+		motion.position = crank.to_global(Vector2.from_angle(angle + delta * float(step) / 8.0) * 576)
 		root.push_input(motion, true)
 		await physics_frame
 	mouse(Vector2.ZERO, false)
-	check(absf(room._crank_angle - PI * 0.5) < 0.05, "Mouse crank raises tide")
+	check(absf(wrapf(room._crank_angle - target, -PI, PI)) < 0.01, "Mouse crank sets the planned tide")
+
+func wait_launch(room: Node, time: float) -> bool:
+	for frame: int in range(1200):
+		if room._elapsed_time >= time:
+			var on_time: bool = room._elapsed_time < time + 0.08
+			check(on_time, "Reach launch window at %.2fs (actual %.3fs)" % [time, room._elapsed_time])
+			return on_time
+		await physics_frame
+	check(false, "Stage clock did not reach the launch window")
+	return false
 
 func solve_ocean(number: int) -> void:
 	var path: String = "res://dev/level_%d_ocean/level_%d_ocean.tscn" % [number, number]
@@ -115,11 +129,15 @@ func solve_ocean(number: int) -> void:
 		return
 	await wait_entrance()
 	var room: Node = current_scene._room
-	# Deliberately take the low-water dead end, then use the real Retry button.
-	for step: int in range(3):
-		await hop(room)
-	check(room._state == 2, "Low route reaches rock trap")
-	await capture("0%d-rock-retry" % (number + 1))
+	# Deliberately miss a moving board, then use the real Retry button.
+	await wait_launch(room, 3.0 if number == 3 else 1.35)
+	await hop(room)
+	for frame: int in range(90):
+		if room._state == 2:
+			break
+		await physics_frame
+	check(room._state == 2 and not room._fragment.visible, "Mistimed shot misses the ferry")
+	await capture("0%d-missed-retry" % (number + 1))
 	key(KEY_ESCAPE)
 	await process_frame
 	await click_caption("Retry stage")
@@ -127,14 +145,22 @@ func solve_ocean(number: int) -> void:
 	await process_frame
 	await wait_entrance()
 	room = current_scene._room
-	check(not paused and room._current_platform == 0, "Rock retry restores start")
-	await hop(room)
-	await hop(room)
-	await raise_tide(room)
-	await capture("0%d-ocean" % (number + 3))
-	await hop(room)
+	check(not paused and room._current_platform == 0, "Retry restores shore")
+	var times: Array[float] = [0.8, 4.8, 7.45, 10.8]
+	var angles: Array[float] = [-PI * 0.5, asin(-0.35), asin(0.85), asin(0.95)]
 	if number == 3:
+		times.assign([0.35, 1.10, 4.45, 12.65, 16.80])
+		angles.assign([-PI * 0.5, asin(-0.45), asin(-0.45), asin(0.55), asin(0.65)])
+	for platform: int in range(times.size()):
+		await set_tide(room, angles[platform])
+		if not await wait_launch(room, times[platform]):
+			return
 		await hop(room)
+		check(room._current_platform == platform + 1, "Timed shot %d lands in ocean %d" % [platform + 1, number])
+		if room._current_platform != platform + 1:
+			return
+		if platform == 1:
+			await capture("0%d-ocean" % (number + 3))
 	check(room._state == 3, "Real input route solves ocean %d" % number)
 	await process_frame
 	await click_caption("Continue")
@@ -159,5 +185,5 @@ func run() -> void:
 		await process_frame
 		await click_caption("Return to Title")
 		check(await wait_scene("res://Level/title_menu.tscn"), "Replay returns to title")
-	print("Scripted full playthrough: %d failures; real input, real physics, both rock retries, ending, replay, title." % failures)
+	print("Scripted full playthrough: %d failures; real input, real physics, four day/five night shots, both miss retries, ending, replay, title." % failures)
 	root.get_node("ReleaseSession").quit_game(1 if failures else 0)

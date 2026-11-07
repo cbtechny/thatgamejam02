@@ -20,7 +20,7 @@ offset_top = 4.0
 offset_right = 348.0
 offset_bottom = 16.0
 theme_override_font_sizes/font_size = 8
-text = "LEVEL 2: OCEAN"
+text = "LEVEL 2: TIDAL FERRIES"
 mouse_filter = 2
 
 [node name="Crank" parent="." instance=ExtResource("2_crank")]
@@ -33,13 +33,44 @@ offset_top = 85.0
 offset_right = 81.0
 offset_bottom = 96.0
 theme_override_font_sizes/font_size = 5
-text = "Drag crank"
+text = "Drag / ← →"
 horizontal_alignment = 1
 mouse_filter = 2
 
+[node name="TideReadout" type="Label" parent="."]
+offset_left = 83.0
+offset_top = 28.0
+offset_right = 209.0
+offset_bottom = 42.0
+theme_override_colors/font_color = Color(1, 0.86, 0.58, 1)
+theme_override_font_sizes/font_size = 9
+text = "TIDE   0%"
+mouse_filter = 2
+
+[node name="MechanismReadout" type="Label" parent="."]
+offset_left = 83.0
+offset_top = 44.0
+offset_right = 209.0
+offset_bottom = 56.0
+theme_override_font_sizes/font_size = 7
+text = "Time the fixed fan shot"
+mouse_filter = 2
+
 [node name="Fan" parent="." instance=ExtResource("3_fan")]
-position = Vector2(237, 25)
-scale = Vector2(0.045, 0.045)
+rotation = -0.63
+scale = Vector2(0.022, 0.022)
+
+[node name="FanFerryI" parent="." instance=ExtResource("3_fan")]
+rotation = -0.63
+scale = Vector2(0.022, 0.022)
+
+[node name="FanPier" parent="." instance=ExtResource("3_fan")]
+rotation = -0.63
+scale = Vector2(0.022, 0.022)
+
+[node name="FanFerryII" parent="." instance=ExtResource("3_fan")]
+rotation = -0.63
+scale = Vector2(0.022, 0.022)
 
 [node name="Fragment" type="Sprite2D" parent="."]
 z_index = 2
@@ -49,18 +80,18 @@ texture = ExtResource("4_key")
 
 [node name="FireButton" type="Button" parent="."]
 offset_left = 218.0
-offset_top = 62.0
+offset_top = 46.0
 offset_right = 280.0
-offset_bottom = 77.0
+offset_bottom = 61.0
 theme_override_font_sizes/font_size = 6
 focus_mode = 0
 text = "Press fan [Space]"
 
 [node name="ResetButton" type="Button" parent="."]
 offset_left = 289.0
-offset_top = 62.0
+offset_top = 24.0
 offset_right = 348.0
-offset_bottom = 77.0
+offset_bottom = 39.0
 theme_override_font_sizes/font_size = 6
 focus_mode = 0
 text = "Reset [R]"

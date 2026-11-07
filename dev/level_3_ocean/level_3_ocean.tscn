@@ -10,7 +10,7 @@ script = ExtResource("1_presentation")
 [node name="MusicBox" type="Node2D" parent="."]
 
 [node name="InteriorBackdrop" type="Polygon2D" parent="MusicBox"]
-color = Color(0.0627451, 0.168627, 0.231373, 1)
+color = Color(0, 0, 0, 1)
 polygon = PackedVector2Array(460, 340, 1070, 340, 1070, 730, 460, 730)
 
 [node name="RoomClip" type="Control" parent="MusicBox"]
@@ -25,5 +25,6 @@ mouse_filter = 2
 
 [node name="MusicBoxExteriorFrame" type="Sprite2D" parent="MusicBox"]
 z_index = 10
+self_modulate = Color(0.43, 0.47, 0.59, 1)
 texture = ExtResource("3_box")
 centered = false

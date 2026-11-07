@@ -1,59 +1,68 @@
-# Release integration handoff — November 7, 2026
+# Release integration handoff - November 7, 2026
 
-Base revision: `3ba7860471c67d169fcea031443298a2f5d3a664` on `main`.
-This change is local work on top of that revision. It has not been agreed with
-Packy as a final shared release commit, pushed, uploaded or submitted.
+This integration combines `main` at `e196704bee1a49667cee7086af4c95f6abab443f`
+with `polish` at `294f22b1b8018bd3f5bd886478d9da02e4b889d6`.
+The review branch is `integrate/main-into-polish`, targeting `polish`.
+No merge into either shared branch, upload or submission is performed here.
 
-## Implemented
+## Combined behavior
 
-- Existing title → key → day ocean → night ocean → ending progression retained.
-- Mute and Exit available in pause, failure, success, title and ending menus.
-  Mute controls Master audio and persists for the current run.
-- Level 1 can pause during released-key flight; repeated Retry is guarded.
-- Help and contributor/music/AI/engine credits are accessible from title and ending.
-- One original theme recording player survives scene changes. Pause suspends its
-  playhead, resume continues it, and the whole track repeats only after finishing.
-  No recording edits, sampling, pitch changes or per-stage copies were introduced.
-- Night landing-edge/label and crank markers preserve the authored lighting and
-  anchor geometry while keeping interaction readable outside the moving light.
-- Windows x86_64 export preset, reproducible build script, player instructions,
-  engine notices and a build/source manifest added. Export dependencies include
-  code-loaded resources, not just scene-attached resources.
+- Packy's new curtains/platform artwork, shared ocean mechanics, four-shot day
+  crossing and five-shot lighthouse crossing are retained. Board motion, tide,
+  landing tolerances, fan placement and lighthouse timing are unchanged.
+- Main's persistent original theme player, mute/exit controls, help, credits,
+  Level 1 flight pause, guarded retries and Windows export setup are included.
+- Night markers follow the current platform anchors/names and render above the
+  drawn lighthouse mask. Dim landing edges, captions and the crank ring remain
+  legible outside the beam; the scene lighting and mechanics remain intact.
+- Release instructions describe timed landings and retries after missed shots.
+  The pier and breakwater are crossing platforms, not the old rock traps.
+- The release regression and real-input playthrough use the redesigned puzzles.
+  No forced completion, target repositioning or puzzle-state shortcuts are used
+  by the full playthrough.
 
 ## Verification and artifacts
 
-Use `dev/release/build_windows.ps1` for current verification; its logs are under
-`.godot/release-logs`. A successful package is
-`builds/ClocksInOrange-Windows-candidate.zip`, with BUILD.json inside.
-The source snapshot is identified by `builds/source-files.sha256`.
+`dev/release/build_windows.ps1` runs the level/campaign/release checks, exports
+Windows x86_64 and creates `builds/ClocksInOrange-Windows-candidate.zip`.
+Its logs are under `.godot/release-logs`; the source manifest and BUILD.json
+identify the candidate. Integration-specific logs are under
+`.godot/integration-qa`.
 
-- Baseline: Level 1 47/47, Ocean 1007/1007, Night Ocean 1116/1116.
-- Release behavior: 56 checks passed, including real mouse menu actions,
-  mute across scenes, pause during flight/hops, both rock traps and repeated Retry.
-- A scripted complete solve passed with real mouse/key input, physics and timed
-  hops: Main → all puzzles → ending → replay → title, including both rock retries.
-- Rendered captures of the full route are under `builds/screenshots/`; title,
-  menus and ending were also checked at 1280×720. Scripted runs are reproducible
-  integration tests and do not constitute an uncoached human playtest.
-- The initial standalone export exposed missing code-loaded dependencies;
-  these were added to the preset. Final package launch/packed-resource checks
-  are recorded against the packaged candidate in `builds/verification.json`.
-- Some older regression scripts quit without stopping the new music singleton,
-  so their logs can contain an MP3 playback/resource warning at engine shutdown.
-  The new release harness stops audio before quitting; normal Exit/window-close
-  now drains the mixer before shutdown. Script/runtime errors still fail the build.
+- Level 1: 47 passed; day ocean: 147 passed; lighthouse: 23 passed headless.
+- Release behavior: 57 checks passed, including mouse menus, persistent mute/audio,
+  flight/hop pause, lighthouse marker ordering and repeated retry after misses.
+- Campaign/navigation, Level 1 input/presentation, full-screen layout/menu
+  headless checks and both ornament regressions passed.
+- Real-time and fixed-step real-input playthroughs: zero failures through Main, all three
+  puzzles, both miss retries, ending, replay and title. It uses the stage clocks,
+  real input and physics rather than directly setting gameplay state.
+- Rendered lighthouse: 29 checks passed, including both beam directions and
+  darkness samples and a landing edge outside the beam at 1920x1080.
+- Rendered release checks: 57 passed, including title/menu bounds at 1920x1080
+  and 1280x720. The rendered full playthrough also completed with zero failures.
+- Windows export succeeded. The extracted PCK passed the 57 release checks and
+  complete real-input playthrough from an isolated resource directory. Native
+  extracted-EXE headless startup also passed; forced test exit leaves the known
+  audio shutdown warning. Human playing/listening remain pending.
+- The export preset explicitly includes the new shared ocean base scripts and
+  platform textures. The build now checks the exported PCK in isolation, and
+  allows the longer full playthrough 120 seconds instead of 55.
+- Prior main-only pass counts and packaged artifacts do not validate this
+  combined source. Use the integration evidence and newly built candidate.
+- Some older harnesses leave MP3 playback/resource warnings during engine
+  shutdown. Normal Exit/window-close drains the audio mixer. Script/runtime
+  errors still fail the build. A sandbox root-certificate-store warning is
+  unrelated to this offline game's behavior.
 
-Original theme file SHA256:
+Original theme file SHA256, verified unchanged:
 `49b64f420c7426cbbdfc6771d0f87de648ba692988f24811128c015f4557806f`.
-The recording is unchanged from the base revision.
 
-## Deferred artwork — explicit user decision
+## Integrated artwork
 
-Lilith's new curtains, wood planks and rocks have **not** been imported. The user
-said they are still in the team's chat and requested skipping them now for a
-future polish pass. Do not treat these deliveries as integrated or block this
-technical candidate on them. Recheck silhouettes against actual landing anchors
-when that later import happens. No replacement artwork was drawn here.
+The new curtains, wood planks and rocks are included from `polish`. The earlier
+main-only deferral no longer describes this integration. Their source assets,
+import settings, authored geometry and landing behavior are preserved.
 
 ## Remaining release gates
 

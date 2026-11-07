@@ -2,15 +2,17 @@
 
 Open `curtain.tscn` to animate the curtain. The rig has seven independent rows,
 each with two `Bone2D` controls running from left to right (14 bones total).
-Rows run from top to bottom, and their lengths follow the curtain's right edge.
+Rows run from top to bottom, each spanning the full 960-pixel width.
 Each row's two joints sit at 0% and 100% of its width, so the second control
 is directly on the curtain edge. The last bone's short gizmo
 extends outward only to keep this edge control visible in the editor.
 The mesh and UVs map to the original texture at one source pixel per unit;
-their outer bounds are limited to the PNG's actual 960x1080 size. The scene UID
-and texture are preserved.
+their outer bounds are limited to each half's 960x1080 size. The left and
+right textures come from the two halves of `ART_20261102-232942.png`. The
+right texture is flipped in the file so the mirrored scene displays it in
+the original orientation.
 
-The scene now includes a subdivided `Polygon2D` mesh (835 vertices and 1556
+The scene includes a subdivided `Polygon2D` mesh (775 vertices and 1440
 triangles), matching UVs, the skeleton link, normalized vertex weights, saved
 bone rest poses, and explicit bone lengths. All setup is stored in the
 scene; no runtime rigging script is needed.
@@ -25,9 +27,9 @@ The mesh uses approximately 36-pixel spacing, including its outline. Only the
 third row's indentation receives rounded weight transitions: the blend has
 zero slope at row three and unit slope at rows two and four. Other spans,
 especially rows four through seven, use linear weight blending to keep the
-edge close to straight spans instead of repeated S-shaped waves. The existing
-silhouette and UV mapping remain unchanged. Intermediate bone motions have
-been merged into each row's right-edge control using editable Bezier curves.
+edge close to straight spans instead of repeated S-shaped waves. The closed
+silhouette is rectangular so the two halves meet at the center. Each row's
+right-edge control uses editable Bezier curves.
 The left-root motion, non-bone tracks, animation duration and loop settings are
 preserved. A 181-frame comparison found at most 0.12 pixels of edge-position
 difference from the five-control version. Each vertex uses at most four bone influences, with normalized
@@ -44,13 +46,13 @@ content. The right copy has a mirrored parent anchored to the menu's right
 edge, so animation tracks moving the curtain root also move in the correct
 mirrored direction. Both copies start and finish together. Each starts
 paused at the authored first frame. Clicking **Play** runs the animation once
-and holds the final pose; the button is disabled during playback and can replay
-it afterwards. The menu duplicates the animation library at runtime to disable
+and enters Level 1 after both halves finish. The button is disabled during
+playback. The menu duplicates the animation library at runtime to disable
 looping locally, preserving the original looping animation for editing.
 
 Run `godot --headless --path . --script res://dev/title/validate_menu_curtain.gd`
-to check menu startup, the Play signal, single playback, repeated-click handling,
-the held final pose, replay, and isolation of the original looping animation.
+to check that both textures load, the first frame closes both halves, Play
+opens them together, and the transition waits for both to finish.
 
 1. Select `AnimationPlayer` and choose **curtain**. The authored
    looping animation is preserved; edit its keys as needed.

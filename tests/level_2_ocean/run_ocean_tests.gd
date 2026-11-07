@@ -55,107 +55,107 @@ func _run() -> void:
 		room_view = Rect2(scene.global_position, Ocean.REFERENCE_SIZE * scene.get_global_transform().get_scale())
 		_expect(Rect2(Vector2.ZERO, viewport_size).encloses(room_view), "Zoomed room fits resized viewport %s" % viewport_size)
 	presentation._fit_viewport()
-	_expect(scene._feedback.text.is_empty(), "No instructions or feedback before a press")
-	_expect(is_equal_approx(scene._crank_angle, -PI * 0.5), "Reset starts at low tide")
-	await _save_capture("ocean-low-start.png")
-	# Sweep a complete wave cycle at both tide extremes, independent of hop timing.
-	for sample: int in range(181):
-		scene._elapsed_time = float(sample) * PI / 180.0
-		scene._crank_angle = -PI * 0.5
-		scene._current_platform = Ocean.Platform.START
-		_expect(scene._find_target() == Ocean.Platform.LOG_1, "Low start -> log 1, wave sample %d" % sample)
-		scene._current_platform = Ocean.Platform.LOG_1
-		_expect(scene._find_target() == Ocean.Platform.LOG_2, "Low log 1 -> log 2, wave sample %d" % sample)
-		scene._current_platform = Ocean.Platform.LOG_2
-		_expect(scene._find_target() == Ocean.Platform.ROCK, "Low log 2 -> first reachable rock, wave sample %d" % sample)
-		scene._crank_angle = PI * 0.5
-		_expect(scene._find_target() == Ocean.Platform.GOAL, "High log 2 -> goal, wave sample %d" % sample)
-		scene._current_platform = Ocean.Platform.ROCK
-		_expect(scene._find_target() == -1, "Rock cannot reach goal, wave sample %d" % sample)
+	_expect(is_equal_approx(scene._water_level(), 142.0), "Reset starts at low water")
+	_expect(scene._platform_fans.size() == Ocean.Platform.GOAL, "Each launch platform has a fan")
+	_expect_platform_fans(scene, -1)
+	await _save_capture("day-waiting-at-shore.png")
 
-	_expect(scene._is_reachable(Vector2.ZERO, Vector2(130.0, -26.0)), "Inclusive maximum distance and upward limit")
-	_expect(scene._is_reachable(Vector2.ZERO, Vector2(130.0, 30.0)), "Inclusive downward limit")
-	for target: Vector2 in [Vector2(0.0, 0.0), Vector2(-1.0, 0.0), Vector2(130.01, 0.0), Vector2(75.0, -26.01), Vector2(75.0, 30.01)]:
-		_expect(not scene._is_reachable(Vector2.ZERO, target), "Reject out-of-range anchor %s" % target)
+	# A non-cardinal mouse release must preserve the exact angle and the board X tracks.
+	var initial_x: float = scene._deck_position(Ocean.Platform.LOG_1).x
+	await _drag_crank(scene, -0.41)
+	_expect(is_equal_approx(scene._crank_angle, -0.41), "Mouse release does not snap the crank")
+	_expect(is_equal_approx(initial_x, scene._deck_position(Ocean.Platform.LOG_1).x), "Turning the crank changes only board height")
+	_expect(scene._water_level() < 142.0 and not scene._dragging_crank, "Tide changes continuously and mouse releases over GUI")
+	_expect_platform_fans(scene, -1)
+	for platform: int in [Ocean.Platform.LOG_1, Ocean.Platform.LOG_2]:
+		var start := scene._deck_at(platform, 0.0)
+		var period: float = 5.4 if platform == Ocean.Platform.LOG_1 else 6.2
+		_expect(is_equal_approx(scene._deck_at(platform, period).x, start.x), "Board returns along its fixed loop")
+		_expect(not is_equal_approx(scene._deck_at(platform, period * 0.5).x, start.x), "The loop keeps moving with a stationary crank")
 
+	# Even a board aligned at takeoff can move out of the landing area in flight.
 	scene.reset_level()
-	scene.fire_fan()
-	_expect(whirr.playing and scene._fan_active and scene._fan_blades.is_playing(), "Fire starts whirr and spinning blades together")
-	_expect((scene._sfx_players["fan_start"] as AudioStreamPlayer).playing, "Fire also triggers existing startup burst")
-	var first_target: int = scene._target_platform
-	for press: int in range(10):
-		scene.fire_fan()
-	_expect(scene._target_platform == first_target and is_zero_approx(scene._hop_elapsed), "Repeated fire does not retarget or restart a hop")
-	_finish_hop(scene)
-	_expect(scene._current_platform == Ocean.Platform.LOG_1, "Animated start -> log 1")
-	_expect(not whirr.playing and not scene._fan_active and not scene._fan_blades.is_playing(), "Landing stops fan whirr and blades together")
-	var before_bob: Vector2 = scene._fragment.position
-	var held_angle: float = scene._crank_angle
-	scene._process(0.4)
-	_expect(scene._fragment.position.is_equal_approx(scene._platform_anchor(Ocean.Platform.LOG_1) + Ocean.FRAGMENT_OFFSET), "Resting fragment follows the log anchor")
-	_expect(not scene._fragment.position.is_equal_approx(before_bob), "Wave bob continues while crank holds")
-	_expect(is_equal_approx(scene._crank_angle, held_angle), "Released crank does not rotate automatically")
-	scene.fire_fan()
-	_finish_hop(scene)
-	_expect(scene._current_platform == Ocean.Platform.LOG_2, "Animated log 1 -> log 2")
-	await _save_capture("ocean-low-log2.png")
-	scene.fire_fan()
-	_finish_hop(scene)
-	_expect(scene._current_platform == Ocean.Platform.ROCK and scene._state == Ocean.State.STRANDED, "Low-tide landing is stranded on rock")
-	_expect(scene._feedback.text == "Stranded—reset to try again.", "Rock shows requested persistent feedback")
-	_expect((scene._sfx_players["miss"] as AudioStreamPlayer).playing and not whirr.playing, "Rock triggers Level 1 miss sound after stopping fan")
-	scene._crank_angle = PI * 0.5
-	scene.fire_fan()
-	scene._process(2.0)
-	_expect(scene._current_platform == Ocean.Platform.ROCK and scene._state == Ocean.State.STRANDED, "Raising tide and firing cannot escape rock")
-	await _save_capture("ocean-stranded.png")
-
-	scene.reset_level()
-	for hop: int in range(2):
-		scene.fire_fan()
-		_finish_hop(scene)
-	# Exercise the scene's input dispatch at its actual viewport transform.
-	await _drag_to_high_tide(scene)
-	await process_frame
-	_expect(is_equal_approx(scene._crank_angle, PI * 0.5), "Mouse dragging raises tide through existing crank gesture")
-	_expect((scene._sfx_players["crank"] as AudioStreamPlayer).playing, "Crank dragging triggers Level 1 ticks")
-	_expect(not scene._dragging_crank, "Mouse release clears crank drag")
-	scene._process(0.1)
-	_expect(scene._fragment.position.is_equal_approx(scene._platform_anchor(Ocean.Platform.LOG_2) + Ocean.FRAGMENT_OFFSET), "Raising tide carries the resting fragment")
-	await _save_capture("ocean-high-log2.png")
+	scene._process(1.35)
+	_expect(absf(scene._deck_position(Ocean.Platform.LOG_1).x - 104.0) < 1.0, "Board aligns at takeoff")
 	_press_key(KEY_SPACE)
+	var end: Vector2 = scene._hop_end
+	_press_key(KEY_SPACE)
+	_press_key(KEY_RIGHT)
+	_expect(scene._hop_end == end and is_zero_approx(scene._hop_elapsed), "Repeated fire and crank input cannot move the committed shot")
+	_expect(whirr.playing and scene._fan_blades.is_playing(), "Fire starts sound and fan together")
+	_finish_hop(scene)
+	_expect(scene._state == Ocean.State.FALLING, "Board that leaves before touchdown causes a fall")
+	await _save_capture("day-missed-ferry.png")
+	scene._process(0.4)
+	_press_key(KEY_SPACE)
+	_expect(scene._state == Ocean.State.FAILED and not scene._fragment.visible and not whirr.playing, "Miss ends the run and disables the fan")
+	_press_key(KEY_R)
+	_expect(scene._state == Ocean.State.RESTING and scene._current_platform == Ocean.Platform.START and scene._fragment.visible, "Retry brings the fragment back to shore")
+
+	scene._set_crank_angle(PI * 0.5)
+	scene._process(0.8)
+	_press_key(KEY_SPACE)
+	_finish_hop(scene)
+	_expect(scene._state == Ocean.State.FALLING, "Aligned board at the wrong height still misses")
+	scene.reset_level()
+
+	scene._process(0.8)
+	_press_key(KEY_SPACE)
+	_finish_hop(scene)
+	scene._set_crank_angle(PI * 0.5)
+	scene._process(4.8 - scene._elapsed_time)
+	_press_key(KEY_SPACE)
+	_finish_hop(scene)
+	_expect(scene._state == Ocean.State.HOPPING, "A shot above the pier keeps descending after the fan arc")
+	await _save_capture("day-high-shot-descending.png")
+	scene._process(0.4)
+	_expect(scene._state == Ocean.State.RESTING and scene._current_platform == Ocean.Platform.ROCK, "A high shot lands when it drops onto the pier")
+
+	scene._set_crank_angle(-PI * 0.5)
+	scene._process(9.75 - scene._elapsed_time)
+	_press_key(KEY_SPACE)
+	var deck_at_arc_end := scene._deck_at(Ocean.Platform.LOG_2, scene._elapsed_time + scene.hop_duration)
+	_expect(absf(deck_at_arc_end.x - scene._hop_end.x) <= Ocean.LANDING_X, "The ferry is below the key at the end of the initial arc")
+	_finish_hop(scene)
+	_expect(scene._state == Ocean.State.HOPPING, "The key keeps falling toward the lower ferry")
+	scene._process(0.5)
+	_expect(scene._state == Ocean.State.FALLING, "A ferry that moves away during the extra descent still causes a miss")
+	scene.reset_level()
+
+	# Play the full route with fixed launch times, including two different moorings.
+	scene._process(0.8)
+	await _save_capture("day-first-shot.png")
+	_press_key(KEY_SPACE)
+	_expect_platform_fans(scene, Ocean.Platform.START)
+	_finish_hop(scene)
+	_expect(scene._current_platform == Ocean.Platform.LOG_1, "Lead the first ferry successfully")
+	_expect_platform_fans(scene, -1)
+	scene._set_crank_angle(asin(-0.35))
+	scene._process(4.8 - scene._elapsed_time)
+	_press_key(KEY_SPACE)
+	_expect_platform_fans(scene, Ocean.Platform.LOG_1)
+	scene._process(0.10)
+	await _save_capture("day-ferry-fan-burst.png")
+	_finish_hop(scene)
+	_expect(scene._current_platform == Ocean.Platform.ROCK, "Jump from the moving ferry to the pier")
+	scene._set_crank_angle(asin(0.85))
+	scene._process(7.45 - scene._elapsed_time)
+	await _save_capture("day-pier-shot.png")
+	_press_key(KEY_SPACE)
+	_expect_platform_fans(scene, Ocean.Platform.ROCK)
+	_finish_hop(scene)
+	_expect(scene._current_platform == Ocean.Platform.LOG_2, "Catch the second ferry at the higher tide")
+	scene._set_crank_angle(asin(0.95))
+	scene._process(10.8 - scene._elapsed_time)
+	_press_key(KEY_SPACE)
+	_expect_platform_fans(scene, Ocean.Platform.LOG_2)
+	_finish_hop(scene)
+	_expect(scene._state == Ocean.State.COMPLETED and scene._current_platform == Ocean.Platform.GOAL, "Complete all four timed shots")
 	await process_frame
-	_expect(scene._state == Ocean.State.HOPPING and scene._target_platform == Ocean.Platform.GOAL, "Space fires the fan toward goal")
-	_finish_hop(scene)
-	_expect(scene._state == Ocean.State.COMPLETED and scene._current_platform == Ocean.Platform.GOAL, "High-tide route completes level")
-	_expect((scene._sfx_players["win"] as AudioStreamPlayer).playing and not whirr.playing, "Completion triggers Level 1 win sound after stopping fan")
-	var finished_position: Vector2 = scene._fragment.position
-	scene.fire_fan()
-	_expect(scene._fragment.position == finished_position and scene._target_platform == -1, "Completion ignores further fire")
-	await _save_capture("ocean-complete.png")
-
+	_expect(scene._campaign_menu.completed and paused, "Goal opens Continue")
 	scene.reset_level()
-	scene._crank_angle = PI * 0.5
-	scene.fire_fan()
-	_expect(scene._state == Ocean.State.RESTING and scene._current_platform == Ocean.Platform.START, "No reachable platform keeps fragment at start")
-	_expect(not scene._feedback.text.is_empty(), "Failed press provides feedback")
-	_expect(whirr.playing, "Unreachable shot still gives the fan's action sound")
-	scene._process(scene.feedback_duration + 0.01)
-	_expect(scene._feedback.text.is_empty(), "Brief failure feedback expires")
-	_expect(not whirr.playing and not scene._fan_active, "Unreachable-shot burst stops fan audio and animation")
+	_expect(not paused, "Reset after success restores normal gameplay")
 
-	# Once selected, a log remains the destination even if the tide makes it unreachable.
-	scene.reset_level()
-	scene.fire_fan()
-	scene._process(scene.hop_duration * 0.5)
-	scene._crank_angle = PI * 0.5
-	scene._process(scene.hop_duration * 0.25)
-	var expected: Vector2 = scene._hop_start.lerp(scene._platform_anchor(Ocean.Platform.LOG_1), 0.75)
-	expected.y -= sin(PI * 0.75) * scene._hop_height
-	_expect(scene._fragment.position.is_equal_approx(expected + Ocean.FRAGMENT_OFFSET), "Mid-hop arc tracks moving locked landing anchor")
-	_finish_hop(scene)
-	_expect(scene._current_platform == Ocean.Platform.LOG_1, "Changing tide does not reselect locked target")
-	_expect(scene._fragment.position.is_equal_approx(scene._platform_anchor(Ocean.Platform.LOG_1) + Ocean.FRAGMENT_OFFSET), "Hop lands exactly on moving anchor")
 
 	for fraction: float in [0.0, 0.25, 0.75, 0.99]:
 		scene.reset_level()
@@ -165,7 +165,7 @@ func _run() -> void:
 		await process_frame
 		scene._process(2.0)
 		_expect(scene._state == Ocean.State.RESTING and scene._current_platform == Ocean.Platform.START and scene._target_platform == -1, "Reset cancels hop at %.2f progress" % fraction)
-		_expect(scene._feedback.text.is_empty() and not scene._fire_button.disabled and not scene._dragging_crank, "Reset clears feedback, button and input state")
+		_expect(not scene._fire_button.disabled and not scene._dragging_crank, "Reset clears feedback, button and input state")
 		_expect(is_equal_approx(scene._crank_angle, scene.initial_crank_angle) and is_zero_approx(scene._hop_elapsed), "Reset restores tide and animation state")
 		_expect(not scene._fan_blades.is_playing(), "Reset stops fan animation")
 		var all_stopped: bool = true
@@ -186,6 +186,14 @@ func _run() -> void:
 	await create_timer(0.15).timeout
 	print("Ocean regression: %d passed, %d failed." % [_checks - _failures, _failures])
 	quit(0 if _failures == 0 else 1)
+
+
+func _expect_platform_fans(scene: Ocean, active_platform: int) -> void:
+	for platform: int in range(scene._platform_fans.size()):
+		var blades: AnimatedSprite2D = scene._platform_fans[platform]
+		var expected := scene._platform_anchor(platform) + Ocean.FAN_OFFSET
+		_expect(scene.to_local(blades.global_position).is_equal_approx(expected), "Fan %d stays mounted on its platform" % platform)
+		_expect(blades.is_playing() == (platform == active_platform), "Only the launch platform's fan spins")
 
 
 func _press_key(keycode: Key) -> void:
@@ -268,9 +276,9 @@ func _check_buttons_and_navigation() -> void:
 	presentation._process(presentation.establishing_hold + presentation.zoom_duration)
 	scene = presentation._room as Ocean
 	scene.set_process(false)
-	await _click(scene, Vector2(249.0, 70.0))
+	await _click(scene, Vector2(249.0, 54.0))
 	_expect(scene._state == Ocean.State.HOPPING, "Fan button activates the same hop as Space")
-	await _click(scene, Vector2(320.0, 70.0))
+	await _click(scene, Vector2(320.0, 32.0))
 	_expect(scene._state == Ocean.State.RESTING and scene._current_platform == Ocean.Platform.START, "Reset button cancels an active hop")
 	_expect(presentation._entrance_finished and not scene._presentation_locked, "Puzzle reset keeps the player inside the room")
 	var echo: InputEventKey = InputEventKey.new()
@@ -292,7 +300,7 @@ func _check_buttons_and_navigation() -> void:
 	await process_frame
 
 
-func _drag_to_high_tide(scene: Ocean) -> void:
+func _drag_crank(scene: Ocean, finish_angle: float) -> void:
 	var transform: Transform2D = scene.get_global_transform_with_canvas()
 	var center: Vector2 = scene._crank.position
 	var press: InputEventMouseButton = InputEventMouseButton.new()
@@ -301,7 +309,7 @@ func _drag_to_high_tide(scene: Ocean) -> void:
 	press.position = transform * (center + Vector2(0.0, -18.0))
 	root.push_input(press, true)
 	await process_frame
-	for angle: float in [-PI * 0.25, 0.0, PI * 0.25, PI * 0.5]:
+	for angle: float in [-PI * 0.25, finish_angle]:
 		var motion: InputEventMouseMotion = InputEventMouseMotion.new()
 		motion.position = transform * (center + Vector2.from_angle(angle) * 18.0)
 		root.push_input(motion, true)
@@ -309,7 +317,7 @@ func _drag_to_high_tide(scene: Ocean) -> void:
 	var release: InputEventMouseButton = InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_LEFT
 	# Release over a button, so GUI consumption cannot leave a stale drag.
-	release.position = transform * Vector2(320.0, 70.0)
+	release.position = transform * Vector2(320.0, 32.0)
 	root.push_input(release, true)
 
 

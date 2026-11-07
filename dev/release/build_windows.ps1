@@ -44,7 +44,7 @@ try {
     if (-not (Test-Path -LiteralPath (Join-Path $templates 'version.txt'))) {
         [IO.File]::WriteAllText((Join-Path $templates 'version.txt'), "4.7.2.stable`n")
     }
-    function Invoke-Godot([string[]]$EngineArguments, [string]$LogName) {
+    function Invoke-Godot([string[]]$EngineArguments, [string]$LogName, [int]$TimeoutSeconds = 55) {
         $log = Join-Path $logs ($LogName + '.log')
         $launch = New-Object Diagnostics.ProcessStartInfo
         $launch.FileName = $GodotPath
@@ -60,9 +60,12 @@ try {
         $process = [Diagnostics.Process]::Start($launch)
         $stdout = $process.StandardOutput.ReadToEndAsync()
         $stderr = $process.StandardError.ReadToEndAsync()
-        if (-not $process.WaitForExit(55000)) {
-            $process.Kill()
-            throw "Godot timed out: $LogName"
+        $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+        while (-not $process.WaitForExit(1000)) {
+            if ([DateTime]::UtcNow -ge $deadline) {
+                $process.Kill()
+                throw "Godot timed out: $LogName"
+            }
         }
         [IO.File]::WriteAllText((Join-Path $logs ($LogName + '.stdout.log')), $stdout.Result)
         [IO.File]::WriteAllText((Join-Path $logs ($LogName + '.stderr.log')), $stderr.Result)
@@ -90,10 +93,20 @@ try {
             'tests/campaign/run_release_tests.gd',
             'tests/campaign/run_playthrough.gd'
         )) {
-            Invoke-Godot -EngineArguments @('--headless','--path',$repo,'--script',('res://' + $test)) -LogName ([IO.Path]::GetFileNameWithoutExtension($test))
+            # The timed four/five-shot route plus both retries outlasts the old
+            # 55-second limit. Keep that bound for the smaller regressions.
+            $timeout = if ($test -eq 'tests/campaign/run_playthrough.gd') { 120 } else { 55 }
+            Invoke-Godot -EngineArguments @('--headless','--path',$repo,'--script',('res://' + $test)) -LogName ([IO.Path]::GetFileNameWithoutExtension($test)) -TimeoutSeconds $timeout
         }
     }
     Invoke-Godot -EngineArguments @('--headless','--path',$repo,'--export-release','Windows Desktop') -LogName 'export'
+    if (-not $SkipTests) {
+        # A PCK launched from the project directory can silently use missing
+        # resources from local source. Check all campaign scenes in isolation.
+        $packedCheck = Join-Path $repo '.godot\release-packed-check'
+        New-Item -ItemType Directory -Force -Path $packedCheck | Out-Null
+        Invoke-Godot -EngineArguments @('--headless','--path',$packedCheck,'--main-pack',(Join-Path $output 'ClocksInOrange.pck'),'--script',(Join-Path $repo 'tests\campaign\run_release_tests.gd')) -LogName 'packed-release'
+    }
     Invoke-Godot -EngineArguments @('--headless','--path',$repo,'--script','res://dev/release/write_notices.gd','--',(Join-Path $output 'Godot-NOTICES.txt')) -LogName 'notices'
     Copy-Item -LiteralPath 'docs\release\PLAYER-README.txt' -Destination (Join-Path $output 'README.txt')
     Copy-Item -LiteralPath 'docs\release\CREDITS.txt' -Destination $output
