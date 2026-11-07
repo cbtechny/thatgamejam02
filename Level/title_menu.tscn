@@ -63,30 +63,30 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 10
-theme_override_constants/separation = 27
+theme_override_constants/separation = 18
 
 [node name="PlayButton" type="Button" parent="ContentMargins/MainBdy/ButtonContainer" unique_id=540772408]
-custom_minimum_size = Vector2(400, 90)
+custom_minimum_size = Vector2(420, 78)
 layout_mode = 2
-theme_override_font_sizes/font_size = 75
+theme_override_font_sizes/font_size = 42
 text = "Play"
 
 [node name="RulesButton" type="Button" parent="ContentMargins/MainBdy/ButtonContainer" unique_id=2070983690]
-custom_minimum_size = Vector2(600, 0)
+custom_minimum_size = Vector2(420, 78)
 layout_mode = 2
-theme_override_font_sizes/font_size = 75
+theme_override_font_sizes/font_size = 42
 text = "How to Play"
 
 [node name="ButtonContainer2" type="HBoxContainer" parent="ContentMargins/MainBdy" unique_id=2101558502]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 10
-theme_override_constants/separation = 27
+theme_override_constants/separation = 18
 
 [node name="TeamButton" type="Button" parent="ContentMargins/MainBdy/ButtonContainer2" unique_id=2066961057]
-custom_minimum_size = Vector2(400, 90)
+custom_minimum_size = Vector2(420, 78)
 layout_mode = 2
-theme_override_font_sizes/font_size = 75
+theme_override_font_sizes/font_size = 42
 text = "Itch.io Game Jam Team"
 
 [connection signal="pressed" from="ContentMargins/MainBdy/ButtonContainer/PlayButton" to="." method="_on_play_button_pressed"]

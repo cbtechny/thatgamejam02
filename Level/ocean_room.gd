@@ -14,8 +14,9 @@ const KEY_CRANK_STEP: float = 0.12
 const AUDIO_SAMPLE_RATE: int = 22050
 const UI_RESOLUTION: float = 6.0
 const TITLE_SCENE_PATH: String = "res://Level/title_menu.tscn"
-const INK := Color("112639")
-const GOLD := Color("ffda88")
+const UI_THEME = preload("res://Level/music_box_theme.gd")
+const INK := UI_THEME.INK
+const GOLD := UI_THEME.GOLD
 
 @export_range(0.1, 2.0, 0.05) var hop_duration: float = 0.55
 
@@ -65,7 +66,7 @@ func _ready() -> void:
 	_guide.material = unlit
 	_guide.draw.connect(_draw_guide)
 	add_child(_guide)
-	_label_backing = _make_label_backing(Color("f7f1dd"))
+	_label_backing = _make_label_backing(GOLD.darkened(0.3))
 	_target_backing = _make_label_backing(GOLD)
 	_setup_sfx()
 	_campaign_menu = preload("res://Level/campaign_menu.gd").new()
@@ -76,10 +77,14 @@ func _ready() -> void:
 
 
 func _prepare_controls() -> void:
+	var room_theme: Theme = UI_THEME.create(1.5)
 	# Rasterize at display scale, preserving the reference-space input bounds.
 	for child: Node in get_children():
 		if child is Control:
 			var control: Control = child as Control
+			control.theme = room_theme
+			if control is Button:
+				control.focus_mode = Control.FOCUS_ALL
 			var reference_size: Vector2 = control.size
 			var font_size: int = control.get_theme_font_size("font_size")
 			control.add_theme_font_size_override("font_size", int(font_size * UI_RESOLUTION))
@@ -422,9 +427,9 @@ func _draw_guide() -> void:
 func _draw_caption(center: Vector2, caption: String, selected: bool = false) -> void:
 	var font: Font = ThemeDB.fallback_font
 	var width: float = font.get_string_size(caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 32).x / UI_RESOLUTION
-	var color: Color = GOLD if selected else Color("f7f1dd")
+	var color: Color = GOLD if selected else UI_THEME.CREAM
 	var backing: StyleBoxFlat = _target_backing if selected else _label_backing
-	_guide.draw_style_box(backing, Rect2(center - Vector2(width * 0.5 + 3.0, 4.5), Vector2(width + 6.0, 9.0)))
+	_guide.draw_style_box(backing, Rect2(center - Vector2(width * 0.5 + 3.5, 5.0), Vector2(width + 7.0, 10.0)))
 	_guide.draw_set_transform(center + Vector2(-width * 0.5, 2.0), 0.0, Vector2.ONE / UI_RESOLUTION)
 	_guide.draw_string(font, Vector2.ZERO, caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 32, color)
 	_guide.draw_set_transform(Vector2.ZERO)
@@ -438,11 +443,8 @@ func _draw_keyhole(platform: int) -> void:
 
 
 func _make_label_backing(color: Color) -> StyleBoxFlat:
-	var backing := StyleBoxFlat.new()
-	backing.bg_color = INK
-	backing.border_color = color.darkened(0.45)
-	backing.set_border_width_all(1)
-	backing.set_corner_radius_all(3)
+	var backing: StyleBoxFlat = UI_THEME.plaque(color, 0.25)
+	backing.set_corner_radius_all(2)
 	return backing
 
 

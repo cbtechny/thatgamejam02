@@ -2,6 +2,7 @@ extends Control
 
 func _ready() -> void:
 	get_tree().paused = false
+	theme = preload("res://Level/music_box_theme.gd").create()
 	var background := TextureRect.new()
 	background.texture = preload("res://Art/Textures/T_Boxexterior.png")
 	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -24,9 +25,9 @@ func _ready() -> void:
 	add_child(menu)
 	var session: Node = get_node("/root/ReleaseSession")
 	menu.completed = true
-	var restart: Button = menu.add_button(column, "Play again", func(): menu.go("res://Level/level_1_music_box.tscn"))
-	menu.add_button(column, "Return to title", func(): menu.go("res://Level/title_menu.tscn"))
-	var credits: Button = menu.add_button(column, "Full credits", func(): menu.show_information("Credits", session.CREDITS, restart))
+	var restart: Button = menu.add_button(column, "Play Again", func(): menu.go("res://Level/level_1_music_box.tscn"))
+	menu.add_button(column, "Return to Title", func(): menu.go("res://Level/title_menu.tscn"))
+	var credits: Button = menu.add_button(column, "Full Credits", func(): menu.show_information("Credits", session.CREDITS, restart))
 	credits.name = "CreditsButton"
 	menu.add_release_controls(column)
 	restart.grab_focus()

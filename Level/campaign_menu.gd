@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+const UI_THEME = preload("res://Level/music_box_theme.gd")
+
 var room: Node
 var next_scene: String
 var panel: Control
@@ -34,6 +36,7 @@ func show_menu(won: bool) -> void:
 	room.call("_release_crank")
 	get_tree().paused = true
 	panel = ColorRect.new()
+	panel.theme = UI_THEME.create()
 	(panel as ColorRect).color = Color(0.025, 0.035, 0.08, 0.9)
 	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(panel)
@@ -49,15 +52,15 @@ func show_menu(won: bool) -> void:
 	heading.add_theme_font_size_override("font_size", 36)
 	column.add_child(heading)
 	var primary := add_button(column, "Continue" if won else "Resume", advance if won else resume)
-	add_button(column, "Retry stage", retry)
-	add_button(column, "Return to title", func(): go("res://Level/title_menu.tscn"))
+	add_button(column, "Retry Stage", retry)
+	add_button(column, "Return to Title", func(): go("res://Level/title_menu.tscn"))
 	add_release_controls(column)
 	primary.grab_focus()
 
 static func add_button(column: Container, caption: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = caption
-	button.custom_minimum_size = Vector2(420, 62)
+	button.custom_minimum_size = UI_THEME.BUTTON_SIZE
 	button.add_theme_font_size_override("font_size", 26)
 	style_button(button)
 	button.pressed.connect(action)
@@ -65,23 +68,20 @@ static func add_button(column: Container, caption: String, action: Callable) -> 
 	return button
 
 static func style_button(button: Button) -> void:
-	var focus := StyleBoxFlat.new()
-	focus.bg_color = Color(0.95, 0.72, 0.3, 0.2)
-	focus.border_color = Color(1.0, 0.82, 0.42)
-	focus.set_border_width_all(4)
-	button.add_theme_stylebox_override("focus", focus)
+	button.theme = UI_THEME.create()
+	button.focus_mode = Control.FOCUS_ALL
 
 static func add_release_controls(column: Container) -> void:
 	var session: Node = column.get_node("/root/ReleaseSession")
 	var mute := Button.new()
 	mute.set_script(preload("res://Level/mute_button.gd"))
 	mute.name = "MuteButton"
-	mute.custom_minimum_size = Vector2(420, 62)
+	mute.custom_minimum_size = UI_THEME.BUTTON_SIZE
 	mute.add_theme_font_size_override("font_size", 26)
 	style_button(mute)
 	mute.pressed.connect(session.toggle_mute)
 	column.add_child(mute)
-	var exit_button := add_button(column, "Exit game", session.quit_game)
+	var exit_button := add_button(column, "Exit Game", session.quit_game)
 	exit_button.name = "ExitButton"
 
 func show_information(heading: String, body: String, source: Control) -> void:
@@ -90,6 +90,7 @@ func show_information(heading: String, body: String, source: Control) -> void:
 	information = true
 	return_focus = source
 	panel = ColorRect.new()
+	panel.theme = UI_THEME.create()
 	(panel as ColorRect).color = Color(0.025, 0.035, 0.08, 0.98)
 	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(panel)

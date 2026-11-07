@@ -16,6 +16,7 @@ var _information_menu: CanvasLayer
 
 func _ready() -> void:
 	get_tree().paused = false
+	theme = preload("res://Level/music_box_theme.gd").create()
 	_information_menu = preload("res://Level/campaign_menu.gd").new()
 	add_child(_information_menu)
 	var session: Node = get_node("/root/ReleaseSession")
@@ -51,12 +52,7 @@ func _update_right_curtain_anchor() -> void:
 	_right_curtain_anchor.position.x = size.x
 
 func _apply_focus_style(button: Button) -> void:
-	var focus := StyleBoxFlat.new()
-	focus.bg_color = Color(0.95, 0.72, 0.3, 0.18)
-	focus.border_color = Color(1.0, 0.82, 0.42, 1.0)
-	focus.set_border_width_all(5)
-	focus.set_corner_radius_all(8)
-	button.add_theme_stylebox_override("focus", focus)
+	button.theme = theme
 
 func _on_play_button_pressed() -> void:
 	if _curtain_playing:

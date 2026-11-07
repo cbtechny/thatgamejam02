@@ -238,6 +238,7 @@ func _show_pause_menu() -> void:
 	_pause_menu_open = true
 	_dragging_crank = false
 	var backdrop: ColorRect = ColorRect.new()
+	backdrop.theme = preload("res://Level/music_box_theme.gd").create()
 	backdrop.name = "PauseMenu"
 	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -247,12 +248,12 @@ func _show_pause_menu() -> void:
 	_get_menu_ui().add_child(backdrop)
 	var panel: VBoxContainer = VBoxContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.offset_left = -190.0
+	panel.offset_left = -210.0
 	panel.offset_top = -235.0
-	panel.offset_right = 190.0
+	panel.offset_right = 210.0
 	panel.offset_bottom = 235.0
 	panel.alignment = BoxContainer.ALIGNMENT_CENTER
-	panel.add_theme_constant_override("separation", 14)
+	panel.add_theme_constant_override("separation", 18)
 	backdrop.add_child(panel)
 	var title: Label = Label.new()
 	title.text = "PAUSED"
@@ -334,13 +335,9 @@ func _set_terminal_menu_focus(backdrop: Control) -> void:
 
 func _style_menu_buttons(buttons: Array[Button]) -> void:
 	for button: Button in buttons:
-		button.focus_mode = Control.FOCUS_ALL
-		var focus: StyleBoxFlat = StyleBoxFlat.new()
-		focus.bg_color = Color(0.95, 0.72, 0.3, 0.2)
-		focus.border_color = Color(1.0, 0.82, 0.42, 1.0)
-		focus.set_border_width_all(4)
-		focus.set_corner_radius_all(6)
-		button.add_theme_stylebox_override("focus", focus)
+		button.custom_minimum_size = Vector2(420, 62)
+		button.add_theme_font_size_override("font_size", 26)
+		CAMPAIGN_MENU.style_button(button)
 
 
 func _retry_level() -> void:
@@ -651,6 +648,7 @@ func _reveal_ui_fragment(icon: Sprite2D) -> void:
 func _show_win_screen() -> void:
 	_release_hint.text = "WIN!"
 	var backdrop: ColorRect = ColorRect.new()
+	backdrop.theme = preload("res://Level/music_box_theme.gd").create()
 	backdrop.name = "WinScreen"
 	_set_terminal_menu_focus(backdrop)
 	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
