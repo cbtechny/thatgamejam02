@@ -26,7 +26,7 @@ func show_menu(won: bool) -> void:
 	if is_instance_valid(panel) or switching:
 		return
 	completed = won
-	room.set("_dragging_crank", false)
+	room.call("_release_crank")
 	get_tree().paused = true
 	panel = ColorRect.new()
 	(panel as ColorRect).color = Color(0.025, 0.035, 0.08, 0.9)
