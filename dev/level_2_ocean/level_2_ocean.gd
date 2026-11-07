@@ -4,6 +4,8 @@ extends Node2D
 enum State { RESTING, HOPPING, STRANDED, COMPLETED }
 enum Platform { START, LOG_1, LOG_2, ROCK, GOAL }
 
+const PLANK_TEXTURE: Texture2D = preload("res://Art/Textures/T_OceanPlank.png")
+const STONE_TEXTURE: Texture2D = preload("res://Art/Textures/T_OceanStone.png")
 const REFERENCE_SIZE: Vector2 = Vector2(360.0, 200.0)
 const PLATFORM_X: Array[float] = [30.0, 105.0, 180.0, 230.0, 310.0]
 const PLATFORM_NAMES: Array[String] = ["Start", "Log 1", "Log 2", "Rock", "Goal"]
@@ -322,13 +324,8 @@ func _draw() -> void:
 		var width: float = 28.0 if floating else (42.0 if platform == Platform.GOAL else 26.0)
 		var height: float = 6.0 if floating else 169.0 - anchor.y
 		var rect: Rect2 = Rect2(anchor - Vector2(width * 0.5, 0.0), Vector2(width, height))
-		var color: Color = Color("d1a46a") if floating else Color("8996a2")
-		if platform == Platform.GOAL:
-			color = Color("d4c6a4")
-		draw_rect(rect, color)
-		draw_line(rect.position, rect.position + Vector2(width, 0.0), Color("f6e3b3"), 1.0, true)
-		if floating:
-			draw_line(rect.position + Vector2(3.0, 3.0), rect.end - Vector2(3.0, 3.0), Color("99734a"), 0.5)
+		var texture: Texture2D = PLANK_TEXTURE if floating else STONE_TEXTURE
+		draw_texture_rect(texture, rect, false)
 		var font: Font = ThemeDB.fallback_font
 		draw_set_transform(Vector2(anchor.x - width * 0.5, anchor.y + height + 7.0), 0.0, Vector2.ONE / UI_RESOLUTION)
 		draw_string(font, Vector2.ZERO, PLATFORM_NAMES[platform], HORIZONTAL_ALIGNMENT_CENTER, width * UI_RESOLUTION, 30, Color("f7f1dd"))

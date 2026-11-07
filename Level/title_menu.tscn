@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://jo4n45oeyn1e" path="res://dev/winder_test_1_time_scroll/music_box_visuals_with_winder.tscn" id="1_mubnc"]
 [ext_resource type="PackedScene" uid="uid://bgv5ox7smt7pj" path="res://dev/title/curtain.tscn" id="2_wywnr"]
 [ext_resource type="Script" uid="uid://di1tx41fqgqv0" path="res://Level/title_menu.gd" id="3_menu"]
+[ext_resource type="Texture2D" path="res://Art/Textures/T_CurtainRight.png" id="4_curtain_right"]
 
 [node name="Title" type="Control" unique_id=1263109973]
 layout_mode = 3
@@ -18,7 +19,6 @@ position = Vector2(1847, 739)
 
 [node name="Curtain" parent="." unique_id=585114034 instance=ExtResource("2_wywnr")]
 z_index = -1
-scale = Vector2(1.03, 1)
 
 [node name="RightCurtainAnchor" type="Node2D" parent="." unique_id=1435525356]
 z_index = -1
@@ -26,7 +26,9 @@ position = Vector2(1920, 0)
 scale = Vector2(-1, 1)
 
 [node name="Curtain" parent="RightCurtainAnchor" unique_id=1537002110 instance=ExtResource("2_wywnr")]
-scale = Vector2(1.03, 1)
+
+[node name="Polygon2D" parent="RightCurtainAnchor/Curtain" index="0"]
+texture = ExtResource("4_curtain_right")
 
 [node name="ContentMargins" type="MarginContainer" parent="." unique_id=1106698621]
 layout_mode = 1
@@ -88,3 +90,5 @@ theme_override_font_sizes/font_size = 75
 text = "Itch.io Game Jam Team"
 
 [connection signal="pressed" from="ContentMargins/MainBdy/ButtonContainer/PlayButton" to="." method="_on_play_button_pressed"]
+
+[editable path="RightCurtainAnchor/Curtain"]

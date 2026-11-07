@@ -21,6 +21,12 @@ func _validate() -> void:
 	assert(not player.is_playing() and not button.disabled)
 	assert(not right.is_playing() and is_zero_approx(right.current_animation_position))
 	assert(is_zero_approx(player.current_animation_position))
+	var left_mesh: Polygon2D = menu.get_node("Curtain/Polygon2D")
+	var right_mesh: Polygon2D = menu.get_node("RightCurtainAnchor/Curtain/Polygon2D")
+	assert(left_mesh.texture.resource_path.ends_with("/T_Curtain.png"))
+	assert(right_mesh.texture.resource_path.ends_with("/T_CurtainRight.png"))
+	for bone: Bone2D in menu.find_children("*", "Bone2D", true, false):
+		assert(bone.transform.is_equal_approx(bone.rest), "The first frame must close both curtains")
 	player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	right.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	button.pressed.emit()
@@ -38,17 +44,9 @@ func _validate() -> void:
 	player.advance(original.length)
 	assert(button.disabled, "Wait for both curtains to finish")
 	right.advance(original.length)
-	assert(not player.is_playing() and not button.disabled)
-	var final_pose: Transform2D = menu.get_node("Curtain/Skeleton2D/Row03_Bone01").transform
-	player.advance(0.5)
-	assert(menu.get_node("Curtain/Skeleton2D/Row03_Bone01").transform == final_pose)
-	button.pressed.emit()
-	assert(player.is_playing() and is_zero_approx(player.current_animation_position))
-	assert(right.is_playing() and is_zero_approx(right.current_animation_position))
-	player.advance(original.length + 0.1)
-	right.advance(original.length + 0.1)
-	assert(not player.is_playing() and not button.disabled)
+	await scene_changed
+	assert(current_scene.scene_file_path == "res://Level/level_1_music_box.tscn")
 	assert(original.loop_mode == Animation.LOOP_LINEAR)
 	source.free()
-	print("MENU_CURTAIN_PASS two_sides=true mirrored_motion=true synchronized_playback=true waits_for_both=true first_frame_paused=true Play_signal_connected=true plays_once=true repeated_press_guard=true holds_final_pose=true replay=true authored_loop_preserved=true")
+	print("MENU_CURTAIN_PASS distinct_textures=true closed_pose=true synchronized_playback=true waits_for_both=true repeated_press_guard=true enters_level_1=true authored_loop_preserved=true")
 	quit()
