@@ -10,9 +10,13 @@ config_version=5
 
 [application]
 
-config/name="thatgamejam #02"
+config/name="Clocks in Orange"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[autoload]
+
+ReleaseSession="*res://Level/release_session.gd"
 
 [display]
 

@@ -53,8 +53,8 @@ horizontal_alignment = 1
 
 [node name="SubTitle" type="Label" parent="ContentMargins/MainBdy" unique_id=2066669471]
 layout_mode = 2
-theme_override_font_sizes/font_size = 95
-text = "...or something like that..."
+theme_override_font_sizes/font_size = 42
+text = "A music-box puzzle in three movements"
 horizontal_alignment = 1
 
 [node name="ButtonContainer" type="HBoxContainer" parent="ContentMargins/MainBdy" unique_id=222248355]
@@ -64,7 +64,7 @@ size_flags_vertical = 10
 theme_override_constants/separation = 27
 
 [node name="PlayButton" type="Button" parent="ContentMargins/MainBdy/ButtonContainer" unique_id=540772408]
-custom_minimum_size = Vector2(400, 175)
+custom_minimum_size = Vector2(400, 90)
 layout_mode = 2
 theme_override_font_sizes/font_size = 75
 text = "Play"
@@ -82,7 +82,7 @@ size_flags_vertical = 10
 theme_override_constants/separation = 27
 
 [node name="TeamButton" type="Button" parent="ContentMargins/MainBdy/ButtonContainer2" unique_id=2066961057]
-custom_minimum_size = Vector2(400, 175)
+custom_minimum_size = Vector2(400, 90)
 layout_mode = 2
 theme_override_font_sizes/font_size = 75
 text = "Itch.io Game Jam Team"

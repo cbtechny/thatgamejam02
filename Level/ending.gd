@@ -16,13 +16,17 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation", 20)
 	center.add_child(column)
 	var label := Label.new()
-	label.text = "THE MUSIC BOX REMEMBERS\n\nAcross the tide, through the night.\nEvery piece has found its way home.\n\nLilith — Writing & hand-drawn art\nChris — Programming\nPacky — Production, technical art & animation\n\nThank you for playing."
+	label.text = "THE MUSIC BOX REMEMBERS\n\nAcross the tide, through the night.\nEvery piece has found its way home.\n\nLilith • Chris • Packy\nTheme music composed by Jason Grace\n\nThank you for playing."
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 30)
 	column.add_child(label)
 	var menu := preload("res://Level/campaign_menu.gd").new()
 	add_child(menu)
+	var session: Node = get_node("/root/ReleaseSession")
 	menu.completed = true
 	var restart: Button = menu.add_button(column, "Play again", func(): menu.go("res://Level/level_1_music_box.tscn"))
 	menu.add_button(column, "Return to title", func(): menu.go("res://Level/title_menu.tscn"))
+	var credits: Button = menu.add_button(column, "Full credits", func(): menu.show_information("Credits", session.CREDITS, restart))
+	credits.name = "CreditsButton"
+	menu.add_release_controls(column)
 	restart.grab_focus()

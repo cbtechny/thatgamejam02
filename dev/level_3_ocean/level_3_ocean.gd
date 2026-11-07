@@ -61,6 +61,9 @@ func _ready() -> void:
 	_campaign_menu.room = self
 	_campaign_menu.next_scene = "res://Level/ending.tscn"
 	add_child(_campaign_menu)
+	var navigation := preload("res://Level/night_navigation.gd").new()
+	navigation.name = "NightNavigation"
+	add_child(navigation)
 
 
 func _prepare_controls() -> void:
@@ -331,10 +334,6 @@ func _draw() -> void:
 		draw_line(rect.position, rect.position + Vector2(width, 0.0), Color("f6e3b3"), 1.0, true)
 		if floating:
 			draw_line(rect.position + Vector2(3.0, 3.0), rect.end - Vector2(3.0, 3.0), Color("99734a"), 0.5)
-		var font: Font = ThemeDB.fallback_font
-		draw_set_transform(Vector2(anchor.x - width * 0.5, anchor.y + height + 7.0), 0.0, Vector2.ONE / UI_RESOLUTION)
-		draw_string(font, Vector2.ZERO, PLATFORM_NAMES[platform], HORIZONTAL_ALIGNMENT_CENTER, width * UI_RESOLUTION, 30, Color("f7f1dd"))
-		draw_set_transform(Vector2.ZERO)
 	# A small keyhole remains a destination marker rather than a route hint.
 	draw_circle(Vector2(330.0, 104.0), 3.0, Color("f7df99"))
 	draw_circle(Vector2(330.0, 104.0), 1.5, Color("102b3b"))

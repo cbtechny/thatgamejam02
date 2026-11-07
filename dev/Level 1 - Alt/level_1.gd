@@ -25,6 +25,7 @@ const KEY_TEETH_ASSEMBLY_OFFSET: Vector2 = Vector2(114.8, 14.4)
 const FULL_KEY_TEXTURE: Texture2D = preload("res://Art/Textures/Resources/Key/key_full.tres")
 const CURTAIN_SCENE: PackedScene = preload("res://dev/title/curtain.tscn")
 const MENU_OVERLAY_SCRIPT: Script = preload("res://dev/Level 1 - Alt/menu_overlay.gd")
+const CAMPAIGN_MENU: Script = preload("res://Level/campaign_menu.gd")
 const TITLE_SCENE_PATH: String = "res://Level/title_menu.tscn"
 signal title_transition_finished
 
@@ -137,7 +138,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _presentation_locked:
 		return
 	if event is InputEventKey and event.keycode == KEY_ESCAPE and event.pressed and not event.echo:
-		if not _released and not _transitioning and not _pause_menu_open:
+		if not _transitioning and not _pause_menu_open and not _missed and not _key_snapped:
 			_show_pause_menu()
 		get_viewport().set_input_as_handled()
 		return
@@ -225,6 +226,8 @@ func _get_menu_ui() -> CanvasLayer:
 
 
 func _show_pause_menu() -> void:
+	if _pause_menu_open or _transitioning or _missed or _key_snapped:
+		return
 	_pause_menu_open = true
 	_dragging_crank = false
 	var backdrop: ColorRect = ColorRect.new()
@@ -238,9 +241,9 @@ func _show_pause_menu() -> void:
 	var panel: VBoxContainer = VBoxContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.offset_left = -190.0
-	panel.offset_top = -140.0
+	panel.offset_top = -235.0
 	panel.offset_right = 190.0
-	panel.offset_bottom = 140.0
+	panel.offset_bottom = 235.0
 	panel.alignment = BoxContainer.ALIGNMENT_CENTER
 	panel.add_theme_constant_override("separation", 14)
 	backdrop.add_child(panel)
@@ -264,6 +267,7 @@ func _show_pause_menu() -> void:
 	title_button.custom_minimum_size = Vector2(300.0, 64.0)
 	title_button.pressed.connect(_return_to_title)
 	panel.add_child(title_button)
+	CAMPAIGN_MENU.add_release_controls(panel)
 	_style_menu_buttons([resume_button, retry_button, title_button])
 	resume_button.call_deferred("grab_focus")
 	get_tree().paused = true
@@ -273,6 +277,7 @@ func _resume_from_pause() -> void:
 	if not _pause_menu_open:
 		return
 	_pause_menu_open = false
+	_dragging_crank = false
 	get_tree().paused = false
 	var backdrop: Node = _get_menu_ui().get_node_or_null("PauseMenu")
 	if backdrop != null:
@@ -297,9 +302,9 @@ func _show_miss_screen() -> void:
 	var panel: VBoxContainer = VBoxContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.offset_left = -190.0
-	panel.offset_top = -105.0
+	panel.offset_top = -205.0
 	panel.offset_right = 190.0
-	panel.offset_bottom = 105.0
+	panel.offset_bottom = 205.0
 	panel.alignment = BoxContainer.ALIGNMENT_CENTER
 	panel.add_theme_constant_override("separation", 14)
 	backdrop.add_child(panel)
@@ -325,6 +330,7 @@ func _add_terminal_menu_buttons(panel: VBoxContainer) -> void:
 	title_button.custom_minimum_size = Vector2(300.0, 64.0)
 	title_button.pressed.connect(_return_to_title)
 	panel.add_child(title_button)
+	CAMPAIGN_MENU.add_release_controls(panel)
 	_style_menu_buttons([retry_button, title_button])
 	retry_button.call_deferred("grab_focus")
 
@@ -346,7 +352,10 @@ func _style_menu_buttons(buttons: Array[Button]) -> void:
 
 
 func _retry_level() -> void:
+	if _transitioning:
+		return
 	_transitioning = true
+	_dragging_crank = false
 	_cancel_presentation_tweens()
 	get_tree().paused = false
 	get_tree().reload_current_scene.call_deferred()
@@ -608,6 +617,9 @@ func _cancel_presentation_tweens() -> void:
 
 
 func _exit_tree() -> void:
+	_dragging_crank = false
+	if _pause_menu_open or _missed or _key_snapped or _transitioning:
+		get_tree().paused = false
 	_cancel_presentation_tweens()
 	for player: AudioStreamPlayer in _sfx_players.values():
 		player.stop()
@@ -631,9 +643,9 @@ func _show_win_screen() -> void:
 	var panel: VBoxContainer = VBoxContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.offset_left = -270.0
-	panel.offset_top = -150.0
+	panel.offset_top = -280.0
 	panel.offset_right = 270.0
-	panel.offset_bottom = 150.0
+	panel.offset_bottom = 280.0
 	panel.alignment = BoxContainer.ALIGNMENT_CENTER
 	panel.add_theme_constant_override("separation", 18)
 	backdrop.add_child(panel)

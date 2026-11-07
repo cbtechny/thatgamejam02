@@ -5,6 +5,8 @@ var next_scene: String
 var panel: Control
 var completed := false
 var switching := false
+var information := false
+var return_focus: Control
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -13,11 +15,14 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		get_viewport().set_input_as_handled()
-		if completed or switching:
+		if switching or (completed and not information):
 			return
 		if is_instance_valid(panel):
-			resume()
-		else:
+			if information:
+				close_information()
+			else:
+				resume()
+		elif is_instance_valid(room):
 			show_menu(false)
 
 func show_menu(won: bool) -> void:
@@ -46,21 +51,86 @@ func show_menu(won: bool) -> void:
 	var primary := add_button(column, "Continue" if won else "Resume", advance if won else resume)
 	add_button(column, "Retry stage", retry)
 	add_button(column, "Return to title", func(): go("res://Level/title_menu.tscn"))
+	add_release_controls(column)
 	primary.grab_focus()
 
-func add_button(column: VBoxContainer, caption: String, action: Callable) -> Button:
+static func add_button(column: Container, caption: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = caption
 	button.custom_minimum_size = Vector2(420, 62)
 	button.add_theme_font_size_override("font_size", 26)
+	style_button(button)
 	button.pressed.connect(action)
 	column.add_child(button)
 	return button
+
+static func style_button(button: Button) -> void:
+	var focus := StyleBoxFlat.new()
+	focus.bg_color = Color(0.95, 0.72, 0.3, 0.2)
+	focus.border_color = Color(1.0, 0.82, 0.42)
+	focus.set_border_width_all(4)
+	button.add_theme_stylebox_override("focus", focus)
+
+static func add_release_controls(column: Container) -> void:
+	var session: Node = column.get_node("/root/ReleaseSession")
+	var mute := Button.new()
+	mute.set_script(preload("res://Level/mute_button.gd"))
+	mute.name = "MuteButton"
+	mute.custom_minimum_size = Vector2(420, 62)
+	mute.add_theme_font_size_override("font_size", 26)
+	style_button(mute)
+	mute.pressed.connect(session.toggle_mute)
+	column.add_child(mute)
+	var exit_button := add_button(column, "Exit game", session.quit_game)
+	exit_button.name = "ExitButton"
+
+func show_information(heading: String, body: String, source: Control) -> void:
+	if is_instance_valid(panel):
+		return
+	information = true
+	return_focus = source
+	panel = ColorRect.new()
+	(panel as ColorRect).color = Color(0.025, 0.035, 0.08, 0.98)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(panel)
+	var margins := MarginContainer.new()
+	margins.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side: String in ["left", "right", "top", "bottom"]:
+		margins.add_theme_constant_override("margin_" + side, 70)
+	panel.add_child(margins)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 20)
+	margins.add_child(column)
+	var title := Label.new()
+	title.text = heading
+	title.add_theme_font_size_override("font_size", 40)
+	column.add_child(title)
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	column.add_child(scroll)
+	var text := Label.new()
+	text.text = body
+	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text.add_theme_font_size_override("font_size", 28)
+	scroll.add_child(text)
+	add_button(column, "Back", close_information).grab_focus()
+
+func close_information() -> void:
+	if is_instance_valid(panel):
+		panel.queue_free()
+		panel = null
+	information = false
+	if is_instance_valid(return_focus):
+		return_focus.grab_focus()
 
 func resume() -> void:
 	if is_instance_valid(panel):
 		panel.queue_free()
 		panel = null
+	if is_instance_valid(room):
+		room.set("_dragging_crank", false)
 	get_tree().paused = false
 
 func retry() -> void:
@@ -74,6 +144,9 @@ func go(path: String) -> void:
 		return
 	switching = true
 	get_tree().paused = false
+	_change_scene.call_deferred(path)
+
+func _change_scene(path: String) -> void:
 	if get_tree().change_scene_to_file(path) != OK:
 		switching = false
 		push_error("Unable to open scene: " + path)

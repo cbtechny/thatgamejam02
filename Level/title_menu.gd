@@ -12,8 +12,23 @@ const LEVEL_ONE_PATH: String = "res://Level/level_1_music_box.tscn"
 
 var _curtain_playing := false
 var _curtains_remaining := 0
+var _information_menu: CanvasLayer
 
 func _ready() -> void:
+	get_tree().paused = false
+	_information_menu = preload("res://Level/campaign_menu.gd").new()
+	add_child(_information_menu)
+	var session: Node = get_node("/root/ReleaseSession")
+	var rules: Button = $ContentMargins/MainBdy/ButtonContainer/RulesButton
+	rules.pressed.connect(func(): _information_menu.show_information("How to play", session.CONTROLS, rules))
+	var credits: Button = $ContentMargins/MainBdy/ButtonContainer2/TeamButton
+	credits.text = "Credits"
+	credits.pressed.connect(func(): _information_menu.show_information("Credits", session.CREDITS, credits))
+	var controls := HBoxContainer.new()
+	controls.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	controls.add_theme_constant_override("separation", 24)
+	$ContentMargins/MainBdy.add_child(controls)
+	_information_menu.add_release_controls(controls)
 	# Keep the authored looping preview intact; this menu plays it once on demand.
 	for player in _curtain_players:
 		var library := player.get_animation_library(&"").duplicate(true) as AnimationLibrary
@@ -49,6 +64,9 @@ func _on_play_button_pressed() -> void:
 	_curtain_playing = true
 	_curtains_remaining = _curtain_players.size()
 	_play_button.disabled = true
+	$ContentMargins.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for button: Button in $ContentMargins.find_children("*", "Button", true, false):
+		button.disabled = true
 	for player in _curtain_players:
 		player.play(CURTAIN_ANIMATION)
 		player.seek(0.0, true)
