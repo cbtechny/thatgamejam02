@@ -4,6 +4,7 @@ extends Node2D
 
 @export var radius: float = 64.0
 @export var glow_color: Color = Color(1.0, 0.8, 0.38, 0.8)
+@export_range(0.0, 8.0, 0.1) var intensity: float = 2.0
 @export_range(0.2, 8.0, 0.1) var pulse_speed: float = 2.4
 @export var active: bool = true
 
@@ -28,11 +29,11 @@ func _draw() -> void:
 		return
 	var pulse: float = 0.5 + 0.5 * sin(_time)
 	var outer: Color = glow_color
-	outer.a *= 0.06 + pulse * 0.06
+	outer.a = clampf(outer.a * (0.06 + pulse * 0.06) * intensity, 0.0, 1.0)
 	var middle: Color = glow_color
-	middle.a *= 0.35 + pulse * 0.18
+	middle.a = clampf(middle.a * (0.35 + pulse * 0.18) * intensity, 0.0, 1.0)
 	var core: Color = glow_color
-	core.a *= 0.45 + pulse * 0.15
+	core.a = clampf(core.a * (0.45 + pulse * 0.15) * intensity, 0.0, 1.0)
 	draw_circle(Vector2.ZERO, radius * (1.12 + pulse * 0.08), outer)
 	draw_arc(Vector2.ZERO, radius * (0.94 + pulse * 0.06), 0.0, TAU, 64, middle, 6.0 + pulse * 2.0, true)
 	draw_arc(Vector2.ZERO, radius * 0.78, 0.0, TAU, 64, core, 2.5, true)

@@ -26,3 +26,15 @@ func _process(delta: float) -> void:
 			upper.show()
 			return
 		previous = point
+
+func _replace_puzzle_for_restart() -> Node:
+	var old_room: Node = _room
+	var parent: Node = old_room.get_parent()
+	var replacement: Node = load(old_room.scene_file_path).instantiate()
+	parent.remove_child(old_room)
+	old_room.queue_free()
+	_room = replacement
+	parent.add_child(replacement)
+	replacement._transitioning = true
+	replacement.set_presentation_locked(true)
+	return self

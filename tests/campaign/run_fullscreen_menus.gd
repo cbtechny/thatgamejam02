@@ -8,7 +8,7 @@ func check(ok: bool, message: String) -> void:
 		push_error(message)
 func run() -> void:
 	root.size = Vector2i(1920,1080)
-	for mode: String in ["PauseMenu", "MissScreen", "WinScreen"]:
+	for mode: String in ["PauseMenu", "WinScreen"]:
 		paused = false
 		change_scene_to_file("res://Level/level_1_music_box.tscn")
 		await process_frame
@@ -18,7 +18,6 @@ func run() -> void:
 		var room: Node = stage._room
 		match mode:
 			"PauseMenu": room._show_pause_menu()
-			"MissScreen": room._show_miss_screen()
 			"WinScreen":
 				room._show_win_screen()
 				room._finish_win_presentation()

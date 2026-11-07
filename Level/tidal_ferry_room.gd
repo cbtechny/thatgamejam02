@@ -4,6 +4,9 @@ extends "res://Level/ocean_room.gd"
 const SHOT := Vector2(76.0, -12.0)
 const LANDING_X: float = 12.0
 const LANDING_Y: float = 8.0
+# A forgiving finish after the timed crossing; earlier decks keep their tolerances.
+const KEYHOLE_LANDING_X: float = 18.0
+const KEYHOLE_LANDING_Y: float = 12.0
 const FAN_OFFSET := Vector2(-9.5, -8.0)
 const WIND_BURST_DURATION: float = 0.24
 
@@ -64,7 +67,10 @@ func _hop_point(progress: float) -> Vector2:
 func _resolve_landing() -> int:
 	var next: int = _current_platform + 1
 	var error := _deck_at(next, _touchdown_time) + FRAGMENT_OFFSET - _fragment.position
-	if absf(error.x) <= LANDING_X and absf(error.y) <= LANDING_Y:
+	var keyhole: bool = next == _platform_names.size() - 1
+	var tolerance_x: float = KEYHOLE_LANDING_X if keyhole else LANDING_X
+	var tolerance_y: float = KEYHOLE_LANDING_Y if keyhole else LANDING_Y
+	if absf(error.x) <= tolerance_x and absf(error.y) <= tolerance_y:
 		return next
 	return -1
 

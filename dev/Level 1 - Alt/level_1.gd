@@ -26,6 +26,7 @@ const FULL_KEY_TEXTURE: Texture2D = preload("res://Art/Textures/Resources/Key/ke
 const CURTAIN_SCENE: PackedScene = preload("res://dev/title/curtain.tscn")
 const MENU_OVERLAY_SCRIPT: Script = preload("res://dev/Level 1 - Alt/menu_overlay.gd")
 const CAMPAIGN_MENU: Script = preload("res://Level/campaign_menu.gd")
+const RESTART_CURTAINS: Script = preload("res://Level/level_1_restart.gd")
 const TITLE_SCENE_PATH: String = "res://Level/title_menu.tscn"
 signal title_transition_finished
 
@@ -138,8 +139,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _presentation_locked:
 		return
 	if event is InputEventKey and event.keycode == KEY_ESCAPE and event.pressed and not event.echo:
-		if not _transitioning and not _pause_menu_open and not _missed and not _key_snapped:
+		if not _transitioning and not _pause_menu_open and not _key_snapped:
 			_show_pause_menu()
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventKey and event.keycode == KEY_R and event.pressed and not event.echo and _missed and not _pause_menu_open:
+		_retry_level()
 		get_viewport().set_input_as_handled()
 		return
 	if _released or _transitioning or _pause_menu_open:
@@ -181,10 +186,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if _missed:
+		_finish_missed_flight()
 	if _released:
 		if _left_fan_active and not _key_snapped and not _missed:
 			if _key_is_out_of_bounds():
-				_show_miss_screen()
+				_mark_missed()
 				return
 			if _endpoints_touch():
 				_key.linear_velocity = Vector2.ZERO
@@ -226,7 +233,7 @@ func _get_menu_ui() -> CanvasLayer:
 
 
 func _show_pause_menu() -> void:
-	if _pause_menu_open or _transitioning or _missed or _key_snapped:
+	if _pause_menu_open or _transitioning or _key_snapped:
 		return
 	_pause_menu_open = true
 	_dragging_crank = false
@@ -284,40 +291,25 @@ func _resume_from_pause() -> void:
 		backdrop.queue_free()
 
 
-func _show_miss_screen() -> void:
+func _mark_missed() -> void:
+	if _missed:
+		return
 	_missed = true
+	_dragging_crank = false
 	_play_sfx("miss")
-	_key.freeze = true
 	_set_left_fan_active(false)
-	_set_middle_fan_active(false)
 	_clear_guidance_highlights()
 	_key_sparkles.emitting = false
 	_middle_key_sparkles.emitting = false
 	_third_piece_sparkles.emitting = false
-	var backdrop: ColorRect = ColorRect.new()
-	backdrop.name = "MissScreen"
-	backdrop.color = Color(0.025, 0.035, 0.08, 0.82)
-	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_get_menu_ui().add_child(backdrop)
-	var panel: VBoxContainer = VBoxContainer.new()
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	panel.offset_left = -190.0
-	panel.offset_top = -205.0
-	panel.offset_right = 190.0
-	panel.offset_bottom = 205.0
-	panel.alignment = BoxContainer.ALIGNMENT_CENTER
-	panel.add_theme_constant_override("separation", 14)
-	backdrop.add_child(panel)
-	var title: Label = Label.new()
-	title.text = "MISSED!"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 40)
-	panel.add_child(title)
-	_add_terminal_menu_buttons(panel)
-	_set_terminal_menu_focus(backdrop)
-	_release_hint.text = "The key missed the target"
-	get_tree().paused = true
+	_release_hint.text = "Hit R to restart"
 
+
+func _finish_missed_flight() -> void:
+	var sprite_bounds: Rect2 = _key_sprite.get_global_transform_with_canvas() * _key_sprite.get_rect()
+	if not get_viewport_rect().intersects(sprite_bounds):
+		_key.hide()
+		_key.freeze = true
 
 func _add_terminal_menu_buttons(panel: VBoxContainer) -> void:
 	var retry_button: Button = Button.new()
@@ -358,7 +350,29 @@ func _retry_level() -> void:
 	_dragging_crank = false
 	_cancel_presentation_tweens()
 	get_tree().paused = false
-	get_tree().reload_current_scene.call_deferred()
+	set_presentation_locked(true)
+	get_viewport().gui_release_focus()
+	if is_instance_valid(_menu_ui):
+		for child: Node in _menu_ui.get_children():
+			if child.name in ["PauseMenu", "WinScreen"]:
+				child.queue_free()
+	var curtains: Node = RESTART_CURTAINS.new()
+	curtains.level_owner = get_tree().current_scene
+	curtains.reset_puzzle = _reset_for_retry
+	get_tree().root.add_child(curtains)
+
+
+func _reset_for_retry() -> Node:
+	var owner: Node = get_tree().current_scene
+	if owner.has_method("_replace_puzzle_for_restart"):
+		return owner._replace_puzzle_for_restart()
+	var replacement: Node = load(scene_file_path).instantiate()
+	get_tree().root.add_child(replacement)
+	get_tree().current_scene = replacement
+	replacement._transitioning = true
+	replacement.set_presentation_locked(true)
+	queue_free()
+	return replacement
 
 
 func _return_to_title() -> void:
@@ -406,11 +420,12 @@ func _on_title_curtain_finished(animation_name: StringName) -> void:
 
 func _process(delta: float) -> void:
 	# A caught piece must stay put while the other pieces assemble around it.
-	if _key_snapped or _missed or _transitioning:
+	if _key_snapped or _transitioning:
 		return
 	# Winding is authored motion; frozen-body synchronization can report an older pose.
 	var follow_y: float = _key.global_position.y if _released else _wound_key_y
-	_left_fan.position.y = _left_fan_start_y + (follow_y - _key_start_y)
+	if not _missed:
+		_left_fan.position.y = _left_fan_start_y + (follow_y - _key_start_y)
 	_middle_fan_pulse_time = fmod(_middle_fan_pulse_time + delta, MIDDLE_FAN_PULSE_PERIOD)
 	var pulse_phase: float = _middle_fan_pulse_time / MIDDLE_FAN_PULSE_PERIOD * TAU
 	var fan_should_be_active: bool = cos(pulse_phase) > 0.0
@@ -617,6 +632,8 @@ func _cancel_presentation_tweens() -> void:
 
 
 func _exit_tree() -> void:
+	if is_instance_valid(_menu_ui) and _menu_ui != _ui:
+		_menu_ui.queue_free()
 	_dragging_crank = false
 	if _pause_menu_open or _missed or _key_snapped or _transitioning:
 		get_tree().paused = false

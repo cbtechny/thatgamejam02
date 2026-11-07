@@ -58,12 +58,13 @@ func run() -> void:
 	room._resume_from_pause()
 	check(not paused, "Nested pause resumes")
 	room._retry_level()
+	await wait_restart()
 	await process_frame
 	await process_frame
 	stage = current_scene
 	room = stage._room
 	display = stage.get_node("MusicBox/RoomClip/Room")
-	check(room._presentation_locked and not room._released, "Retry reloads outer entrance and fresh puzzle")
+	check(not room._presentation_locked and not room._released and stage._entrance_finished, "Retry replaces the puzzle without replaying the entrance")
 	await create_timer(2.3).timeout
 	room._show_win_screen()
 	room._finish_win_presentation()
@@ -88,3 +89,10 @@ func run() -> void:
 	current_scene.free()
 	await process_frame
 	quit(1 if failures else 0)
+
+func wait_restart() -> void:
+	for frame: int in range(480):
+		if root.get_node_or_null("Level1RestartCurtains") == null:
+			return
+		await physics_frame
+	check(false, "Curtain restart timed out")

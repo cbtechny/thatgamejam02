@@ -7,7 +7,7 @@ Keep ClocksInOrange.pck beside the executable. Godot is not required.
 
 CONTROLS
 Mouse: drag the crank. Space: release the key / fire the ocean fan.
-Level 1: time the release so the key meets the moving piece. Joining is automatic.
+Level 1: time the release so the key meets the moving piece. Joining is automatic. After a miss, press R to restart.
 Levels 2 and 3: set the tide, then time each shot onto the moving boards.
 Cross the pier by day and breakwater by night. The lighthouse sweeps on its own.
 A missed landing ends the run. Press R or use Retry to restart from shore.

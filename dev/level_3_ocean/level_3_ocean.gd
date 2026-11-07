@@ -89,3 +89,12 @@ func _draw_lighthouse() -> void:
 	draw_colored_polygon(PackedVector2Array([
 		Vector2(167, 16), Vector2(180, 8), Vector2(193, 16),
 	]), Color("844d48"))
+
+func _update_scenery_bounds() -> void:
+	var darkness: ColorRect = $NightMask/Darkness
+	var mask := _scenery_bounds.grow(2.0)
+	darkness.position = mask.position
+	darkness.size = mask.size
+	_beam_material.set_shader_parameter(&"mask_origin", mask.position)
+	_beam_material.set_shader_parameter(&"mask_size", mask.size)
+	_beam_material.set_shader_parameter(&"stage_floor_y", _scenery_bounds.end.y)

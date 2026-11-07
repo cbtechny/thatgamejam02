@@ -26,6 +26,8 @@ const GOLD := Color("ffda88")
 @onready var _feedback: Label = $Feedback
 @onready var _fire_button: Button = $FireButton
 
+var _stage_play_area := Rect2()
+var _scenery_bounds := Rect2(Vector2.ZERO, REFERENCE_SIZE)
 var initial_crank_angle: float = -PI * 0.5
 var _platform_names: PackedStringArray
 var _floating_platforms: PackedInt32Array
@@ -85,14 +87,26 @@ func _prepare_controls() -> void:
 			control.size = reference_size * UI_RESOLUTION
 
 
+func set_stage_layout(play_area: Rect2) -> void:
+	_stage_play_area = play_area
+	_fit_viewport()
+
+
 func _fit_viewport() -> void:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	if get_parent() is Control:
 		viewport_size = (get_parent() as Control).size
-	var factor: float = minf(viewport_size.x / REFERENCE_SIZE.x, viewport_size.y / REFERENCE_SIZE.y)
+	var play_area := Rect2(Vector2.ZERO, viewport_size) if not _stage_play_area.has_area() else _stage_play_area
+	var factor: float = minf(play_area.size.x / REFERENCE_SIZE.x, play_area.size.y / REFERENCE_SIZE.y)
 	scale = Vector2.ONE * factor
-	position = (viewport_size - REFERENCE_SIZE * factor) * 0.5
+	position = play_area.position + (play_area.size - REFERENCE_SIZE * factor) * 0.5
+	_scenery_bounds = transform.affine_inverse() * Rect2(Vector2.ZERO, viewport_size)
+	_update_scenery_bounds()
+	queue_redraw()
 
+
+func _update_scenery_bounds() -> void:
+	pass
 
 func set_presentation_locked(locked: bool) -> void:
 	_presentation_locked = locked
@@ -375,11 +389,15 @@ func _exit_tree() -> void:
 
 func _draw() -> void:
 	var water := PackedVector2Array()
-	for x: int in range(0, 361, 3):
-		water.append(Vector2(float(x), _water_y(float(x))))
+	var segments := ceili(_scenery_bounds.size.x / 3.0)
+	for index: int in range(segments + 1):
+		var x := lerpf(_scenery_bounds.position.x, _scenery_bounds.end.x, float(index) / segments)
+		water.append(Vector2(x, _water_y(x)))
 	var surface: PackedVector2Array = water.duplicate()
-	water.append(Vector2(360.0, 169.0))
-	water.append(Vector2(0.0, 169.0))
+	# Continue beneath the frame lip so no antialiased seam is exposed.
+	var floor_y := _scenery_bounds.end.y + 1.0
+	water.append(Vector2(_scenery_bounds.end.x, floor_y))
+	water.append(Vector2(_scenery_bounds.position.x, floor_y))
 	draw_colored_polygon(water, Color("308c9b"))
 	draw_polyline(surface, Color("9be1db"), 0.7, true)
 	for platform: int in range(_platform_names.size()):
@@ -388,7 +406,7 @@ func _draw() -> void:
 		var anchor := _platform_anchor(platform)
 		var floating: bool = platform in _floating_platforms
 		var width: float = 26.0 if floating else 28.0
-		var height: float = 6.0 if floating else 169.0 - anchor.y
+		var height: float = 6.0 if floating else floor_y - anchor.y
 		var rect := Rect2(anchor - Vector2(width * 0.5, 0.0), Vector2(width, height))
 		draw_texture_rect(PLANK_TEXTURE if floating else STONE_TEXTURE, rect, false)
 

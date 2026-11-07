@@ -98,6 +98,7 @@ func run() -> void:
 	await capture("level1-flight-paused")
 	room._retry_level()
 	room._retry_level()
+	await wait_restart()
 	await process_frame
 	await process_frame
 	check(not paused and not current_scene._room._released and not current_scene._room._dragging_crank, "Repeated Retry produces fresh, unpaused Level 1")
@@ -160,3 +161,10 @@ func run() -> void:
 	current_scene.free()
 	await create_timer(0.15).timeout
 	quit(1 if failures else 0)
+
+func wait_restart() -> void:
+	for frame: int in range(480):
+		if root.get_node_or_null("Level1RestartCurtains") == null:
+			return
+		await physics_frame
+	check(false, "Curtain restart timed out")

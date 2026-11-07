@@ -166,15 +166,16 @@ func _check_miss_and_retry() -> void:
 		await physics_frame
 		if level._missed:
 			break
-	_expect(level._missed and paused and level._ui.get_node_or_null("MissScreen") != null, "Existing low release still reaches the miss/retry screen")
+	_expect(level._missed and not paused and level._ui.get_node_or_null("MissScreen") == null and level._release_hint.text == "Hit R to restart", "Low release reaches the quiet restart hint without pausing")
 	_expect(_all_highlights_off(level) and not level._key_sparkles.emitting and not level._middle_key_sparkles.emitting, "Miss stops misleading highlights and sparkles")
-	_expect(not level._left_fan_active and not level._middle_fan_active, "Miss stops both fan animations and whirrs")
+	_expect(not level._left_fan_active, "Miss stops the launch fan without pausing the scene")
 	await _save("after-miss.png")
 	level._retry_level()
+	await _wait_restart()
 	await process_frame
 	await process_frame
 	var replacement: LevelOne = current_scene as LevelOne
-	_expect(replacement != null and replacement != level and not replacement._released and not paused, "Retry reloads fresh gameplay and resumes the tree")
+	_expect(replacement != null and replacement != level and not replacement._released and not paused, "Curtain retry restores fresh gameplay without pausing")
 	if replacement != null:
 		_expect(replacement._crank_highlight.active and not replacement._center_highlight.active, "Retry restores initial guidance")
 		replacement.queue_free()
@@ -195,6 +196,7 @@ func _check_exit_and_retry_during_assembly() -> void:
 	var sequence: Tween = level._assembly_tween
 	await create_timer(0.2).timeout
 	level._retry_level()
+	await _wait_restart()
 	await process_frame
 	await process_frame
 	_expect(not sequence.is_valid(), "Retry cancels the in-flight assembly sequence")
@@ -239,3 +241,10 @@ func _check_return_to_title() -> void:
 	if current_scene != null:
 		current_scene.queue_free()
 	await process_frame
+
+func _wait_restart() -> void:
+	for frame: int in range(480):
+		if root.get_node_or_null("Level1RestartCurtains") == null:
+			return
+		await physics_frame
+	_expect(false, "Curtain restart timed out")

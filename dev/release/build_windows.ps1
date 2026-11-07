@@ -85,6 +85,7 @@ try {
             'tests/level_3_ocean/run_level3_tests.gd',
             'tests/campaign/run_campaign_tests.gd',
             'tests/campaign/run_level1_input_tests.gd',
+            'tests/campaign/run_level1_restart.gd',
             'tests/campaign/run_level1_presentation.gd',
             'tests/campaign/run_fullscreen_menus.gd',
             'tests/campaign/run_fullscreen_scale.gd',
