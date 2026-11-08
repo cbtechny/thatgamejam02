@@ -38,8 +38,8 @@ func _can_launch() -> bool:
 func _hint() -> String:
 	if _current_platform == Platform.LOG_1:
 		if not _pier_height_reachable():
-			return "Raise the tide to reach the pier, then time your shot."
-		return "Fire as Ferry I approaches the pier."
+			return "Raise the tide to reach the pier."
+		return "Fire as the ferry nears the pier."
 	return super._hint()
 
 

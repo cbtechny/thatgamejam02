@@ -20,10 +20,4 @@ func _draw() -> void:
 		var floating: bool = platform in room._floating_platforms
 		var width: float = 26.0 if floating else 28.0
 		draw_line(anchor - Vector2(width * 0.5, 0), anchor + Vector2(width * 0.5, 0), edge, 0.65, true)
-		# Align with the room captions instead of introducing a second label row.
-		var caption: String = room._platform_names[platform]
-		var label_offset: float = -8.0 if platform == room._platform_names.size() - 1 else 12.0
-		room._draw_caption(anchor + Vector2(0.0, label_offset), caption, false, self)
 	room._draw_keyhole(room._platform_names.size() - 1, self)
-	var knob: Vector2 = to_local(room._crank.to_global(room.CRANK_KNOB_LOCAL_POSITION.rotated(room._crank_handle.rotation)))
-	draw_arc(knob, 5.5, 0.0, TAU, 32, Color("d6bd7a"), 0.6, true)

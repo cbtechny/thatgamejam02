@@ -77,16 +77,14 @@ func _resolve_landing() -> int:
 
 func _update_mechanisms() -> void:
 	_position_fans()
-	var tide_percent := roundi(100.0 * inverse_lerp(142.0, 102.0, _water_level()))
-	($TideReadout as Label).text = "TIDE   %d%%" % tide_percent
 
 
 func _hint() -> String:
-	return "Set the tide. Time the landing with the moving deck."
+	return "Turn the crank. Time the jump."
 
 
 func _failure_hint() -> String:
-	return "The key missed its landing. Press R to retry from shore."
+	return "Missed. Press R to retry."
 
 
 func _draw() -> void:
@@ -98,9 +96,6 @@ func _draw() -> void:
 
 
 func _draw_guide() -> void:
-	for platform: int in range(_platform_names.size()):
-		var label_offset: float = -8.0 if platform == _platform_names.size() - 1 else 12.0
-		_draw_caption(_platform_anchor(platform) + Vector2(0.0, label_offset), _platform_names[platform])
 	_draw_keyhole(_platform_names.size() - 1)
 	if _state == State.HOPPING and _hop_elapsed < WIND_BURST_DURATION:
 		_draw_wind_burst()

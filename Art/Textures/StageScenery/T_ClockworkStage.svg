@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2440" height="1560" viewBox="0 0 610 390">
+  <defs>
+    <linearGradient id="wall" x2="0" y2="1">
+      <stop stop-color="#161b2a"/><stop offset=".62" stop-color="#20383b"/><stop offset="1" stop-color="#2b3c3c"/>
+    </linearGradient>
+    <radialGradient id="wash" cx=".52" cy=".56" r=".53">
+      <stop stop-color="#557c71" stop-opacity=".37"/><stop offset="1" stop-color="#557c71" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="wing" x2="0" y2="1">
+      <stop stop-color="#141c28"/><stop offset=".63" stop-color="#263638"/><stop offset="1" stop-color="#142123"/>
+    </linearGradient>
+    <linearGradient id="floor" x2="0" y2="1">
+      <stop stop-color="#334a47"/><stop offset="1" stop-color="#152628"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#wall)" d="M0 0H610V390H0Z"/>
+  <path fill="url(#wash)" d="M0 0H610V390H0Z"/>
+  <!-- Recessed back panel and the stepped edge of the paper wings. -->
+  <path fill="none" stroke="#718a7c" stroke-opacity=".23" stroke-width=".7" d="M119 334V227C119 151 190 116 305 116S491 151 491 227V334 M129 334V231C129 157 197 122 305 122S481 157 481 231V334"/>
+  <path fill="#111b23" fill-opacity=".56" d="M0 0H610V353H492V228C492 138 412 108 305 108S118 138 118 228V353H0Z"/>
+  <path fill="url(#wing)" fill-rule="evenodd" d="M0 0H610V390H0Z M99 351V218C99 123 192 86 305 86S511 123 511 218V351Z"/>
+  <g fill="none" stroke="#b39a6f" stroke-width=".65" opacity=".45">
+    <path d="M104 344V220C104 128 194 92 305 92S506 128 506 220V344"/>
+    <path d="M91 341V214C91 119 187 78 305 78S519 119 519 214V341"/>
+    <path d="M78 341V211C78 114 183 70 305 70S532 114 532 211V341"/>
+  </g>
+  <path fill="url(#floor)" d="M0 346 Q305 324 610 346V390H0Z"/>
+  <path fill="none" stroke="#8c9e81" stroke-width=".65" opacity=".38" d="M0 350 Q305 330 610 350 M0 360 Q305 344 610 360 M0 374 Q305 365 610 374"/>
+</svg>

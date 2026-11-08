@@ -196,9 +196,10 @@ func run() -> void:
 		key(KEY_ESCAPE)
 		await process_frame
 		await _wait_for_scene_fade()
-		await click_caption("Return to Title")
-		check(await wait_scene("res://Level/title_menu.tscn"), "Replay returns to title")
-	print("Scripted full playthrough: %d failures; real input, real physics, four day/five night shots, both miss retries, ending, replay, title." % failures)
+		check(paused, "Replay can pause")
+		await click_caption("Resume")
+		check(not paused, "Replay can resume")
+	print("Scripted full playthrough: %d failures; real input, real physics, four day/five night shots, both miss retries, ending and replay." % failures)
 	root.get_node("ReleaseSession").quit_game(1 if failures else 0)
 
 

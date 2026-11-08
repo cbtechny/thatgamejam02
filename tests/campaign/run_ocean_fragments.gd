@@ -59,6 +59,22 @@ func run() -> void:
 		stage._process(3.0)
 		room._process(0.5)
 		check(not collection.pickup_position(1).is_equal_approx(initial), "Unlocked pickups bob")
+		check(room._crank_highlight.active and room._key_sparkles.emitting, "Initial guidance highlights the knob and sparkles on the traveling key")
+		check(not collection._highlights[0].active and not collection._highlights[1].active, "Later pieces start with no halo")
+		var turn := InputEventKey.new()
+		turn.keycode = KEY_RIGHT
+		turn.pressed = true
+		root.push_input(turn, true)
+		turn = turn.duplicate()
+		turn.pressed = false
+		root.push_input(turn, true)
+		check(not room._crank_highlight.active and collection._highlights[0].active, "Turning the crank shifts guidance to the middle piece")
+		check(collection._sparkles[0].emitting and not collection._highlights[1].active, "Only the current target sparkles")
+		await photograph("level%d-aim" % number)
+		room.fire_fan()
+		check(not room._crank_highlight.active and collection._highlights[0].active, "Flight keeps the target highlighted")
+		room.reset_level()
+		check(room._crank_highlight.active and not collection._highlights[0].active, "Reset restores initial guidance")
 		room.set_process(true)
 		room._campaign_menu.show_menu(false)
 		var clock: float = collection._time
@@ -76,12 +92,14 @@ func run() -> void:
 				check(root.get_visible_rect().encloses(icon.get_global_transform_with_canvas() * icon.get_rect()), "HUD icon fits viewport")
 		land_at(room, middle, true)
 		check(not collection.collected[1], "Missed middle landing awards nothing")
+		check(not room._crank_highlight.active and not room._key_sparkles.emitting and not collection._highlights[0].active, "Miss clears guidance and stops key sparkles")
 		room.reset_level()
 		land_at(room, 1)
 		check(collection.collected == [true, false, false], "Other platforms award nothing")
 		land_at(room, middle)
 		check(collection.collected == [true, true, false], "Successful middle landing collects second piece")
 		check(collection.icons[1].self_modulate == Color.WHITE, "Second UI icon fills")
+		check(not collection._highlights[0].active and collection._highlights[1].active, "Collecting the middle piece moves the halo to the final piece")
 		check(collection._celebration.playing and collection._celebration.stream.get_length() > 0.3, "Collection plays its celebration chime")
 		check(collection._icon_tweens.size() == 1 and collection._icon_tweens[0].is_running(), "Collection starts its HUD pulse")
 		land_at(room, middle)
@@ -100,6 +118,7 @@ func run() -> void:
 		land_at(room, goal)
 		check(collection.collected == [true, true, true], "Goal collects third piece before completion menu")
 		check(room._state == room.State.COMPLETED, "Existing completion still runs")
+		check(not collection._highlights[1].active and not room._key_sparkles.emitting, "Completion clears guidance")
 		await process_frame
 		await _wait_for_scene_fade()
 		await create_timer(0.45).timeout

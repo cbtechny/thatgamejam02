@@ -289,22 +289,8 @@ func _check_buttons_and_navigation() -> void:
 	presentation.set_process(false)
 	var scene: Ocean = presentation._room as Ocean
 	scene.set_process(false)
-	# Returning to title also works before the entrance finishes.
-	await _click(scene.get_node("TitleButton"))
-	await process_frame
-	await _wait_for_scene_fade()
-	_expect(not is_instance_valid(presentation), "Title exit cancels the entrance without delayed view changes")
-	if current_scene != null:
-		current_scene.queue_free()
-	await process_frame
-	await _wait_for_scene_fade()
-	presentation = OCEAN_SCENE.instantiate() as Presentation
-	root.add_child(presentation)
-	current_scene = presentation
-	presentation.set_process(false)
+	_expect(scene.get_node_or_null("TitleButton") == null, "The room has no title button")
 	presentation._process(presentation.establishing_hold + presentation.zoom_duration)
-	scene = presentation._room as Ocean
-	scene.set_process(false)
 	await _click(scene._fire_button)
 	_expect(scene._state == Ocean.State.HOPPING, "Fan button activates the same hop as Space")
 	await _click(scene._reset_button)
@@ -319,14 +305,7 @@ func _check_buttons_and_navigation() -> void:
 	scene._dragging_crank = true
 	scene._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
 	_expect(not scene._dragging_crank, "Losing application focus cancels crank drag")
-	scene.fire_fan()
-	await _click(scene.get_node("TitleButton"))
-	await process_frame
-	await _wait_for_scene_fade()
-	_expect(not is_instance_valid(scene), "Return to Title safely exits during an active hop")
-	_expect(current_scene != null and current_scene.find_child("PlayButton", true, false) != null, "Return to Title opens existing navigation")
-	if current_scene != null:
-		current_scene.queue_free()
+	presentation.queue_free()
 	await process_frame
 	await _wait_for_scene_fade()
 func _drag_crank(scene: Ocean, finish_angle: float) -> void:

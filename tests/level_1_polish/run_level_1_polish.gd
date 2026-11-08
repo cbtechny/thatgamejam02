@@ -114,7 +114,7 @@ func _run() -> void:
 	await _wait_for_scene_fade()
 	await _check_miss_and_retry()
 	await _check_exit_and_retry_during_assembly()
-	await _check_return_to_title()
+	await _check_pause_actions()
 	await create_timer(0.15).timeout
 	print("Level 1 polish: %d passed, %d failed." % [_checks - _failures, _failures])
 	quit(0 if _failures == 0 else 1)
@@ -231,27 +231,19 @@ func _save(file_name: String) -> void:
 	_expect(root.get_texture().get_image().save_png(folder.path_join(file_name)) == OK, "Saved " + file_name)
 
 
-func _check_return_to_title() -> void:
+func _check_pause_actions() -> void:
 	var level: LevelOne = _new_level()
-	_begin_catch_fixture(level)
-	var sequence: Tween = level._assembly_tween
-	level._return_to_title()
-	_expect(not sequence.is_valid() and paused, "Return to Title cancels assembly before the existing curtain transition")
-	var players: Array[Node] = level._ui.find_children("*", "AnimationPlayer", true, false)
-	_expect(players.size() == 2, "Return transition retains both curtains")
-	for node: Node in players:
-		var player: AnimationPlayer = node as AnimationPlayer
-		player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
-		player.advance(player.get_animation(&"curtain").length + 0.01)
+	level._show_pause_menu()
+	var menu: Node = level._get_menu_ui().get_node("PauseMenu")
+	for button: Node in menu.find_children("*", "Button", true, false):
+		_expect(button.text != "Return to Title", "Level 1 pause has no title button")
+	level._resume_from_pause()
+	level.queue_free()
 	await process_frame
 	await _wait_for_scene_fade()
-	await process_frame
-	await _wait_for_scene_fade()
-	_expect(not is_instance_valid(level) and current_scene != null and current_scene.find_child("PlayButton", true, false) != null and not paused, "Both curtain completions return to the original title menu")
-	if current_scene != null:
-		current_scene.queue_free()
-	await process_frame
-	await _wait_for_scene_fade()
+
+
+
 func _wait_restart() -> void:
 	for frame: int in range(480):
 		if root.get_node_or_null("Level1RestartFade") == null:

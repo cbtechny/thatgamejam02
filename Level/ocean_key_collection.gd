@@ -6,7 +6,7 @@ const KEY_TEXTURES: Array[Texture2D] = [
 	preload("res://Art/Textures/Resources/Key/key2.tres"),
 ]
 const DIM := Color(0.65, 0.72, 0.85, 0.5)
-const GOLD := Color("ffda88")
+const PICKUP_SCALE := 0.06
 
 var middle_platform: int = -1
 var collected: Array[bool] = [true, false, false]
@@ -16,6 +16,9 @@ var _hud: Control
 var _time: float = 0.0
 var _celebration: AudioStreamPlayer
 var _icon_tweens: Array[Tween] = []
+var _pickups: Array[Sprite2D] = []
+var _highlights: Array[HighlightPulse] = []
+var _sparkles: Array[CPUParticles2D] = []
 
 func _ready() -> void:
 	_room = get_parent() as Node2D
@@ -24,6 +27,14 @@ func _ready() -> void:
 	var unlit := CanvasItemMaterial.new()
 	unlit.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
 	material = unlit
+	for index: int in [1, 2]:
+		var pickup := Sprite2D.new()
+		pickup.texture = KEY_TEXTURES[index]
+		pickup.scale = Vector2.ONE * PICKUP_SCALE
+		add_child(pickup)
+		_pickups.append(pickup)
+		_highlights.append(HighlightPulse.attach(pickup, 150.0))
+		_sparkles.append(HighlightPulse.attach_sparkles(pickup, pickup.scale * _room.GUIDANCE_PIXELS_PER_UNIT))
 	var layer := CanvasLayer.new()
 	layer.name = "KeyHUD"
 	layer.layer = 20
@@ -66,6 +77,9 @@ func reset() -> void:
 	for index: int in range(icons.size()):
 		icons[index].self_modulate = Color.WHITE if collected[index] else DIM
 	refresh()
+	for particles: CPUParticles2D in _sparkles:
+		particles.restart()
+	set_guidance(false, false)
 
 func collect_on_landing(platform: int) -> void:
 	var index: int = 1 if platform == middle_platform else 2 if platform == _room._platform_names.size() - 1 else -1
@@ -80,12 +94,25 @@ func collect_on_landing(platform: int) -> void:
 	pulse.tween_property(icons[index], "scale", original_scale * 1.4, 0.10).set_trans(Tween.TRANS_SINE)
 	pulse.tween_property(icons[index], "scale", original_scale, 0.25).set_trans(Tween.TRANS_SINE)
 	_icon_tweens.append(pulse)
-	queue_redraw()
+	refresh()
 
 func refresh() -> void:
-	# Use the gameplay clock so pause, entrance locks and Reset also govern effects.
+	# Use the gameplay clock so pause, entrance locks and Reset also govern bobbing.
 	_time = _room._elapsed_time
-	queue_redraw()
+	for index: int in [1, 2]:
+		var pickup: Sprite2D = _pickups[index - 1]
+		pickup.position = pickup_position(index)
+		pickup.visible = not collected[index]
+
+
+func set_guidance(active: bool, ready_to_launch: bool) -> void:
+	var next_piece: int = 2 if collected[1] else 1
+	for index: int in [1, 2]:
+		var highlighted: bool = active and index == next_piece and not collected[index]
+		var halo: HighlightPulse = _highlights[index - 1]
+		halo.glow_color = HighlightPulse.READY_COLOR if ready_to_launch else HighlightPulse.WAITING_COLOR
+		halo.set_active(highlighted)
+		_sparkles[index - 1].emitting = highlighted
 
 func pickup_position(index: int) -> Vector2:
 	var platform: int = middle_platform if index == 1 else _room._platform_names.size() - 1
@@ -93,24 +120,6 @@ func pickup_position(index: int) -> Vector2:
 		# This is the actual landing target, not a decoration above the goal.
 		return _room._keyhole_position(platform)
 	return _room._platform_anchor(platform) + Vector2(6.0, -18.0 + sin(_time * 2.0 + index) * 1.5)
-
-func _draw() -> void:
-	if not is_instance_valid(_room):
-		return
-	for index: int in [1, 2]:
-		if collected[index]:
-			continue
-		var center := pickup_position(index)
-		var texture: Texture2D = KEY_TEXTURES[index]
-		var size: Vector2 = texture.get_size() * 0.06
-		draw_texture_rect(texture, Rect2(center - size * 0.5, size), false)
-		# A few deterministic sparkles avoid an extra particle system or timers.
-		for mote: int in range(5):
-			var phase: float = _time * 1.7 + mote * TAU / 5.0 + index
-			var point := center + Vector2(cos(phase) * (size.x * 0.5 + 2.0), sin(phase * 1.3) * 6.0)
-			var alpha: float = 0.35 + 0.55 * (0.5 + 0.5 * sin(phase * 2.0))
-			draw_circle(point, 0.45, Color(GOLD, alpha), true, -1.0, true)
-
 
 func _make_celebration() -> AudioStreamWAV:
 	var sound := AudioStreamWAV.new()

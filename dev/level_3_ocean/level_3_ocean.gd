@@ -16,6 +16,10 @@ func _ready() -> void:
 	_platform_fans = [$Fan/Blades, $FanDriftI/Blades, $FanDriftII/Blades, $FanBreakwater/Blades, $FanDriftIII/Blades]
 	_next_scene = "res://Level/ending.tscn"
 	_beam_material.set_shader_parameter(&"lamp_position", LAMP)
+	_scenery.copy_paint_textures_to(_beam_material)
+	_beam_material.set_shader_parameter(&"tower_texture", _scenery.LIGHTHOUSE)
+	var tower: Rect2 = _scenery.LIGHTHOUSE_RECT
+	_beam_material.set_shader_parameter(&"tower_rect", Vector4(tower.position.x, tower.position.y, tower.size.x, tower.size.y))
 	super._ready()
 	var navigation := preload("res://Level/night_navigation.gd").new()
 	navigation.name = "NightNavigation"
@@ -56,40 +60,8 @@ func _update_beam() -> void:
 
 
 func _hint() -> String:
-	return "Watch the drift while the lighthouse sweeps past."
+	return "Turn the crank. Follow the beam."
 
-
-func _draw() -> void:
-	_draw_lighthouse()
-	super._draw()
-
-
-func _draw_lighthouse() -> void:
-	# A cliff and painted masonry behind the playable decks.
-	draw_colored_polygon(PackedVector2Array([
-		Vector2(143, 154), Vector2(155, 109), Vector2(162, 94),
-		Vector2(196, 92), Vector2(207, 110), Vector2(217, 154),
-	]), Color("354654"))
-	draw_colored_polygon(PackedVector2Array([
-		Vector2(171, 29), Vector2(189, 29), Vector2(199, 102), Vector2(161, 102),
-	]), Color("c4b29b"))
-	draw_colored_polygon(PackedVector2Array([
-		Vector2(171, 36), Vector2(190, 36), Vector2(192, 52), Vector2(168, 52),
-	]), Color("8e4c44"))
-	draw_colored_polygon(PackedVector2Array([
-		Vector2(166, 65), Vector2(194, 65), Vector2(196, 82), Vector2(164, 82),
-	]), Color("8e4c44"))
-	draw_colored_polygon(PackedVector2Array([
-		Vector2(184, 29), Vector2(189, 29), Vector2(199, 102), Vector2(185, 102),
-	]), Color(0.12, 0.18, 0.23, 0.32))
-	draw_rect(Rect2(175, 84, 10, 17), Color("2c3b47"))
-	draw_rect(Rect2(166, 27, 28, 4), Color("4d535a"))
-	draw_rect(Rect2(171, 15, 18, 12), Color("54636c"))
-	draw_rect(Rect2(174, 17, 12, 9), Color("f1b963"))
-	draw_circle(LAMP, 3.6, Color("fff0b0"), true, -1.0, true)
-	draw_colored_polygon(PackedVector2Array([
-		Vector2(167, 16), Vector2(180, 8), Vector2(193, 16),
-	]), Color("844d48"))
 
 func _update_scenery_bounds() -> void:
 	var darkness: ColorRect = $NightMask/Darkness

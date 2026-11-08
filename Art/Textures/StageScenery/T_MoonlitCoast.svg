@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2440" height="1560" viewBox="0 0 610 390">
+  <defs>
+    <linearGradient id="air" x2="0" y2="1">
+      <stop stop-color="#091020"/><stop offset=".32" stop-color="#091020"/><stop offset=".63" stop-color="#263b54"/><stop offset=".78" stop-color="#14263d"/><stop offset="1" stop-color="#090f1c"/>
+    </linearGradient>
+    <radialGradient id="halo">
+      <stop stop-color="#537cb0" stop-opacity=".39"/><stop offset="1" stop-color="#537cb0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fade" x2="0" y2="1">
+      <stop stop-color="#172a40"/><stop offset="1" stop-color="#172a40" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#air)" d="M0 0H610V390H0Z"/>
+  <ellipse cx="400" cy="149" rx="140" ry="105" fill="url(#halo)"/>
+  <g fill="#bfd1e4" opacity=".42"><circle cx="151" cy="126" r="0.8"/><circle cx="178" cy="141" r="0.45"/><circle cx="215" cy="127" r="0.55"/><circle cx="250" cy="152" r="0.4"/><circle cx="273" cy="119" r="0.7"/><circle cx="346" cy="133" r="0.65"/><circle cx="435" cy="128" r="0.55"/><circle cx="458" cy="154" r="0.5"/><circle cx="475" cy="141" r="0.8"/><circle cx="384" cy="109" r="0.5"/><circle cx="195" cy="107" r="0.45"/><circle cx="124" cy="154" r="0.5"/><circle cx="322" cy="157" r="0.55"/><circle cx="508" cy="163" r="0.45"/></g>
+  <!-- Long ridge contours with staggered peaks and open water in the center. -->
+  <path fill="#24374e" d="M0 192Q45 185 83 195T152 215Q173 222 193 221T243 237Q268 245 304 249Q349 244 376 230T422 224Q450 224 470 211T525 203Q566 187 610 194V259H0Z"/>
+  <path fill="#1d3046" d="M0 206Q41 203 74 215Q96 230 126 233Q148 234 178 247L215 257H0Z M610 204Q579 203 548 217Q528 228 500 227Q478 226 457 235Q427 248 395 255L366 259H610Z"/>
+  <path fill="url(#fade)" d="M0 220Q48 217 83 240Q105 250 154 254Q179 255 230 261Q280 265 305 264Q373 261 414 254Q450 248 481 244Q516 240 542 227Q576 215 610 220V294H0Z"/>
+  <g fill="none" stroke="#66829c" stroke-width=".65" opacity=".25">
+    <path d="M0 208Q39 205 70 217Q99 235 124 235 M610 207Q579 205 550 220Q527 232 501 230 M29 248Q54 247 76 253 M508 247Q542 238 568 238"/>
+  </g>
+  <g fill="none" stroke="#66829c" stroke-width=".6" opacity="0.13" stroke-linecap="round">
+    <path d="M163 266h44m19 1h48m63 2h35m21-3h45m-137 12h55m-149 9h54m178-6h30m-376 9h41m300 9h35m-197 7h58m-167 15h54m122 8h59m-326 7h49m251 15h84"/>
+  </g>
+</svg>

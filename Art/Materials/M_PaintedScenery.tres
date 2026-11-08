@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://Level/painted_scenery.gdshader" id="1"]
+[ext_resource type="Texture2D" path="res://Art/Textures/T_Background.png" id="2"]
+[ext_resource type="Texture2D" path="res://Art/Textures/BackgroundOrnaments/painted_ball.png" id="3"]
+[ext_resource type="Texture2D" path="res://Art/Textures/BackgroundOrnaments/painted_spiral.png" id="4"]
+[ext_resource type="Texture2D" path="res://Art/Textures/BackgroundOrnaments/painted_drum.png" id="5"]
+[ext_resource type="Texture2D" path="res://Art/Textures/BackgroundOrnaments/painted_star.png" id="6"]
+
+[resource]
+shader = ExtResource("1")
+shader_parameter/brushwork = ExtResource("2")
+shader_parameter/painted_ball = ExtResource("3")
+shader_parameter/painted_spiral = ExtResource("4")
+shader_parameter/painted_drum = ExtResource("5")
+shader_parameter/painted_star = ExtResource("6")

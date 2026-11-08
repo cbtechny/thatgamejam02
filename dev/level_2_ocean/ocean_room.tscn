@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://Level/ocean_ornaments.gd" id="5_ornaments"]
+[ext_resource type="Script" path="res://Level/ocean_scenery.gd" id="5_scenery"]
 
 [ext_resource type="Script" path="res://dev/level_2_ocean/level_2_ocean.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://Art/Textures/Resources/Crank/crank_knob.tscn" id="2_crank"]
@@ -10,51 +10,13 @@
 [node name="Level2Ocean" type="Node2D"]
 script = ExtResource("1_script")
 
-[node name="BackgroundOrnaments" type="Node2D" parent="."]
-script = ExtResource("5_ornaments")
-night_mode = false
-
-[node name="Title" type="Label" parent="."]
-offset_left = 12.0
-offset_top = 4.0
-offset_right = 348.0
-offset_bottom = 17.0
-theme_override_font_sizes/font_size = 8
-text = "LEVEL 2: TIDAL FERRIES"
-mouse_filter = 2
+[node name="OceanScenery" type="Node2D" parent="."]
+show_behind_parent = true
+script = ExtResource("5_scenery")
 
 [node name="Crank" parent="." instance=ExtResource("2_crank")]
 position = Vector2(45, 52)
 scale = Vector2(0.03125, 0.03125)
-
-[node name="CrankLabel" type="Label" parent="."]
-offset_left = 14.0
-offset_top = 85.0
-offset_right = 81.0
-offset_bottom = 96.0
-theme_override_font_sizes/font_size = 5
-text = "Drag / ← →"
-horizontal_alignment = 1
-mouse_filter = 2
-
-[node name="TideReadout" type="Label" parent="."]
-offset_left = 83.0
-offset_top = 28.0
-offset_right = 209.0
-offset_bottom = 42.0
-theme_override_colors/font_color = Color(1, 0.86, 0.58, 1)
-theme_override_font_sizes/font_size = 9
-text = "TIDE   0%"
-mouse_filter = 2
-
-[node name="MechanismReadout" type="Label" parent="."]
-offset_left = 83.0
-offset_top = 44.0
-offset_right = 209.0
-offset_bottom = 56.0
-theme_override_font_sizes/font_size = 7
-text = "Time the fixed fan shot"
-mouse_filter = 2
 
 [node name="Fan" parent="." instance=ExtResource("3_fan")]
 rotation = -0.63
@@ -96,24 +58,5 @@ theme_override_font_sizes/font_size = 6
 focus_mode = 0
 text = "Reset [R]"
 
-[node name="TitleButton" type="Button" parent="."]
-offset_left = 283.0
-offset_top = 24.0
-offset_right = 348.0
-offset_bottom = 39.0
-theme_override_font_sizes/font_size = 6
-focus_mode = 0
-text = "Return to Title"
-
-[node name="Feedback" type="Label" parent="."]
-offset_left = 12.0
-offset_top = 184.0
-offset_right = 348.0
-offset_bottom = 199.0
-theme_override_font_sizes/font_size = 7
-horizontal_alignment = 1
-mouse_filter = 2
-
 [connection signal="pressed" from="FireButton" to="." method="fire_fan"]
 [connection signal="pressed" from="ResetButton" to="." method="reset_level"]
-[connection signal="pressed" from="TitleButton" to="." method="_return_to_title"]

@@ -55,9 +55,9 @@ func run() -> void:
 			check(room._state == room.State.HOPPING and room._hop_elapsed == elapsed, "Held/repeated Space cannot reset or relaunch an active hop")
 			key(KEY_ENTER)
 			check(room._state == room.State.RESTING, "Enter still activates focused Reset")
-		room.get_node("TitleButton").grab_focus()
+		check(room.get_node_or_null("TitleButton") == null, "Gameplay has no title button")
 		key(KEY_SPACE)
-		check(current_scene == stage and room._state == room.State.HOPPING, "Space cannot activate focused Return to Title during gameplay")
+		check(current_scene == stage and room._state == room.State.HOPPING, "Space fires during gameplay")
 		key(KEY_R)
 		check(room._state == room.State.RESTING, "R remains available")
 		room._campaign_menu.show_menu(false)
@@ -70,6 +70,7 @@ func run() -> void:
 		await process_frame
 		var retry: Button
 		for button: Node in room._campaign_menu.panel.find_children("*", "Button", true, false):
+			check(button.text != "Return to Title", "Pause menu has no title button")
 			if button.text == "Retry Stage":
 				retry = button
 		click(retry)

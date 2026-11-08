@@ -47,9 +47,9 @@ and an actual mouse click on Continue while the victory screen pauses gameplay.
 
 Ocean background presentation:
 `godot --headless --path . --script res://tests/campaign/run_ocean_ornaments.gd`
-Checks both modes, shared assets, motion, pause and reset. Run without headless
-for 1920x1080 captures in `.godot/level2-ornaments-preview.png` and
-`.godot/level3-ornaments-preview.png`.
+Checks scenery coverage, day mist motion, pause and reset, and the night mask's
+backdrop. Run without headless for 1920x1080 captures in
+`.godot/level2-scenery-preview.png` and `.godot/level3-scenery-preview.png`.
 
 Level 1 unified music-box entrance:
 `godot --headless --path . --script res://tests/campaign/run_level1_presentation.gd`

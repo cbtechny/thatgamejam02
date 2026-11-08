@@ -17,12 +17,10 @@ const KEYHOLE_ART_OPENING := Vector2(633.5, 380.0)
 const HOP_HEIGHT: float = 20.0
 const KEY_CRANK_STEP: float = 0.12
 const AUDIO_SAMPLE_RATE: int = 22050
-const UI_RESOLUTION: float = 6.0
-const TITLE_SCENE_PATH: String = "res://Level/title_menu.tscn"
 const UI_THEME = preload("res://Level/music_box_theme.gd")
 const STAGE_KEY_CONTROLS := preload("res://Level/stage_key_controls.gd")
-const INK := UI_THEME.INK
 const GOLD := UI_THEME.GOLD
+const GUIDANCE_PIXELS_PER_UNIT := 5.0
 
 @export_range(0.1, 2.0, 0.05) var hop_duration: float = 0.55
 
@@ -30,9 +28,9 @@ const GOLD := UI_THEME.GOLD
 @onready var _crank_handle: Node2D = $Crank/Handle
 @onready var _fan_blades: AnimatedSprite2D = $Fan/Blades
 @onready var _fragment: Sprite2D = $Fragment
-@onready var _feedback: Label = $Feedback
 @onready var _fire_button: Button = $FireButton
 @onready var _reset_button: Button = $ResetButton
+@onready var _scenery: Node2D = $OceanScenery
 
 var _stage_play_area := Rect2()
 var _scenery_bounds := Rect2(Vector2.ZERO, REFERENCE_SIZE)
@@ -41,8 +39,10 @@ var _platform_names: PackedStringArray
 var _floating_platforms: PackedInt32Array
 var _next_scene: String
 var _guide: Node2D
-var _label_backing: StyleBoxFlat
-var _target_backing: StyleBoxFlat
+var _feedback: Label
+var _crank_highlight: HighlightPulse
+var _key_sparkles: CPUParticles2D
+var _crank_used: bool = false
 var _state: State = State.RESTING
 var _current_platform: int = 0
 var _target_platform: int = -1
@@ -73,16 +73,27 @@ func _ready() -> void:
 	var hud := CanvasLayer.new()
 	hud.name = "StageHUD"
 	add_child(hud)
-	STAGE_KEY_CONTROLS.mount(hud, _fire_button, _reset_button, "FIRE FAN", "RESET")
-	_prepare_controls()
+	var controls: Control = STAGE_KEY_CONTROLS.mount(hud, _fire_button, _reset_button, "FIRE FAN", "RESET")
+	_feedback = Label.new()
+	_feedback.name = "Hint"
+	_feedback.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_feedback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_feedback.add_theme_color_override("font_color", UI_THEME.CREAM)
+	_feedback.add_theme_color_override("font_shadow_color", Color.BLACK)
+	_feedback.add_theme_constant_override("shadow_offset_y", 2)
+	_feedback.add_theme_font_size_override("font_size", 24)
+	controls.add_child(_feedback)
+	_feedback.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_feedback.offset_left = -360.0
+	_feedback.offset_right = 360.0
+	_feedback.offset_top = -42.0
+	_feedback.offset_bottom = -8.0
 	_guide = Node2D.new()
 	var unlit := CanvasItemMaterial.new()
 	unlit.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
 	_guide.material = unlit
 	_guide.draw.connect(_draw_guide)
 	add_child(_guide)
-	_label_backing = _make_label_backing(GOLD.darkened(0.3))
-	_target_backing = _make_label_backing(GOLD)
 	_setup_sfx()
 	_reset_prompt = preload("res://Level/restart_prompt.gd").attach(_reset_button)
 	_campaign_menu = preload("res://Level/campaign_menu.gd").new()
@@ -93,23 +104,9 @@ func _ready() -> void:
 	_key_collection.name = "KeyCollection"
 	_key_collection.middle_platform = _middle_fragment_platform
 	add_child(_key_collection)
+	_crank_highlight = HighlightPulse.attach($Crank/Handle/CrankKnob2, 150.0)
+	_key_sparkles = HighlightPulse.attach_sparkles(_fragment, _fragment.scale.abs() * GUIDANCE_PIXELS_PER_UNIT)
 	reset_level()
-
-
-func _prepare_controls() -> void:
-	var room_theme: Theme = UI_THEME.create(1.5)
-	# Rasterize at display scale, preserving the reference-space input bounds.
-	for child: Node in get_children():
-		if child is Control:
-			var control: Control = child as Control
-			var reference_size: Vector2 = control.size
-			var font_size: int = control.get_theme_font_size("font_size")
-			control.theme = room_theme
-			if control is Button:
-				control.focus_mode = Control.FOCUS_ALL
-			control.add_theme_font_size_override("font_size", int(font_size * UI_RESOLUTION))
-			control.scale = Vector2.ONE / UI_RESOLUTION
-			control.size = reference_size * UI_RESOLUTION
 
 
 func set_stage_layout(play_area: Rect2) -> void:
@@ -126,6 +123,7 @@ func _fit_viewport() -> void:
 	scale = Vector2.ONE * factor
 	position = play_area.position + (play_area.size - REFERENCE_SIZE * factor) * 0.5
 	_scenery_bounds = transform.affine_inverse() * Rect2(Vector2.ZERO, viewport_size)
+	_scenery.set_bounds(_scenery_bounds)
 	_update_scenery_bounds()
 	queue_redraw()
 
@@ -274,18 +272,18 @@ func _show_completion_after_collection() -> void:
 func _update_guidance() -> void:
 	_update_mechanisms()
 	_fire_button.disabled = _presentation_locked or _state != State.RESTING or not _can_launch()
-	if _presentation_locked:
-		_feedback.text = ""
-	else:
-		match _state:
-			State.COMPLETED:
-				_feedback.text = "Delivered to the keyhole!"
-			State.FAILED, State.FALLING:
-				_feedback.text = _failure_hint()
-			State.HOPPING:
-				_feedback.text = "In flight…"
-			_:
-				_feedback.text = _hint()
+	var in_flight: bool = _state == State.HOPPING
+	var guiding: bool = not _presentation_locked and (_state == State.RESTING or in_flight)
+	var started: bool = _crank_used or in_flight or _current_platform > 0
+	_crank_highlight.set_active(guiding and not started)
+	_key_sparkles.emitting = guiding
+	_key_collection.set_guidance(guiding and started, in_flight or not _fire_button.disabled)
+	_feedback.text = ""
+	if not _presentation_locked:
+		if _state == State.RESTING:
+			_feedback.text = _hint()
+		elif _state in [State.FAILED, State.FALLING]:
+			_feedback.text = _failure_hint()
 	_reset_prompt.set_active(not _presentation_locked and _state in [State.FAILED, State.FALLING])
 	_guide.queue_redraw()
 
@@ -305,13 +303,15 @@ func reset_level() -> void:
 	_hop_start = Vector2.ZERO
 	_hop_end = Vector2.ZERO
 	_dragging_crank = false
+	_crank_used = false
 	_previous_crank_angle = 0.0
 	_crank_angle_since_tick = 0.0
 	_reset_mechanisms()
+	_key_sparkles.restart()
+	_key_collection.reset()
 	_set_crank_angle(initial_crank_angle)
 	_fragment.rotation = 0.0
 	_fragment.show()
-	_key_collection.reset()
 	_stop_fan()
 	for player: AudioStreamPlayer in _sfx_players.values():
 		player.stop()
@@ -385,6 +385,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_LEFT, KEY_RIGHT:
 				if _state == State.RESTING and not _dragging_crank:
 					var step: float = KEY_CRANK_STEP if event.keycode == KEY_RIGHT else -KEY_CRANK_STEP
+					_crank_used = true
 					_set_crank_angle(_crank_angle + step)
 					_play_sfx("crank")
 			_:
@@ -409,6 +410,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var angle: float = offset.angle()
 		var angular_delta: float = wrapf(angle - _previous_crank_angle, -PI, PI)
 		_previous_crank_angle = angle
+		_crank_used = _crank_used or absf(angular_delta) > 0.01
 		_set_crank_angle(_crank_angle + angular_delta)
 		_crank_angle_since_tick += absf(angular_delta)
 		if _crank_angle_since_tick >= 0.34:
@@ -420,13 +422,6 @@ func _unhandled_input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		_release_crank()
-
-
-func _return_to_title() -> void:
-	if _exiting:
-		return
-	_exiting = true
-	get_node("/root/SceneFade").go(TITLE_SCENE_PATH)
 
 
 func _exit_tree() -> void:
@@ -448,8 +443,14 @@ func _draw() -> void:
 	var floor_y := _scenery_bounds.end.y + 1.0
 	water.append(Vector2(_scenery_bounds.end.x, floor_y))
 	water.append(Vector2(_scenery_bounds.position.x, floor_y))
-	draw_colored_polygon(water, Color("308c9b"))
-	draw_polyline(surface, Color("9be1db"), 0.7, true)
+	var colors := PackedColorArray()
+	colors.resize(water.size())
+	colors.fill(Color("3e777a"))
+	colors[-2] = Color("152d3a")
+	colors[-1] = colors[-2]
+	draw_polygon(water, colors)
+	draw_polyline(surface, Color("91c4b7"), 0.45, true)
+	_draw_water_ripples(floor_y)
 	for platform: int in range(_platform_names.size()):
 		if not _platform_visible(platform):
 			continue
@@ -461,25 +462,27 @@ func _draw() -> void:
 		draw_texture_rect(PLANK_TEXTURE if floating else STONE_TEXTURE, rect, false)
 
 
+func _draw_water_ripples(floor_y: float) -> void:
+	# Stagger the glints and sink them below the live wave crest at every tide.
+	for row: int in range(3):
+		for column: int in range(8):
+			var phase: float = row * 2.1 + column * 1.87
+			var x: float = _scenery_bounds.position.x + (column + 0.25 + row * 0.19) * _scenery_bounds.size.x / 8.0
+			x += sin(_elapsed_time * (0.38 + row * 0.07) + phase) * 8.0
+			var length: float = 11.0 + 6.0 * sin(phase)
+			var depth: float = 0.15 + row * 0.21
+			var start := Vector2(x, lerpf(_water_y(x), floor_y, depth))
+			var end := Vector2(x + length, lerpf(_water_y(x + length), floor_y, depth))
+			var alpha: float = 0.12 + 0.09 * sin(_elapsed_time * 0.65 + phase)
+			draw_line(start, end, Color(0.64, 0.84, 0.78, alpha), 0.45 + row * 0.12, true)
+
+
 func _platform_visible(_platform: int) -> bool:
 	return true
 
 
 func _draw_guide() -> void:
 	pass
-
-
-func _draw_caption(center: Vector2, caption: String, selected: bool = false, canvas: Node2D = null) -> void:
-	if canvas == null:
-		canvas = _guide
-	var font: Font = ThemeDB.fallback_font
-	var width: float = font.get_string_size(caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 32).x / UI_RESOLUTION
-	var color: Color = GOLD if selected else UI_THEME.CREAM
-	var backing: StyleBoxFlat = _target_backing if selected else _label_backing
-	canvas.draw_style_box(backing, Rect2(center - Vector2(width * 0.5 + 3.5, 5.0), Vector2(width + 7.0, 10.0)))
-	canvas.draw_set_transform(center + Vector2(-width * 0.5, 2.0), 0.0, Vector2.ONE / UI_RESOLUTION)
-	canvas.draw_string(font, Vector2.ZERO, caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 32, color)
-	canvas.draw_set_transform(Vector2.ZERO)
 
 
 func _keyhole_position(platform: int) -> Vector2:
@@ -497,12 +500,6 @@ func _draw_keyhole(platform: int, canvas: Node2D = null) -> void:
 	var size: Vector2 = KEYHOLE_TEXTURE.get_size() * KEYHOLE_ART_SCALE
 	var origin: Vector2 = center - KEYHOLE_ART_OPENING * KEYHOLE_ART_SCALE
 	canvas.draw_texture_rect(KEYHOLE_TEXTURE, Rect2(origin, size), false)
-
-
-func _make_label_backing(color: Color) -> StyleBoxFlat:
-	var backing: StyleBoxFlat = UI_THEME.plaque(color, 0.25)
-	backing.set_corner_radius_all(2)
-	return backing
 
 
 func _setup_sfx() -> void:

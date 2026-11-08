@@ -1,16 +1,14 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://Level/level_1_music_box.gd" id="1"]
 [ext_resource type="PackedScene" path="res://dev/Level 1 - Alt/level_1_room.tscn" id="2"]
 [ext_resource type="Texture2D" path="res://Art/Textures/T_Boxexterior.png" id="3"]
 
-[ext_resource type="Texture2D" path="res://dev/winder_test_1_time_scroll/assets/wide_day_and_night.webp" id="4_sky"]
+[ext_resource type="Texture2D" path="res://Art/Textures/StageScenery/T_ClockworkStage.svg" id="4_scenery"]
+[ext_resource type="Script" path="res://Level/clockwork_scenery.gd" id="6_scenery"]
+[ext_resource type="Material" path="res://Art/Materials/M_PaintedScenery.tres" id="7_paint"]
 
 [ext_resource type="Texture2D" path="res://Art/Textures/Rope segment.png" id="5_rope"]
-
-[sub_resource type="AtlasTexture" id="Atlas_day_sky"]
-atlas = ExtResource("4_sky")
-region = Rect2(0, 0, 3600, 1024)
 
 [node name="Level1MusicBox" type="Node2D"]
 script = ExtResource("1")
@@ -19,14 +17,15 @@ room_path = NodePath("MusicBox/RoomClip/Room/GameViewport/Puzzle")
 [node name="MusicBox" type="Node2D" parent="."]
 
 [node name="InteriorBackdrop" type="TextureRect" parent="MusicBox"]
+material = ExtResource("7_paint")
 offset_left = 460.0
 offset_top = 340.0
 offset_right = 1070.0
 offset_bottom = 730.0
 mouse_filter = 2
-texture = SubResource("Atlas_day_sky")
+texture = ExtResource("4_scenery")
 expand_mode = 1
-stretch_mode = 6
+script = ExtResource("6_scenery")
 
 [node name="RoomClip" type="Control" parent="MusicBox"]
 clip_contents = true

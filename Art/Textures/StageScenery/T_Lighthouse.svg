@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="912" viewBox="140 4 80 152">
+  <defs>
+    <linearGradient id="tower">
+      <stop stop-color="#827e77"/><stop offset=".39" stop-color="#aba098"/><stop offset="1" stop-color="#475162"/>
+    </linearGradient>
+    <linearGradient id="rock" x2=".15" y2="1">
+      <stop stop-color="#374452"/><stop offset="1" stop-color="#253241"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#ffe1a2" stop-opacity=".65"/><stop offset="1" stop-color="#ffe1a2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path fill="url(#rock)" d="M142 156L153 118L162 104L169 99L190 98L204 107L209 121L218 156Z"/>
+  <path fill="url(#tower)" d="M172 30H188L196 103Q181 106 163 103Z"/>
+  <path fill="#796366" d="M171 39H189L191 52H169Z M168 64H192L194 76H167Z"/>
+  <path fill="#c0b4a0" opacity=".25" d="M175 32H177L172 103H167Z"/>
+  <path fill="#2d3847" d="M178 102V91Q178 87 181 87Q184 87 184 91V102Z"/>
+  <path fill="none" stroke="#71808a" stroke-width=".6" opacity=".6" d="M162 112L170 105L188 106 M187 109L200 113L206 123 M154 134L165 122"/>
+  <path fill="#4b5565" d="M166 27H194L191 31H169Z M171 15H189V27H171Z"/>
+  <path fill="#735d62" d="M167 16L180 8L193 16Z"/>
+  <circle cx="180" cy="22" r="13" fill="url(#glow)"/>
+  <path fill="#e3ad63" d="M174 17H186V26H174Z"/>
+  <circle cx="180" cy="22" r="3.6" fill="#fff0b0"/>
+</svg>

@@ -23,13 +23,10 @@ const KEY_RING_ASSEMBLY_OFFSET: Vector2 = Vector2(-90.4, 0.4)
 const KEY_SHAFT_ASSEMBLY_OFFSET: Vector2 = Vector2(34.2, 2.2)
 const KEY_TEETH_ASSEMBLY_OFFSET: Vector2 = Vector2(114.8, 14.4)
 const FULL_KEY_TEXTURE: Texture2D = preload("res://Art/Textures/Resources/Key/key_full.tres")
-const CURTAIN_SCENE: PackedScene = preload("res://dev/title/curtain.tscn")
 const MENU_OVERLAY_SCRIPT: Script = preload("res://dev/Level 1 - Alt/menu_overlay.gd")
 const CAMPAIGN_MENU: Script = preload("res://Level/campaign_menu.gd")
 const STAGE_KEY_CONTROLS: Script = preload("res://Level/stage_key_controls.gd")
 const RESTART_CURTAINS: Script = preload("res://Level/level_1_restart.gd")
-const TITLE_SCENE_PATH: String = "res://Level/title_menu.tscn"
-signal title_transition_finished
 
 @onready var _key: RigidBody2D = $Key0 as RigidBody2D
 @onready var _key_sprite: Sprite2D = $Key0/Sprite2D as Sprite2D
@@ -84,7 +81,6 @@ var _crank_angle_since_tick: float = 0.0
 var _menu_ui: CanvasLayer
 var _pause_menu_open: bool = false
 var _transitioning: bool = false
-var _title_transition_curtains_remaining: int = 0
 var _crank_used: bool = false
 var _key_sparkles: CPUParticles2D
 var _middle_key_sparkles: CPUParticles2D
@@ -107,17 +103,17 @@ func _ready() -> void:
 	_left_fan_start_y = _left_fan.position.y
 	_middle_key_start_y = _middle_key.position.y
 	_create_endpoint_hitboxes()
-	_crank_highlight = _add_highlight($Crank/Handle/CrankKnob2 as Node2D, 150.0)
-	_fan_highlight = _add_highlight(_left_fan_blades, 200.0)
-	_center_highlight = _add_highlight(_middle_key, 150.0)
-	_keyhole_highlight = _add_highlight(_keyhole, 600.0)
-	_third_piece_highlight = _add_highlight(_key3_placeholder, 150.0)
+	_crank_highlight = HighlightPulse.attach($Crank/Handle/CrankKnob2 as Node2D, 150.0)
+	_fan_highlight = HighlightPulse.attach(_left_fan_blades, 200.0)
+	_center_highlight = HighlightPulse.attach(_middle_key, 150.0)
+	_keyhole_highlight = HighlightPulse.attach(_keyhole, 600.0)
+	_third_piece_highlight = HighlightPulse.attach(_key3_placeholder, 150.0)
 	_center_highlight.set_active(false)
 	_keyhole_highlight.set_active(false)
 	_third_piece_highlight.set_active(false)
-	_key_sparkles = _add_key_particles(_key_sprite)
-	_middle_key_sparkles = _add_key_particles(_middle_key)
-	_third_piece_sparkles = _add_key_particles(_key3_placeholder)
+	_key_sparkles = HighlightPulse.attach_sparkles(_key_sprite, _key_sprite.global_scale.abs())
+	_middle_key_sparkles = HighlightPulse.attach_sparkles(_middle_key, _middle_key.global_scale.abs())
+	_third_piece_sparkles = HighlightPulse.attach_sparkles(_key3_placeholder, _key3_placeholder.global_scale.abs())
 	_third_piece_sparkles.emitting = false
 	_create_flash_overlay()
 	_release_hint.hide()
@@ -296,13 +292,8 @@ func _show_pause_menu() -> void:
 	retry_button.custom_minimum_size = Vector2(300.0, 64.0)
 	retry_button.pressed.connect(_retry_level)
 	panel.add_child(retry_button)
-	var title_button: Button = Button.new()
-	title_button.text = "Return to Title"
-	title_button.custom_minimum_size = Vector2(300.0, 64.0)
-	title_button.pressed.connect(_return_to_title)
-	panel.add_child(title_button)
 	CAMPAIGN_MENU.add_release_controls(panel)
-	_style_menu_buttons([resume_button, retry_button, title_button])
+	_style_menu_buttons([resume_button, retry_button])
 	var retry_prompt: Node = preload("res://Level/restart_prompt.gd").attach(retry_button)
 	retry_prompt.set_active(_missed)
 	resume_button.call_deferred("grab_focus")
@@ -385,13 +376,8 @@ func _add_terminal_menu_buttons(panel: VBoxContainer) -> void:
 	retry_button.custom_minimum_size = Vector2(300.0, 64.0)
 	retry_button.pressed.connect(_retry_level)
 	panel.add_child(retry_button)
-	var title_button: Button = Button.new()
-	title_button.text = "Return to Title"
-	title_button.custom_minimum_size = Vector2(300.0, 64.0)
-	title_button.pressed.connect(_return_to_title)
-	panel.add_child(title_button)
 	CAMPAIGN_MENU.add_release_controls(panel)
-	_style_menu_buttons([retry_button, title_button])
+	_style_menu_buttons([retry_button])
 	retry_button.call_deferred("grab_focus")
 
 
@@ -440,49 +426,6 @@ func _reset_for_retry() -> Node:
 	queue_free()
 	return replacement
 
-
-func _return_to_title() -> void:
-	if _transitioning:
-		return
-	_transitioning = true
-	_cancel_presentation_tweens()
-	get_tree().paused = true
-	var left_curtain: Node2D = CURTAIN_SCENE.instantiate() as Node2D
-	left_curtain.z_index = 100
-	_ui.add_child(left_curtain)
-	var right_anchor: Node2D = Node2D.new()
-	right_anchor.name = "RightCurtainAnchor"
-	right_anchor.position.x = get_viewport_rect().size.x
-	right_anchor.scale = Vector2(-1.0, 1.0)
-	right_anchor.z_index = 100
-	_ui.add_child(right_anchor)
-	var right_curtain: Node2D = CURTAIN_SCENE.instantiate() as Node2D
-	right_anchor.add_child(right_curtain)
-	var players: Array[AnimationPlayer] = [
-		left_curtain.get_node("AnimationPlayer") as AnimationPlayer,
-		right_curtain.get_node("AnimationPlayer") as AnimationPlayer,
-	]
-	_title_transition_curtains_remaining = players.size()
-	for player: AnimationPlayer in players:
-		player.process_mode = Node.PROCESS_MODE_ALWAYS
-		var library: AnimationLibrary = player.get_animation_library(&"").duplicate(true) as AnimationLibrary
-		library.get_animation(&"curtain").loop_mode = Animation.LOOP_NONE
-		player.remove_animation_library(&"")
-		player.add_animation_library(&"", library)
-		player.animation_finished.connect(_on_title_curtain_finished)
-		player.play(&"curtain")
-		player.seek(0.0, true)
-	await title_transition_finished
-	get_tree().paused = false
-	get_node("/root/SceneFade").go(TITLE_SCENE_PATH)
-
-
-func _on_title_curtain_finished(animation_name: StringName) -> void:
-	if animation_name != &"curtain":
-		return
-	_title_transition_curtains_remaining -= 1
-	if _title_transition_curtains_remaining == 0:
-		title_transition_finished.emit()
 
 func _sync_key_controls() -> void:
 	if not is_instance_valid(_key_controls):
@@ -600,7 +543,7 @@ func _update_guidance() -> void:
 	_crank_highlight.set_active(not _crank_used and not _released)
 	_fan_highlight.set_active(_crank_used and not _released)
 	_center_highlight.set_active(_crank_used or _released)
-	_center_highlight.glow_color = Color(1.0, 0.84, 0.42, 0.9) if _middle_fan_active else Color(0.7, 0.42, 1.0, 0.85)
+	_center_highlight.glow_color = HighlightPulse.READY_COLOR if _middle_fan_active else HighlightPulse.WAITING_COLOR
 	_middle_key_sparkles.emitting = _crank_used or _released
 	if _released:
 		_release_hint.text = "Catch the glowing piece!"
@@ -872,54 +815,6 @@ func _set_fan_whirr_active(player_name: String, active: bool) -> void:
 		player.stop()
 
 
-func _add_highlight(target: Node2D, glow_radius: float) -> HighlightPulse:
-	var highlight: HighlightPulse = HighlightPulse.new()
-	highlight.radius = glow_radius
-	# Stay behind this sprite without falling behind the stage background.
-	highlight.z_index = 0
-	highlight.show_behind_parent = true
-	target.add_child(highlight)
-	return highlight
-
-
-func _add_key_particles(target: Node2D) -> CPUParticles2D:
-	var particles: CPUParticles2D = CPUParticles2D.new()
-	particles.name = "KeySparkles"
-	particles.amount = 10
-	particles.lifetime = 0.9
-	particles.explosiveness = 0.0
-	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
-	# The emitter follows the visible sprite, with small glints in world pixels.
-	particles.scale = Vector2.ONE / target.global_scale.abs()
-	var sprite: Sprite2D = target as Sprite2D
-	particles.emission_rect_extents = sprite.texture.get_size() * target.global_scale.abs() * Vector2(0.36, 0.22)
-	particles.direction = Vector2.UP
-	particles.spread = 180.0
-	particles.initial_velocity_min = 8.0
-	particles.initial_velocity_max = 20.0
-	particles.gravity = Vector2(0.0, -5.0)
-	particles.scale_amount_min = 0.2
-	particles.scale_amount_max = 0.45
-	particles.color = Color(1.0, 0.88, 0.56, 0.9)
-	particles.texture = _make_sparkle_texture()
-	target.add_child(particles)
-	particles.position = Vector2.ZERO
-	particles.emitting = true
-	return particles
-
-
-func _make_sparkle_texture() -> Texture2D:
-	var image: Image = Image.create(16, 16, false, Image.FORMAT_RGBA8)
-	for y: int in range(16):
-		for x: int in range(16):
-			var distance: float = Vector2(x - 7.5, y - 7.5).length() / 7.5
-			var core: float = clampf(1.0 - distance * 2.0, 0.0, 1.0)
-			var ray: float = clampf(1.0 - minf(absf(x - 7.5), absf(y - 7.5)), 0.0, 1.0)
-			var alpha: float = maxf(core, ray) * clampf(1.0 - distance, 0.0, 1.0)
-			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
-	return ImageTexture.create_from_image(image)
-
-
 func _emit_key_burst(world_position: Vector2) -> void:
 	var burst: CPUParticles2D = CPUParticles2D.new()
 	burst.name = "KeyConnectionBurst"
@@ -936,7 +831,7 @@ func _emit_key_burst(world_position: Vector2) -> void:
 	burst.scale_amount_min = 0.24
 	burst.scale_amount_max = 0.5
 	burst.color = Color(1.0, 0.9, 0.6, 1.0)
-	burst.texture = _make_sparkle_texture()
+	burst.texture = HighlightPulse.make_sparkle_texture()
 	_ui.add_child(burst)
 	burst.global_position = world_position
 	burst.process_mode = Node.PROCESS_MODE_ALWAYS

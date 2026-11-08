@@ -4,8 +4,9 @@
 [ext_resource type="PackedScene" uid="uid://c2pl028wbcv7y" path="res://Art/Textures/Resources/Crank/crank_knob.tscn" id="2_crank"]
 [ext_resource type="PackedScene" uid="uid://cap0sjxxwhvyq" path="res://Art/Textures/Resources/Fan/fan.tscn" id="3_fan"]
 [ext_resource type="Texture2D" uid="uid://j4slrladcdim" path="res://Art/Textures/Resources/Key/key0.tres" id="4_key"]
-[ext_resource type="Script" uid="uid://dr5yerlf2vlto" path="res://Level/ocean_ornaments.gd" id="5_ornaments"]
+[ext_resource type="Script" uid="uid://dr5yerlf2vlto" path="res://Level/ocean_scenery.gd" id="5_scenery"]
 [ext_resource type="Shader" uid="uid://1v5yrfbxtnr1" path="res://dev/level_3_ocean/lighthouse_mask.gdshader" id="6_mask"]
+[ext_resource type="Texture2D" path="res://Art/Textures/StageScenery/T_MoonlitCoast.svg" id="7_coast"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mask"]
 resource_local_to_scene = true
@@ -15,56 +16,20 @@ shader_parameter/mask_size = Vector2(364, 204)
 shader_parameter/stage_floor_y = 200.0
 shader_parameter/beam_slope = 0.0
 shader_parameter/lamp_position = Vector2(180, 22)
+shader_parameter/night_scenery = ExtResource("7_coast")
 
 [node name="Level3Ocean" type="Node2D" unique_id=1280186356]
 script = ExtResource("1_script")
 
-[node name="BackgroundOrnaments" type="Node2D" parent="." unique_id=1054897828]
-script = ExtResource("5_ornaments")
+[node name="OceanScenery" type="Node2D" parent="." unique_id=1054897828]
+show_behind_parent = true
+script = ExtResource("5_scenery")
 night_mode = true
-
-[node name="Title" type="Label" parent="." unique_id=1318364007]
-z_index = 11
-offset_left = 12.0
-offset_top = 4.0
-offset_right = 348.0
-offset_bottom = 17.0
-theme_override_font_sizes/font_size = 8
-text = "LEVEL 3: LIGHTHOUSE"
 
 [node name="Crank" parent="." unique_id=2134137877 instance=ExtResource("2_crank")]
 z_index = 11
 position = Vector2(45, 52)
 scale = Vector2(0.03125, 0.03125)
-
-[node name="CrankLabel" type="Label" parent="." unique_id=1667567176]
-z_index = 11
-offset_left = 14.0
-offset_top = 85.0
-offset_right = 81.0
-offset_bottom = 96.0
-theme_override_font_sizes/font_size = 5
-text = "Drag / ← →"
-horizontal_alignment = 1
-
-[node name="TideReadout" type="Label" parent="." unique_id=962374753]
-z_index = 11
-offset_left = 83.0
-offset_top = 28.0
-offset_right = 209.0
-offset_bottom = 42.0
-theme_override_colors/font_color = Color(1, 0.86, 0.58, 1)
-theme_override_font_sizes/font_size = 9
-text = "TIDE   0%"
-
-[node name="MechanismReadout" type="Label" parent="." unique_id=45097513]
-z_index = 11
-offset_left = 83.0
-offset_top = 44.0
-offset_right = 209.0
-offset_bottom = 56.0
-theme_override_font_sizes/font_size = 7
-text = "Watch the sweeping beam"
 
 [node name="Fan" parent="." unique_id=1867037272 instance=ExtResource("3_fan")]
 rotation = -0.63
@@ -112,25 +77,6 @@ focus_mode = 0
 theme_override_font_sizes/font_size = 6
 text = "Reset [R]"
 
-[node name="TitleButton" type="Button" parent="." unique_id=487121557]
-z_index = 11
-offset_left = 283.0
-offset_top = 24.0
-offset_right = 348.0
-offset_bottom = 39.0
-focus_mode = 0
-theme_override_font_sizes/font_size = 6
-text = "Return to Title"
-
-[node name="Feedback" type="Label" parent="." unique_id=635400639]
-z_index = 11
-offset_left = 12.0
-offset_top = 184.0
-offset_right = 348.0
-offset_bottom = 199.0
-theme_override_font_sizes/font_size = 7
-horizontal_alignment = 1
-
 [node name="NightMask" type="Node2D" parent="." unique_id=1500388910]
 z_index = 10
 
@@ -144,4 +90,3 @@ mouse_filter = 2
 
 [connection signal="pressed" from="FireButton" to="." method="fire_fan"]
 [connection signal="pressed" from="ResetButton" to="." method="reset_level"]
-[connection signal="pressed" from="TitleButton" to="." method="_return_to_title"]

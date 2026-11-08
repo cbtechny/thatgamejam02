@@ -22,7 +22,7 @@ Made by Lilith, Chris (Ninja Pirate Robot Alien) and Packy for thatgamejam #02.
 - In Level 1, press **Space** to release the key. Time the release to meet the moving piece; the pieces join automatically.
 - In the ocean levels, set the tide and press **Space** or click **Fire fan**. Time each shot onto the drifting boards; cross the pier by day and the breakwater under the lighthouse at night.
 - A missed landing ends the run. Press **R** in ocean levels or choose **Retry** from the pause menu to restart from shore.
-- **Esc** pauses/resumes. Menus include Retry, Return to Title, Mute and Exit.
+- **Esc** pauses/resumes. Stage menus include Retry, Mute and Exit.
 - **Tab / arrows** move menu focus; **Enter** selects.
 
 ### Download

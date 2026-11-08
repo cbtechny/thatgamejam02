@@ -15,8 +15,6 @@
 [ext_resource type="Script" uid="uid://d6b3ddh512g3" path="res://dev/Level 1 - Alt/level_1.gd" id="13_level_script"]
 [ext_resource type="AudioStream" uid="uid://c4n7j7sxvm73o" path="res://dev/winder_test_1_time_scroll/assets/thatgamejam_theme_mp3_medium_audio_track.mp3" id="14_0evmt"]
 
-[ext_resource type="PackedScene" path="res://Level/background_ornaments.tscn" id="15_ornaments"]
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_winder"]
 size = Vector2(996, 365)
 
@@ -36,19 +34,6 @@ corner_radius_bottom_left = 12
 
 [node name="PanoramaWindowTest" type="Node2D" unique_id=320456242]
 script = ExtResource("13_level_script")
-
-[node name="BoxWindow" type="Control" parent="." unique_id=720501311]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 1920.0
-offset_bottom = 1080.0
-clip_contents = true
-mouse_filter = 2
-
-[node name="BackgroundOrnaments" parent="BoxWindow" instance=ExtResource("15_ornaments")]
-position = Vector2(289, 24)
 
 [node name="LeftFan" parent="." unique_id=1296767138 instance=ExtResource("6_cb03v")]
 position = Vector2(304, 445)

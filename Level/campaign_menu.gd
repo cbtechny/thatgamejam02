@@ -55,7 +55,6 @@ func show_menu(won: bool) -> void:
 	var retry_button := add_button(column, "Retry Stage", retry)
 	var retry_prompt: Node = preload("res://Level/restart_prompt.gd").attach(retry_button)
 	retry_prompt.set_active(room.get("_state") in [2, 4])
-	add_button(column, "Return to Title", func(): go("res://Level/title_menu.tscn"))
 	add_release_controls(column)
 	primary.grab_focus()
 
