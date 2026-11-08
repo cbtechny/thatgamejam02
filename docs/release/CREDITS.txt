@@ -18,10 +18,7 @@ It is not licensed for reuse in other projects or future non-jam releases.
 Jam rules: https://itch.io/jam/thatgamejam02
 
 AI disclosure
-AI tools assisted programming. The painted ball, drum, spiral and star background
-ornament cutouts were created with imagegen from contributor-supplied hand-painted
-artwork. The remaining asset provenance must be checked with the team before
-claiming this is a complete list of AI-assisted assets.
+Lilith created the game's original hand-drawn artwork and contributed its writing and concept. AI tools assisted with translation, some UI components, and coding. Team members worked across different time zones and languages, and AI was essential to real-time communication. AI-assisted visual work was limited, including background ornament cutouts adapted from contributor-supplied hand-painted artwork.
 
 Team-created code and assets remain the property of their respective creators.
 No general repository or asset reuse license is granted.

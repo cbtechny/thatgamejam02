@@ -46,8 +46,7 @@ only within this jam entry. Made with Godot Engine.
 
 ### AI disclosure
 
-AI tools assisted programming. The painted ball, drum, spiral and star background
-ornament cutouts are AI-assisted edits of contributor-supplied hand-painted artwork.
+Lilith created the game's original hand-drawn artwork and contributed its writing and concept. AI tools assisted with translation, some UI components, and coding. Team members worked across different time zones and languages, and AI was essential to real-time communication. AI-assisted visual work was limited, including background ornament cutouts adapted from contributor-supplied hand-painted artwork.
 
 ## Metadata and publication checklist
 
