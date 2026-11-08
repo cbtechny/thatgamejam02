@@ -29,11 +29,16 @@ func mouse(point: Vector2, pressed: bool) -> void:
 	root.push_input(event, true)
 
 func click_caption(caption: String) -> void:
+	if caption == "Continue":
+		await create_timer(0.45).timeout
+	# Deliver synthetic unpause input before physics flushes its pending queries.
+	await physics_frame
 	for button: Node in current_scene.find_children("*", "Button", true, false):
-		if button.text == caption:
+		if button.text.nocasecmp_to(caption) == 0:
 			mouse(button.get_global_rect().get_center(), true)
 			mouse(button.get_global_rect().get_center(), false)
 			await process_frame
+			await _wait_for_scene_fade()
 			return
 	check(false, "Missing button: " + caption)
 
@@ -41,6 +46,7 @@ func wait_scene(path: String) -> bool:
 	for frame: int in range(360):
 		if current_scene != null and current_scene.scene_file_path == path:
 			await process_frame
+			await _wait_for_scene_fade()
 			return true
 		await physics_frame
 	check(false, "Transition timed out: " + path)
@@ -140,9 +146,12 @@ func solve_ocean(number: int) -> void:
 	await capture("0%d-missed-retry" % (number + 1))
 	key(KEY_ESCAPE)
 	await process_frame
+	await _wait_for_scene_fade()
 	await click_caption("Retry stage")
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	await wait_entrance()
 	room = current_scene._room
 	check(not paused and room._current_platform == 0, "Retry restores shore")
@@ -163,12 +172,15 @@ func solve_ocean(number: int) -> void:
 			await capture("0%d-ocean" % (number + 3))
 	check(room._state == 3, "Real input route solves ocean %d" % number)
 	await process_frame
+	await _wait_for_scene_fade()
 	await click_caption("Continue")
 
 func run() -> void:
 	change_scene_to_file("res://Main.tscn")
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	await click_caption("Play")
 	if not await wait_scene("res://Level/level_1_music_box.tscn"):
 		root.get_node("ReleaseSession").quit_game(1)
@@ -183,7 +195,14 @@ func run() -> void:
 		await wait_entrance()
 		key(KEY_ESCAPE)
 		await process_frame
+		await _wait_for_scene_fade()
 		await click_caption("Return to Title")
 		check(await wait_scene("res://Level/title_menu.tscn"), "Replay returns to title")
 	print("Scripted full playthrough: %d failures; real input, real physics, four day/five night shots, both miss retries, ending, replay, title." % failures)
 	root.get_node("ReleaseSession").quit_game(1 if failures else 0)
+
+
+func _wait_for_scene_fade() -> void:
+	var fade: Node = root.get_node_or_null("SceneFade")
+	while is_instance_valid(fade) and fade.busy:
+		await process_frame

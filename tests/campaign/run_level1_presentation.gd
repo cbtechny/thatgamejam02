@@ -14,7 +14,9 @@ func run() -> void:
 	root.size = Vector2i(1920, 1080)
 	change_scene_to_file("res://Level/level_1_music_box.tscn")
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	var stage: Node = current_scene
 	var room: Node = stage._room
 	var display: Control = stage.get_node("MusicBox/RoomClip/Room")
@@ -35,18 +37,21 @@ func run() -> void:
 	press.position = screen_knob
 	root.push_input(press, true)
 	await process_frame
+	await _wait_for_scene_fade()
 	check(room._dragging_crank, "Screen click reaches crank inside transformed viewport")
 	var motion := InputEventMouseMotion.new()
 	motion.position = display.get_global_transform_with_canvas() * room._crank.to_global(Vector2.from_angle(0.3) * 576)
 	root.push_input(motion, true)
 	await physics_frame
 	await process_frame
+	await _wait_for_scene_fade()
 	check(absf(room._wound_key_y - (room._key_start_y - 30.0)) < 0.1, "Viewport mapping preserves drag angle and lift")
 	var release := InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_LEFT
 	release.position = screen_knob
 	root.push_input(release, true)
 	await process_frame
+	await _wait_for_scene_fade()
 	check(not room._dragging_crank, "Mouse release clears viewport drag")
 	for extent: Vector2 in [Vector2(1920,1080), Vector2(1280,720), Vector2(1080,1080)]:
 		stage._apply_layout(extent)
@@ -60,7 +65,9 @@ func run() -> void:
 	room._retry_level()
 	await wait_restart()
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	stage = current_scene
 	room = stage._room
 	display = stage.get_node("MusicBox/RoomClip/Room")
@@ -69,6 +76,7 @@ func run() -> void:
 	room._show_win_screen()
 	room._finish_win_presentation()
 	await process_frame
+	await _wait_for_scene_fade()
 	var next: Button
 	for button: Node in room._get_menu_ui().find_children("*", "Button", true, false):
 		if button.text == "Continue to the ocean":
@@ -83,16 +91,25 @@ func run() -> void:
 	click.pressed = false
 	root.push_input(click, true)
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	check(current_scene != stage and not paused, "Victory mouse click leaves nested viewport for Level 2")
 	print("Level 1 music-box presentation: %d failures" % failures)
 	current_scene.free()
 	await process_frame
+	await _wait_for_scene_fade()
 	quit(1 if failures else 0)
 
 func wait_restart() -> void:
 	for frame: int in range(480):
-		if root.get_node_or_null("Level1RestartCurtains") == null:
+		if root.get_node_or_null("Level1RestartFade") == null:
 			return
 		await physics_frame
 	check(false, "Curtain restart timed out")
+
+
+func _wait_for_scene_fade() -> void:
+	var fade: Node = root.get_node_or_null("SceneFade")
+	while is_instance_valid(fade) and fade.busy:
+		await process_frame

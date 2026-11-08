@@ -22,7 +22,13 @@ if (-not $version.StartsWith('4.7.2.stable.')) { throw "Expected Godot 4.7.2 sta
 $originalAppData = $env:APPDATA
 $originalLocalAppData = $env:LOCALAPPDATA
 try {
-    if (-not $TemplatesDirectory) { $TemplatesDirectory = Join-Path $originalAppData 'Godot\export_templates\4.7.2.stable' }
+    if (-not $TemplatesDirectory) {
+        $TemplatesDirectory = Join-Path $originalAppData 'Godot\export_templates\4.7.2.stable'
+        if (-not (Test-Path -LiteralPath (Join-Path $TemplatesDirectory 'windows_release_x86_64.exe'))) {
+            $localTemplates = Join-Path $repo '.godot\release-tools'
+            if (Test-Path -LiteralPath (Join-Path $localTemplates 'windows_release_x86_64.exe')) { $TemplatesDirectory = $localTemplates }
+        }
+    }
     if (-not (Test-Path -LiteralPath (Join-Path $TemplatesDirectory 'windows_release_x86_64.exe'))) {
         throw 'Install matching Godot 4.7.2 export templates, or pass -TemplatesDirectory containing windows_release_x86_64.exe.'
     }
@@ -92,6 +98,10 @@ try {
             'tests/campaign/run_background_ornaments.gd',
             'tests/campaign/run_ocean_ornaments.gd',
             'tests/campaign/run_release_tests.gd',
+            'tests/campaign/run_ocean_fragments.gd',
+            'tests/campaign/run_ocean_space_input.gd',
+            'tests/campaign/run_keycaps.gd',
+            'tests/campaign/run_restart_cues.gd',
             'tests/campaign/run_playthrough.gd'
         )) {
             # The timed four/five-shot route plus both retries outlasts the old

@@ -1,30 +1,32 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://c2y8pyrharlvu"]
 
-[ext_resource type="Script" path="res://dev/level_3_ocean/ocean_music_box.gd" id="1_presentation"]
-[ext_resource type="PackedScene" path="res://dev/level_3_ocean/ocean_room.tscn" id="2_room"]
-[ext_resource type="Texture2D" path="res://Art/Textures/T_Boxexterior.png" id="3_box"]
+[ext_resource type="Script" uid="uid://cuoi822k8jdta" path="res://dev/level_3_ocean/ocean_music_box.gd" id="1_presentation"]
+[ext_resource type="PackedScene" uid="uid://bu27mj4pcqyba" path="res://dev/level_3_ocean/ocean_room.tscn" id="2_room"]
+[ext_resource type="Texture2D" uid="uid://bug5gkxtcg8dw" path="res://Art/Textures/T_Boxexterior.png" id="3_box"]
 
-[node name="Level3OceanMusicBox" type="Node2D"]
+[node name="Level3OceanMusicBox" type="Node2D" unique_id=214812702]
 script = ExtResource("1_presentation")
 
-[node name="MusicBox" type="Node2D" parent="."]
+[node name="MusicBox" type="Node2D" parent="." unique_id=1524421729]
 
-[node name="InteriorBackdrop" type="Polygon2D" parent="MusicBox"]
+[node name="InteriorBackdrop" type="Polygon2D" parent="MusicBox" unique_id=213293448]
 color = Color(0, 0, 0, 1)
 polygon = PackedVector2Array(460, 340, 1070, 340, 1070, 730, 460, 730)
 
-[node name="RoomClip" type="Control" parent="MusicBox"]
+[node name="RoomClip" type="Control" parent="MusicBox" unique_id=1684782521]
 clip_contents = true
+layout_mode = 3
+anchors_preset = 0
 offset_left = 520.0
 offset_top = 456.0
 offset_right = 1016.0
 offset_bottom = 704.0
 mouse_filter = 2
 
-[node name="Room" parent="MusicBox/RoomClip" instance=ExtResource("2_room")]
+[node name="Room" parent="MusicBox/RoomClip" unique_id=324887755 instance=ExtResource("2_room")]
 
-[node name="MusicBoxExteriorFrame" type="Sprite2D" parent="MusicBox"]
-z_index = 10
+[node name="MusicBoxExteriorFrame" type="Sprite2D" parent="MusicBox" unique_id=434921974]
 self_modulate = Color(0.43, 0.47, 0.59, 1)
+z_index = 10
 texture = ExtResource("3_box")
 centered = false

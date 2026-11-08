@@ -5,8 +5,8 @@ const SHOT := Vector2(76.0, -12.0)
 const LANDING_X: float = 12.0
 const LANDING_Y: float = 8.0
 # A forgiving finish after the timed crossing; earlier decks keep their tolerances.
-const KEYHOLE_LANDING_X: float = 18.0
-const KEYHOLE_LANDING_Y: float = 12.0
+const KEYHOLE_LANDING_X: float = 24.0
+const KEYHOLE_LANDING_Y: float = 18.0
 const FAN_OFFSET := Vector2(-9.5, -8.0)
 const WIND_BURST_DURATION: float = 0.24
 
@@ -47,7 +47,7 @@ func _prepare_launch() -> void:
 	# Start from the drawn fragment, but aim from the stable deck height so
 	# surface bob does not change the launch tolerance.
 	_hop_end = _deck_position(_current_platform) + SHOT + FRAGMENT_OFFSET
-	var deck_y := _deck_position(_current_platform + 1).y + FRAGMENT_OFFSET.y
+	var deck_y := _landing_point(_current_platform + 1, _elapsed_time).y
 	var drop := deck_y - _hop_end.y
 	if drop > LANDING_Y:
 		_flight_duration += drop / _descent_speed()
@@ -66,7 +66,7 @@ func _hop_point(progress: float) -> Vector2:
 
 func _resolve_landing() -> int:
 	var next: int = _current_platform + 1
-	var error := _deck_at(next, _touchdown_time) + FRAGMENT_OFFSET - _fragment.position
+	var error := _landing_point(next, _touchdown_time) - _fragment.position
 	var keyhole: bool = next == _platform_names.size() - 1
 	var tolerance_x: float = KEYHOLE_LANDING_X if keyhole else LANDING_X
 	var tolerance_y: float = KEYHOLE_LANDING_Y if keyhole else LANDING_Y
@@ -99,7 +99,8 @@ func _draw() -> void:
 
 func _draw_guide() -> void:
 	for platform: int in range(_platform_names.size()):
-		_draw_caption(_platform_anchor(platform) + Vector2(0.0, 12.0), _platform_names[platform])
+		var label_offset: float = -8.0 if platform == _platform_names.size() - 1 else 12.0
+		_draw_caption(_platform_anchor(platform) + Vector2(0.0, label_offset), _platform_names[platform])
 	_draw_keyhole(_platform_names.size() - 1)
 	if _state == State.HOPPING and _hop_elapsed < WIND_BURST_DURATION:
 		_draw_wind_burst()
@@ -125,3 +126,14 @@ func _draw_wind_burst() -> void:
 		var start := origin + perpendicular * (float(strand) * 2.3) - direction * absf(strand) * 2.0
 		var end := start + direction * (7.0 - absf(strand) * 2.0)
 		_guide.draw_line(start, end, Color("e3f6ee", (1.0 - progress) * 0.8), 0.75, true)
+
+
+func _landing_point(platform: int, time: float) -> Vector2:
+	var offset: Vector2 = KEYHOLE_OFFSET if platform == _platform_names.size() - 1 else FRAGMENT_OFFSET
+	return _deck_at(platform, time) + offset
+
+
+func _resting_fragment_position(platform: int) -> Vector2:
+	if platform == _platform_names.size() - 1:
+		return _keyhole_position(platform)
+	return super._resting_fragment_position(platform)

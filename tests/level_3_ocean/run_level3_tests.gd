@@ -32,6 +32,7 @@ func _run() -> void:
 		# Window managers may clamp --resolution to the desktop work area.
 		root.size = Vector2i(1920, 1080)
 		await process_frame
+		await _wait_for_scene_fade()
 	var box: Node2D = BOX.instantiate()
 	root.add_child(box)
 	box.set_process(false)
@@ -95,11 +96,15 @@ func _run() -> void:
 		_expect(scene._current_platform == platform + 1, "Timed shot %d lands on the next platform" % (platform + 1))
 
 	await process_frame
+
+	await _wait_for_scene_fade()
+	await create_timer(0.45).timeout
 	_expect(scene._state == Ocean.State.COMPLETED and scene._campaign_menu.completed, "The five-hop route opens Continue")
 	scene.reset_level()
 	_expect(not paused and scene._current_platform == Ocean.Platform.START, "Retry restores play after completion")
 	box.queue_free()
 	await process_frame
+	await _wait_for_scene_fade()
 	await create_timer(0.15).timeout
 	print("Lighthouse regression: %d passed, %d failed." % [_checks - _failures, _failures])
 	quit(0 if _failures == 0 else 1)
@@ -107,6 +112,7 @@ func _run() -> void:
 
 func _save_capture(file_name: String) -> Image:
 	await process_frame
+	await _wait_for_scene_fade()
 	await RenderingServer.frame_post_draw
 	DirAccess.make_dir_recursive_absolute("res://.godot/level3_qa")
 	var frame := root.get_texture().get_image()
@@ -117,3 +123,9 @@ func _save_capture(file_name: String) -> Image:
 func _luminance(frame: Image, scene: Ocean, point: Vector2) -> float:
 	var pixel := Vector2i(scene.get_global_transform_with_canvas() * point)
 	return frame.get_pixelv(pixel).get_luminance()
+
+
+func _wait_for_scene_fade() -> void:
+	var fade: Node = root.get_node_or_null("SceneFade")
+	while is_instance_valid(fade) and fade.busy:
+		await process_frame

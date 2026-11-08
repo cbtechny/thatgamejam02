@@ -10,7 +10,9 @@ func run() -> void:
 	root.size = Vector2i(1920, 1080)
 	change_scene_to_file("res://dev/Level 1 - Alt/level_1.tscn")
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	var level: Node = current_scene
 	var crank: Node2D = level._crank
 	var press := InputEventMouseButton.new()
@@ -30,6 +32,7 @@ func run() -> void:
 		check(absf(level._left_fan.position.y - expected) < 0.01, "Fan follows winding displacement before physics")
 		await physics_frame
 		await process_frame
+		await _wait_for_scene_fade()
 		level._process(0.0)
 		check(absf(level._left_fan.position.y - expected) < 0.01, "Fan retains winding displacement after physics")
 		check(level._left_fan.position.y <= previous_y + 0.01, "Fan never moves backwards during forward winding")
@@ -40,6 +43,7 @@ func run() -> void:
 		level._unhandled_input(motion)
 		await physics_frame
 		await process_frame
+		await _wait_for_scene_fade()
 		level._process(0.0)
 		check(absf(level._left_fan.position.y - (level._left_fan_start_y - step * 2.5)) < 0.01, "Reverse winding preserves fan displacement after physics")
 	var release := InputEventMouseButton.new()
@@ -48,11 +52,13 @@ func run() -> void:
 	for frame: int in range(6):
 		await physics_frame
 		await process_frame
+		await _wait_for_scene_fade()
 		level._process(0.0)
 		check(absf(level._left_fan.position.y - level._left_fan_start_y) < 0.01, "Fan holds position after mouse release")
 	level._show_win_screen()
 	level._finish_win_presentation()
 	await process_frame
+	await _wait_for_scene_fade()
 	var next: Button
 	for button: Node in level._ui.find_children("*", "Button", true, false):
 		if button.text == "Continue to the ocean":
@@ -68,9 +74,18 @@ func run() -> void:
 		click.pressed = false
 		root.push_input(click, true)
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	check(current_scene != level and not paused, "Mouse click on victory Continue enters next stage and unpauses")
 	current_scene.free()
 	await process_frame
+	await _wait_for_scene_fade()
 	print("Level 1 input regression: %d failures" % failures)
 	quit(1 if failures else 0)
+
+
+func _wait_for_scene_fade() -> void:
+	var fade: Node = root.get_node_or_null("SceneFade")
+	while is_instance_valid(fade) and fade.busy:
+		await process_frame

@@ -11,6 +11,7 @@ func check(ok: bool, message: String) -> void:
 func photograph(label: String) -> void:
 	if DisplayServer.get_name() != "headless":
 		await process_frame
+		await _wait_for_scene_fade()
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://.godot/restart-" + label + ".png")
 func run() -> void:
@@ -18,7 +19,9 @@ func run() -> void:
 		paused = false
 		change_scene_to_file("res://Level/level_1_music_box.tscn" if number == 1 else "res://dev/level_%d_ocean/level_%d_ocean.tscn" % [number, number])
 		await process_frame
+		await _wait_for_scene_fade()
 		await process_frame
+		await _wait_for_scene_fade()
 		var stage: Node = current_scene
 		stage._process(3.0)
 		var room: Node = stage._room
@@ -44,12 +47,14 @@ func run() -> void:
 		for extent: Vector2i in [Vector2i(1920,1080), Vector2i(1280,720)]:
 			root.size = extent
 			await process_frame
+			await _wait_for_scene_fade()
 			await photograph("level%d-%d" % [number, extent.x])
 		if number == 1:
 			room._show_pause_menu()
 		else:
 			room._campaign_menu.show_menu(false)
 		await process_frame
+		await _wait_for_scene_fade()
 		var menu: Node = stage.find_child("PauseMenu", true, false) if number == 1 else room._campaign_menu.panel
 		var retry: Button
 		for child: Node in menu.find_children("*", "Button", true, false):
@@ -62,10 +67,11 @@ func run() -> void:
 			check(button.visible and cue.active, "Resume restores Level One restart cue")
 			button.pressed.emit()
 			for frame: int in range(480):
-				if root.get_node_or_null("Level1RestartCurtains") == null:
+				if root.get_node_or_null("Level1RestartFade") == null:
 					break
 				await physics_frame
 			await process_frame
+			await _wait_for_scene_fade()
 			check(not current_scene._room._missed and current_scene._room._failure_restart == null, "Restart clears Level One cue")
 		else:
 			room._campaign_menu.resume()
@@ -77,5 +83,12 @@ func run() -> void:
 	paused = false
 	current_scene.free()
 	await process_frame
+	await _wait_for_scene_fade()
 	print("Restart cues: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
+
+
+func _wait_for_scene_fade() -> void:
+	var fade: Node = root.get_node_or_null("SceneFade")
+	while is_instance_valid(fade) and fade.busy:
+		await process_frame

@@ -5,7 +5,9 @@ func run() -> void:
 	root.size = Vector2i(1920, 1080)
 	change_scene_to_file("res://dev/Level 1 - Alt/level_1.tscn")
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	var ornaments: Node = current_scene.get_node("BoxWindow/BackgroundOrnaments")
 	assert(ornaments.get_child_count() == 4)
 	for sprite: Sprite2D in ornaments.get_children():
@@ -25,3 +27,9 @@ func run() -> void:
 		root.get_texture().get_image().save_png("res://.godot/background-ornaments-preview.png")
 	print("Background ornaments PASS: 4 transparent textures, rotation, pause")
 	quit()
+
+
+func _wait_for_scene_fade() -> void:
+	var fade: Node = root.get_node_or_null("SceneFade")
+	while is_instance_valid(fade) and fade.busy:
+		await process_frame

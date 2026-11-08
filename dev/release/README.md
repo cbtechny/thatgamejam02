@@ -2,7 +2,9 @@
 
 Run from the repository root in PowerShell with Godot 4.7.2 and matching Windows
 export templates installed. The build script uses the editor path already in
-`.vscode/settings.json`; `-GodotPath` can override it.
+`.vscode/settings.json`; `-GodotPath` can override it. Templates are read from
+the standard Godot installation directory, falling back to `.godot/release-tools`
+when the matching local Windows templates are present.
 
 ```powershell
 & .\dev\release\build_windows.ps1
@@ -40,3 +42,10 @@ For an additional full packed playthrough, use the editor executable with
 The release template does not run the external script harness; separately launch
 the exported EXE from an extracted ZIP. Scripted tests do not replace a human
 playthrough, audio listening, or upload/download verification.
+
+
+The Windows preset targets x86_64 with GL Compatibility and a separate PCK.
+The selected export resources explicitly include the reusable raised-keycap
+script, shared Level One keyhole artwork, and animated backdrop shader/texture.
+The release gate checks the enlarged keyhole target, repeated Reset/Space input,
+keycap press feedback, and fast black restart before the isolated PCK check.

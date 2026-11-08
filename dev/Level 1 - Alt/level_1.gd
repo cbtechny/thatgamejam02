@@ -61,6 +61,10 @@ var _middle_fan_pulse_time: float = 0.0
 var _key_snapped: bool = false
 var _missed: bool = false
 var _failure_restart: Button
+var _key_controls: Control
+var _space_keycap: Button
+var _restart_keycap: Button
+var _key_hint: Label
 var _key_start_y: float = 0.0
 var _wound_key_y: float = 0.0
 var _left_fan_start_y: float = 0.0
@@ -115,12 +119,26 @@ func _ready() -> void:
 	_third_piece_sparkles = _add_key_particles(_key3_placeholder)
 	_third_piece_sparkles.emitting = false
 	_create_flash_overlay()
+	_release_hint.hide()
+	_create_key_controls.call_deferred()
 	_setup_sfx()
 	_update_tethered_rope()
 	_update_guidance()
 
 
 func _input(event: InputEvent) -> void:
+	# Once a crank drag starts, keep it active while crossing HUD controls.
+	if event is InputEventMouseMotion and _dragging_crank:
+		_unhandled_input(event)
+		return
+	if event is InputEventKey and event.keycode in [KEY_SPACE, KEY_R] and is_instance_valid(_space_keycap):
+		var key_button: Button = _space_keycap if event.keycode == KEY_SPACE else _restart_keycap
+		key_button.get_node("KeycapVisual").set_keyboard_down(event.pressed)
+		if event.keycode == KEY_SPACE and not _presentation_locked and not _pause_menu_open and not _transitioning and not _key_snapped:
+			get_viewport().set_input_as_handled()
+			if event.pressed and not event.echo and not _missed:
+				_release_key()
+			return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		_dragging_crank = false
 
@@ -229,7 +247,10 @@ func _get_menu_ui() -> CanvasLayer:
 		_menu_ui.name = "ScreenMenus"
 		_menu_ui.layer = 100
 		_menu_ui.process_mode = Node.PROCESS_MODE_ALWAYS
-		get_tree().current_scene.add_child(_menu_ui)
+		var screen_owner: Node = self
+		while screen_owner.get_parent() != null and screen_owner.get_parent() != get_tree().root:
+			screen_owner = screen_owner.get_parent()
+		screen_owner.add_child(_menu_ui)
 	return _menu_ui
 
 
@@ -317,19 +338,65 @@ func _mark_missed() -> void:
 
 
 func _show_failure_restart() -> void:
-	_failure_restart = Button.new()
-	_failure_restart.name = "FailureRestart"
-	_failure_restart.text = "Restart [R]"
-	_failure_restart.pressed.connect(_retry_level)
-	_style_menu_buttons([_failure_restart])
-	_get_menu_ui().add_child(_failure_restart)
-	_failure_restart.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_failure_restart.offset_left = -210.0
-	_failure_restart.offset_right = 210.0
-	_failure_restart.offset_top = -268.0
-	_failure_restart.offset_bottom = -206.0
-	var cue: Node = preload("res://Level/restart_prompt.gd").attach(_failure_restart)
-	cue.set_active(true)
+	_failure_restart = _restart_keycap
+	_failure_restart.disabled = false
+	_failure_restart.show()
+	_failure_restart.get_node("RestartPrompt").set_active(true)
+	_sync_key_controls()
+
+
+func _create_key_controls() -> void:
+	_release_hint.hide()
+	_key_controls = Control.new()
+	_key_controls.name = "KeyControls"
+	_key_controls.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_get_menu_ui().add_child(_key_controls)
+	_key_controls.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_key_controls.offset_left = -600.0
+	_key_controls.offset_right = 600.0
+	_key_controls.offset_top = -268.0
+	_key_controls.offset_bottom = -130.0
+	var center := CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	center.offset_bottom = 62.0
+	_key_controls.add_child(center)
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", 16)
+	center.add_child(row)
+	_space_keycap = Button.new()
+	_space_keycap.name = "SpaceKey"
+	_space_keycap.text = "Space"
+	_space_keycap.custom_minimum_size = Vector2(420, 62)
+	_space_keycap.add_theme_font_size_override("font_size", 26)
+	CAMPAIGN_MENU.style_button(_space_keycap)
+	_space_keycap.pressed.connect(_release_key)
+	row.add_child(_space_keycap)
+	preload("res://Level/keycap_visual.gd").attach(_space_keycap, "SPACE", "RELEASE", KEY_SPACE)
+	_restart_keycap = Button.new()
+	_restart_keycap.name = "RestartKey"
+	_restart_keycap.text = "R"
+	_restart_keycap.tooltip_text = "Restart [R]"
+	_restart_keycap.custom_minimum_size = Vector2(104, 62)
+	_restart_keycap.add_theme_font_size_override("font_size", 26)
+	_restart_keycap.disabled = true
+	CAMPAIGN_MENU.style_button(_restart_keycap)
+	_restart_keycap.pressed.connect(_retry_level)
+	row.add_child(_restart_keycap)
+	preload("res://Level/keycap_visual.gd").attach(_restart_keycap, "R", "RESTART", KEY_R)
+	preload("res://Level/restart_prompt.gd").attach(_restart_keycap)
+	_key_hint = Label.new()
+	_key_hint.position = Vector2(0, 76)
+	_key_hint.size = Vector2(1200, 46)
+	_key_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_key_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_key_hint.add_theme_color_override("font_color", Color("f7f1dd"))
+	_key_hint.add_theme_color_override("font_shadow_color", Color.BLACK)
+	_key_hint.add_theme_constant_override("shadow_offset_y", 2)
+	_key_hint.add_theme_font_size_override("font_size", 22)
+	_key_controls.add_child(_key_hint)
+	_sync_key_controls()
 
 
 func _finish_missed_flight() -> void:
@@ -372,7 +439,6 @@ func _retry_level() -> void:
 	_transitioning = true
 	if is_instance_valid(_failure_restart):
 		_failure_restart.get_node("RestartPrompt").set_active(false)
-		_failure_restart.hide()
 	_dragging_crank = false
 	_cancel_presentation_tweens()
 	get_tree().paused = false
@@ -444,7 +510,18 @@ func _on_title_curtain_finished(animation_name: StringName) -> void:
 	if _title_transition_curtains_remaining == 0:
 		title_transition_finished.emit()
 
+func _sync_key_controls() -> void:
+	if not is_instance_valid(_key_controls):
+		return
+	var restarting: bool = _transitioning and get_tree().root.has_node("Level1RestartFade")
+	_key_controls.visible = not _pause_menu_open and not _key_snapped and (not _transitioning or restarting)
+	_key_hint.text = _release_hint.text
+	_space_keycap.disabled = _released or _presentation_locked or _missed or _transitioning
+	_restart_keycap.disabled = not _missed or _presentation_locked or _transitioning
+
+
 func _process(delta: float) -> void:
+	_sync_key_controls()
 	# A caught piece must stay put while the other pieces assemble around it.
 	if _key_snapped or _transitioning:
 		return
@@ -543,6 +620,7 @@ func _set_middle_fan_active(active: bool) -> void:
 
 
 func _update_guidance() -> void:
+	_sync_key_controls()
 	if _center_highlight == null or _key_snapped or _missed:
 		return
 	_crank_highlight.set_active(not _crank_used and not _released)
@@ -648,6 +726,10 @@ func _finish_key_delivery() -> void:
 
 
 func _finish_win_presentation() -> void:
+	# Completed rope bodies no longer need physics while the victory UI is open.
+	_key.freeze = true
+	for body: RigidBody2D in _rope_bodies:
+		body.freeze = true
 	get_tree().paused = true
 
 

@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This is a Godot 4.7.2-stable project using standard GDScript and the GL Compatibility renderer. `project.godot` defines the project; `Main.tscn` launches the title menu, whose Play button opens `dev/Level 1 - Alt/level_1.tscn`.
+This is a Godot 4.7.2-stable project using standard GDScript and the GL Compatibility renderer. `project.godot` defines the project; `Main.tscn` launches the title menu, whose Play button opens `Level/level_1_music_box.tscn`.
 
 - `Level/`: game scenes, including the title menu and music box.
 - `Art/Textures/` and `Art/Materials/`: shared artwork and Godot materials.
@@ -23,7 +23,7 @@ godot --headless --path . --editor --quit        # Import and check editor start
 godot --path . "res://tests/music_box_surreal/music_box_surreal_test.tscn"
 ```
 
-In the editor, use **F5** for the project and **F6** for the current scene. No export presets are checked in; configure a desktop export preset before producing a build.
+In the editor, use **F5** for the project and **F6** for the current scene. The Windows Desktop export preset is checked in. Use `dev/release/build_windows.ps1` with matching templates; see `dev/release/README.md`.
 
 ## Coding Style & Naming Conventions
 

@@ -171,9 +171,11 @@ func _run() -> void:
 	scene._process(10.8 - scene._elapsed_time)
 	_press_key(KEY_SPACE)
 	_expect_platform_fans(scene, Ocean.Platform.LOG_2)
-	_finish_hop(scene)
+	scene._process(scene._flight_duration + 0.01)
 	_expect(scene._state == Ocean.State.COMPLETED and scene._current_platform == Ocean.Platform.GOAL, "Complete all four timed shots")
 	await process_frame
+	await _wait_for_scene_fade()
+	await create_timer(0.45).timeout
 	_expect(scene._campaign_menu.completed and paused, "Goal opens Continue")
 	scene.reset_level()
 	_expect(not paused, "Reset after success restores normal gameplay")
@@ -185,6 +187,7 @@ func _run() -> void:
 		scene._process(scene.hop_duration * fraction)
 		_press_key(KEY_R)
 		await process_frame
+		await _wait_for_scene_fade()
 		scene._process(2.0)
 		_expect(scene._state == Ocean.State.RESTING and scene._current_platform == Ocean.Platform.START and scene._target_platform == -1, "Reset cancels hop at %.2f progress" % fraction)
 		_expect(not scene._fire_button.disabled and not scene._dragging_crank, "Reset clears feedback, button and input state")
@@ -199,7 +202,9 @@ func _run() -> void:
 	var whirr_reference: WeakRef = weakref(whirr)
 	presentation.queue_free()
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(not is_instance_valid(scene) and not is_instance_valid(presentation), "Scene exit during hop frees room and presentation without pending callbacks")
 	_expect(whirr_reference.get_ref() == null, "Scene exit frees the looping fan player")
 	await _check_buttons_and_navigation()
@@ -257,12 +262,12 @@ func _check_live_entrance() -> void:
 	var close_scale: Vector2 = presentation._box.scale
 	presentation._room.reset_level()
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(presentation._box.scale.is_equal_approx(close_scale), "Reset preserves the final zoom in the real frame loop")
 	await _save_capture("music-box-live-room.png")
 	presentation.queue_free()
 	await process_frame
-
-
+	await _wait_for_scene_fade()
 func _click(scene: Ocean, reference_position: Vector2) -> void:
 	var press: InputEventMouseButton = InputEventMouseButton.new()
 	press.button_index = MOUSE_BUTTON_LEFT
@@ -270,13 +275,13 @@ func _click(scene: Ocean, reference_position: Vector2) -> void:
 	press.position = scene.get_global_transform_with_canvas() * reference_position
 	root.push_input(press, true)
 	await process_frame
+	await _wait_for_scene_fade()
 	var release: InputEventMouseButton = InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_LEFT
 	release.position = press.position
 	root.push_input(release, true)
 	await process_frame
-
-
+	await _wait_for_scene_fade()
 func _check_buttons_and_navigation() -> void:
 	var presentation: Presentation = OCEAN_SCENE.instantiate() as Presentation
 	root.add_child(presentation)
@@ -285,12 +290,14 @@ func _check_buttons_and_navigation() -> void:
 	var scene: Ocean = presentation._room as Ocean
 	scene.set_process(false)
 	# Returning to title also works before the entrance finishes.
-	await _click(scene, Vector2(317.0, 12.0))
+	await _click(scene, _button_center(scene, "TitleButton"))
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(not is_instance_valid(presentation), "Title exit cancels the entrance without delayed view changes")
 	if current_scene != null:
 		current_scene.queue_free()
 	await process_frame
+	await _wait_for_scene_fade()
 	presentation = OCEAN_SCENE.instantiate() as Presentation
 	root.add_child(presentation)
 	current_scene = presentation
@@ -298,9 +305,9 @@ func _check_buttons_and_navigation() -> void:
 	presentation._process(presentation.establishing_hold + presentation.zoom_duration)
 	scene = presentation._room as Ocean
 	scene.set_process(false)
-	await _click(scene, Vector2(249.0, 54.0))
+	await _click(scene, _button_center(scene, "FireButton"))
 	_expect(scene._state == Ocean.State.HOPPING, "Fan button activates the same hop as Space")
-	await _click(scene, Vector2(320.0, 32.0))
+	await _click(scene, _button_center(scene, "ResetButton"))
 	_expect(scene._state == Ocean.State.RESTING and scene._current_platform == Ocean.Platform.START, "Reset button cancels an active hop")
 	_expect(presentation._entrance_finished and not scene._presentation_locked, "Puzzle reset keeps the player inside the room")
 	var echo: InputEventKey = InputEventKey.new()
@@ -313,15 +320,15 @@ func _check_buttons_and_navigation() -> void:
 	scene._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
 	_expect(not scene._dragging_crank, "Losing application focus cancels crank drag")
 	scene.fire_fan()
-	await _click(scene, Vector2(317.0, 12.0))
+	await _click(scene, _button_center(scene, "TitleButton"))
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(not is_instance_valid(scene), "Return to Title safely exits during an active hop")
 	_expect(current_scene != null and current_scene.find_child("PlayButton", true, false) != null, "Return to Title opens existing navigation")
 	if current_scene != null:
 		current_scene.queue_free()
 	await process_frame
-
-
+	await _wait_for_scene_fade()
 func _drag_crank(scene: Ocean, finish_angle: float) -> void:
 	var transform: Transform2D = scene.get_global_transform_with_canvas()
 	var center: Vector2 = scene._crank.position
@@ -331,15 +338,17 @@ func _drag_crank(scene: Ocean, finish_angle: float) -> void:
 	press.position = transform * (center + Vector2(0.0, -18.0))
 	root.push_input(press, true)
 	await process_frame
+	await _wait_for_scene_fade()
 	for angle: float in [-PI * 0.25, finish_angle]:
 		var motion: InputEventMouseMotion = InputEventMouseMotion.new()
 		motion.position = transform * (center + Vector2.from_angle(angle) * 18.0)
 		root.push_input(motion, true)
 		await process_frame
+		await _wait_for_scene_fade()
 	var release: InputEventMouseButton = InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_LEFT
 	# Release over a button, so GUI consumption cannot leave a stale drag.
-	release.position = transform * Vector2(320.0, 32.0)
+	release.position = transform * _button_center(scene, "ResetButton")
 	root.push_input(release, true)
 
 
@@ -347,12 +356,15 @@ func _check_level_one(expected_sounds: Dictionary) -> void:
 	var main: Node = (load("res://Main.tscn") as PackedScene).instantiate()
 	root.add_child(main)
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(main.find_child("PlayButton", true, false) != null, "Main still loads the existing title menu")
 	main.queue_free()
 	await process_frame
+	await _wait_for_scene_fade()
 	var level: Node2D = (load("res://dev/Level 1 - Alt/level_1.tscn") as PackedScene).instantiate() as Node2D
 	root.add_child(level)
 	await process_frame
+	await _wait_for_scene_fade()
 	var level_sounds: Dictionary = level.get("_sfx_players")
 	for sound_name: String in expected_sounds:
 		var level_name: String = "left_fan_whirr" if sound_name == "fan_whirr" else sound_name
@@ -364,6 +376,7 @@ func _check_level_one(expected_sounds: Dictionary) -> void:
 		_expect(stream.loop_mode == expected["loop_mode"] and stream.loop_begin == expected["loop_begin"] and stream.loop_end == expected["loop_end"] and stream.mix_rate == expected["mix_rate"] and stream.format == expected["format"], "Ocean matches Level 1 loop and playback configuration: " + sound_name)
 	_expect(not level.get("_released"), "Level 1 loads with its fragment tethered")
 	var key: RigidBody2D = level.get_node("Key0") as RigidBody2D
+	await physics_frame
 	var start_y: float = key.global_position.y
 	var crank: Node2D = level.get_node("Crank") as Node2D
 	var press: InputEventMouseButton = InputEventMouseButton.new()
@@ -372,32 +385,47 @@ func _check_level_one(expected_sounds: Dictionary) -> void:
 	press.position = crank.to_global(Vector2(576.0, 0.0))
 	root.push_input(press, true)
 	await process_frame
+	await _wait_for_scene_fade()
 	var motion: InputEventMouseMotion = InputEventMouseMotion.new()
 	motion.position = crank.to_global(Vector2.from_angle(0.2) * 576.0)
 	root.push_input(motion, true)
 	await process_frame
+	await _wait_for_scene_fade()
 	var release: InputEventMouseButton = InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_LEFT
 	release.position = motion.position
 	root.push_input(release, true)
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(key.global_position.y < start_y, "Level 1 crank still moves tethered fragment")
 	_press_key(KEY_SPACE)
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(level.get("_released") and not key.freeze, "Level 1 Space still releases fragment")
 	_expect((level.get_node("LeftFan/Blades") as AnimatedSprite2D).is_playing(), "Level 1 fan animation still activates")
 	_expect(level.get("_rope_bodies").size() == 32, "Level 1 still creates its swinging rope")
 	await _save_capture("level1-release.png")
 	level.queue_free()
 	await process_frame
-
-
+	await _wait_for_scene_fade()
 func _save_capture(file_name: String) -> void:
 	if not _capture:
 		return
 	await process_frame
+	await _wait_for_scene_fade()
 	await RenderingServer.frame_post_draw
 	var folder: String = "res://.godot/ocean_qa"
 	DirAccess.make_dir_recursive_absolute(folder)
 	var result: Error = root.get_texture().get_image().save_png(folder.path_join(file_name))
 	_expect(result == OK, "Saved rendered capture " + file_name)
+
+
+func _wait_for_scene_fade() -> void:
+	var fade: Node = root.get_node_or_null("SceneFade")
+	while is_instance_valid(fade) and fade.busy:
+		await process_frame
+
+
+func _button_center(scene: Node, button_name: String) -> Vector2:
+	var button: Control = scene.get_node(button_name)
+	return button.position + button.size * button.scale * 0.5

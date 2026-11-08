@@ -90,6 +90,7 @@ func _run() -> void:
 	_expect(paused and level._pause_menu_open and not level._dragging_crank, "Escape still pauses and clears held crank state")
 	_press_key(KEY_ESCAPE)
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(not paused and not level._pause_menu_open, "Escape resumes through the existing overlay")
 	# Start the same pulse phase used to establish this baseline release.
 	level._middle_fan_pulse_time = 0.0
@@ -110,6 +111,7 @@ func _run() -> void:
 	paused = false
 	level.queue_free()
 	await process_frame
+	await _wait_for_scene_fade()
 	await _check_miss_and_retry()
 	await _check_exit_and_retry_during_assembly()
 	await _check_return_to_title()
@@ -173,15 +175,16 @@ func _check_miss_and_retry() -> void:
 	level._retry_level()
 	await _wait_restart()
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	var replacement: LevelOne = current_scene as LevelOne
 	_expect(replacement != null and replacement != level and not replacement._released and not paused, "Curtain retry restores fresh gameplay without pausing")
 	if replacement != null:
 		_expect(replacement._crank_highlight.active and not replacement._center_highlight.active, "Retry restores initial guidance")
 		replacement.queue_free()
 	await process_frame
-
-
+	await _wait_for_scene_fade()
 func _begin_catch_fixture(level: LevelOne) -> void:
 	level._release_key()
 	level._key.freeze = true
@@ -198,7 +201,9 @@ func _check_exit_and_retry_during_assembly() -> void:
 	level._retry_level()
 	await _wait_restart()
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(not sequence.is_valid(), "Retry cancels the in-flight assembly sequence")
 	var replacement: LevelOne = current_scene as LevelOne
 	await create_timer(0.8).timeout
@@ -208,8 +213,10 @@ func _check_exit_and_retry_during_assembly() -> void:
 		var exiting_sequence: Tween = replacement._assembly_tween
 		replacement.queue_free()
 		await process_frame
+		await _wait_for_scene_fade()
 		_expect(not exiting_sequence.is_valid(), "Scene exit cancels assembly without orphaned callbacks")
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(not paused, "Exiting during assembly does not later pause the tree")
 
 
@@ -217,6 +224,7 @@ func _save(file_name: String) -> void:
 	if not _capture:
 		return
 	await process_frame
+	await _wait_for_scene_fade()
 	await RenderingServer.frame_post_draw
 	var folder: String = "res://.godot/level1_polish_qa"
 	DirAccess.make_dir_recursive_absolute(folder)
@@ -236,15 +244,23 @@ func _check_return_to_title() -> void:
 		player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 		player.advance(player.get_animation(&"curtain").length + 0.01)
 	await process_frame
+	await _wait_for_scene_fade()
 	await process_frame
+	await _wait_for_scene_fade()
 	_expect(not is_instance_valid(level) and current_scene != null and current_scene.find_child("PlayButton", true, false) != null and not paused, "Both curtain completions return to the original title menu")
 	if current_scene != null:
 		current_scene.queue_free()
 	await process_frame
-
+	await _wait_for_scene_fade()
 func _wait_restart() -> void:
 	for frame: int in range(480):
-		if root.get_node_or_null("Level1RestartCurtains") == null:
+		if root.get_node_or_null("Level1RestartFade") == null:
 			return
 		await physics_frame
 	_expect(false, "Curtain restart timed out")
+
+
+func _wait_for_scene_fade() -> void:
+	var fade: Node = root.get_node_or_null("SceneFade")
+	while is_instance_valid(fade) and fade.busy:
+		await process_frame

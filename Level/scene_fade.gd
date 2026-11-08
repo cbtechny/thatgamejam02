@@ -31,3 +31,21 @@ func _transition(path: String) -> void:
 	busy = false
 	if result != OK:
 		push_error("Unable to open scene: " + path)
+
+
+func reset_under_black(action: Callable) -> Node:
+	if busy:
+		return null
+	busy = true
+	_cover.mouse_filter = Control.MOUSE_FILTER_STOP
+	var fade := create_tween()
+	fade.tween_property(_cover, "modulate:a", 1.0, 0.10)
+	await fade.finished
+	var owner: Node = action.call() if action.is_valid() else null
+	await get_tree().process_frame
+	fade = create_tween()
+	fade.tween_property(_cover, "modulate:a", 0.0, 0.12)
+	await fade.finished
+	_cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	busy = false
+	return owner

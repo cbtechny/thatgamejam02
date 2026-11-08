@@ -9,6 +9,11 @@ const REFERENCE_SIZE := Vector2(360.0, 200.0)
 const CRANK_KNOB_LOCAL_POSITION := Vector2(576.0, 0.0)
 const CRANK_HIT_RADIUS: float = 9.0
 const FRAGMENT_OFFSET := Vector2(0.0, -7.5)
+const KEYHOLE_OFFSET := Vector2(0.0, 24.0)
+const KEYHOLE_TEXTURE: Texture2D = preload("res://Art/Textures/KeyHole.png")
+const KEYHOLE_ART_SCALE: float = 0.028
+# Center of the round opening in the original Level One artwork.
+const KEYHOLE_ART_OPENING := Vector2(633.5, 380.0)
 const HOP_HEIGHT: float = 20.0
 const KEY_CRANK_STEP: float = 0.12
 const AUDIO_SAMPLE_RATE: int = 22050
@@ -55,6 +60,7 @@ var _presentation_locked: bool = false
 var _sfx_players: Dictionary = {}
 var _campaign_menu: CanvasLayer
 var _reset_prompt: Node
+var _completion_generation: int = 0
 var _key_collection: Node2D
 var _middle_fragment_platform: int = -1
 
@@ -98,6 +104,9 @@ func _prepare_controls() -> void:
 			control.add_theme_font_size_override("font_size", int(font_size * UI_RESOLUTION))
 			control.scale = Vector2.ONE / UI_RESOLUTION
 			control.size = reference_size * UI_RESOLUTION
+			if control is Button and control.name in ["FireButton", "ResetButton"]:
+				var launch: bool = control.name == "FireButton"
+				preload("res://Level/keycap_visual.gd").attach(control, "SPACE" if launch else "R", "FIRE FAN" if launch else "RESET", KEY_SPACE if launch else KEY_R, 1.5)
 
 
 func set_stage_layout(play_area: Rect2) -> void:
@@ -224,7 +233,7 @@ func _process(delta: float) -> void:
 				_state = State.FAILED
 				_update_guidance()
 		State.RESTING, State.COMPLETED:
-			_fragment.position = _platform_anchor(_current_platform) + FRAGMENT_OFFSET
+			_fragment.position = _resting_fragment_position(_current_platform)
 	_key_collection.refresh()
 	queue_redraw()
 	_guide.queue_redraw()
@@ -242,14 +251,21 @@ func _land() -> void:
 		_play_sfx("miss")
 	else:
 		_current_platform = landing
-		_fragment.position = _platform_anchor(landing) + FRAGMENT_OFFSET
+		_fragment.position = _resting_fragment_position(landing)
 		_state = State.RESTING
 		_on_landing()
 		if landing == _platform_names.size() - 1:
 			_state = State.COMPLETED
 			_play_sfx("win")
-			_campaign_menu.show_menu.call_deferred(true)
+			_show_completion_after_collection()
 	_update_guidance()
+
+
+func _show_completion_after_collection() -> void:
+	var generation: int = _completion_generation
+	await get_tree().create_timer(0.4, false).timeout
+	if generation == _completion_generation and _state == State.COMPLETED and not _exiting:
+		_campaign_menu.show_menu(true)
 
 
 func _update_guidance() -> void:
@@ -277,6 +293,7 @@ func reset_level() -> void:
 	if _campaign_menu.completed:
 		_campaign_menu.resume()
 		_campaign_menu.completed = false
+	_completion_generation += 1
 	_state = State.RESTING
 	_current_platform = 0
 	_target_platform = -1
@@ -316,7 +333,7 @@ func _set_crank_angle(angle: float) -> void:
 	_crank_angle = _constrain_crank_angle(angle)
 	_crank_handle.rotation = _crank_angle
 	if _state == State.RESTING:
-		_fragment.position = _platform_anchor(_current_platform) + FRAGMENT_OFFSET
+		_fragment.position = _resting_fragment_position(_current_platform)
 	_update_guidance()
 	queue_redraw()
 
@@ -332,6 +349,23 @@ func _release_crank() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# Once a crank drag starts, keep it active while crossing HUD controls.
+	if event is InputEventMouseMotion and _dragging_crank:
+		_unhandled_input(event)
+		return
+	if event is InputEventKey and event.keycode in [KEY_SPACE, KEY_R]:
+		var key_button: Button = $FireButton if event.keycode == KEY_SPACE else $ResetButton
+		key_button.get_node("KeycapVisual").set_keyboard_down(event.pressed)
+	# Space belongs to gameplay, even after a HUD button takes keyboard focus.
+	# Handle both edges so GUI ui_accept cannot trigger Reset on key release.
+	if event is InputEventKey and event.keycode == KEY_SPACE:
+		var gameplay_active: bool = not get_tree().paused and not _exiting and not _presentation_locked
+		var menu_active: bool = _campaign_menu.switching or is_instance_valid(_campaign_menu.panel)
+		if gameplay_active and not menu_active and not get_node("/root/SceneFade").busy:
+			get_viewport().set_input_as_handled()
+			if event.pressed and not event.echo:
+				fire_fan()
+			return
 	# Release must also work over a GUI control.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		_release_crank()
@@ -345,9 +379,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_R:
 				if not event.echo:
 					reset_level()
-			KEY_SPACE:
-				if not event.echo:
-					fire_fan()
 			KEY_LEFT, KEY_RIGHT:
 				if _state == State.RESTING and not _dragging_crank:
 					var step: float = KEY_CRANK_STEP if event.keycode == KEY_RIGHT else -KEY_CRANK_STEP
@@ -448,11 +479,21 @@ func _draw_caption(center: Vector2, caption: String, selected: bool = false, can
 	canvas.draw_set_transform(Vector2.ZERO)
 
 
-func _draw_keyhole(platform: int) -> void:
-	var center := _platform_anchor(platform) + Vector2(0.0, 24.0)
-	_guide.draw_circle(center, 3.3, GOLD, true, -1.0, true)
-	_guide.draw_circle(center, 1.4, INK, true, -1.0, true)
-	_guide.draw_rect(Rect2(center + Vector2(-0.8, 0.0), Vector2(1.6, 2.5)), INK)
+func _keyhole_position(platform: int) -> Vector2:
+	return _platform_anchor(platform) + KEYHOLE_OFFSET
+
+
+func _resting_fragment_position(platform: int) -> Vector2:
+	return _platform_anchor(platform) + FRAGMENT_OFFSET
+
+
+func _draw_keyhole(platform: int, canvas: Node2D = null) -> void:
+	if canvas == null:
+		canvas = _guide
+	var center := _keyhole_position(platform)
+	var size: Vector2 = KEYHOLE_TEXTURE.get_size() * KEYHOLE_ART_SCALE
+	var origin: Vector2 = center - KEYHOLE_ART_OPENING * KEYHOLE_ART_SCALE
+	canvas.draw_texture_rect(KEYHOLE_TEXTURE, Rect2(origin, size), false)
 
 
 func _make_label_backing(color: Color) -> StyleBoxFlat:

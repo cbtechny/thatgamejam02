@@ -70,12 +70,12 @@ Checks pause and win overlays render in the main viewport, cover three
 window sizes, resume correctly and accept a real Continue mouse click. Saves
 `.godot/fullscreen-PauseMenu.png`, `fullscreen-WinScreen.png`.
 
-Level 1 quiet failure and curtain restart:
+Level 1 fast black restart:
 `godot --headless --path . --script res://tests/campaign/run_level1_restart.gd`
-Checks unpaused misses, continued visible fragment flight, the R prompt, repeated
-input, standalone/campaign restarts, preserved framing, resize, and session audio.
-Run without headless and append `-- --capture` for miss/closing/closed/reopened
-captures at 1920x1080 and 1280x720 under `.godot/level1-restart-qa/`.
+Checks R input, repeated input protection, the black screen cover, fast completion,
+standalone/campaign restarts, preserved framing, resize, and session audio.
+Run without headless for 1920x1080 and 1280x720 captures under
+`.godot/fast-restart-*.png`.
 For an isolated exported-PCK run, append `-- --campaign-only` to omit the
 standalone development scene, which is intentionally excluded from the export.
 
@@ -91,3 +91,15 @@ Omit `--headless` and append `-- --capture` for both window sizes in
 checks failure-only restart glow, stable input bounds, very quiet beep settings,
 paused Retry cues and restart cleanup across all three stages. Omit `--headless`
 for captures at both window sizes in `.godot/restart-*.png`.
+
+
+Ocean Space/input focus regression:
+`godot --headless --path . --script res://tests/campaign/run_ocean_space_input.gd`
+Checks repeated misses and mouse Reset clicks, focused HUD buttons, Space/Enter,
+key repeats, pause Resume, and menu Retry in both ocean stages.
+
+
+Raised keycap UI:
+`godot --headless --path . --script res://tests/campaign/run_keycaps.gd`
+checks mouse/keyboard press animation, action mapping, fixed click bounds,
+failure enablement, and both window sizes. Omit headless for `.godot/keycaps-*.png`.

@@ -12,7 +12,9 @@ func run() -> void:
 	for index: int in range(paths.size()):
 		change_scene_to_file(paths[index])
 		await process_frame
+		await _wait_for_scene_fade()
 		await process_frame
+		await _wait_for_scene_fade()
 		var stage: Node = current_scene
 		stage.set_process(false)
 		for extent: Vector2 in [Vector2(1920,1080), Vector2(1280,720), Vector2(1080,1080)]:
@@ -48,7 +50,15 @@ func run() -> void:
 				check(actual.is_equal_approx(reference["fullscreen"]), "All stages share fullscreen framing")
 			root.mode = Window.MODE_WINDOWED
 			await process_frame
+			await _wait_for_scene_fade()
 	print("Three-stage scale parity: %d failures" % failures)
 	current_scene.free()
 	await process_frame
+	await _wait_for_scene_fade()
 	quit(1 if failures else 0)
+
+
+func _wait_for_scene_fade() -> void:
+	var fade: Node = root.get_node_or_null("SceneFade")
+	while is_instance_valid(fade) and fade.busy:
+		await process_frame
