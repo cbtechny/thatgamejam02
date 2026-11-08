@@ -36,13 +36,14 @@ func run() -> void:
 			room._land()
 		var button: Button = room._failure_restart if number == 1 else room._reset_button
 		var cue: Node = button.get_node("RestartPrompt")
+		var face: StyleBoxFlat = button.get_node("KeycapVisual/KeyFace").get_theme_stylebox("panel")
 		check(cue.active and not button.disabled, "Failed run enables a usable restart cue")
 		check(cue._audio.volume_db <= -36.0 and cue._audio.bus == &"Master", "Beep is very quiet and respects Master mute")
 		var rect: Rect2 = button.get_global_rect()
 		cue._process(0.1)
-		var first_size: int = (button.get_theme_stylebox("normal") as StyleBoxFlat).shadow_size
+		var first_size: int = face.shadow_size
 		cue._process(0.5)
-		check((button.get_theme_stylebox("normal") as StyleBoxFlat).shadow_size != first_size, "Glow actually pulses")
+		check(face.shadow_size != first_size, "Visible keycap face actually pulses")
 		check(button.get_global_rect().is_equal_approx(rect), "Pulse leaves button bounds unchanged")
 		for extent: Vector2i in [Vector2i(1920,1080), Vector2i(1280,720)]:
 			root.size = extent
@@ -58,9 +59,9 @@ func run() -> void:
 		var menu: Node = stage.find_child("PauseMenu", true, false) if number == 1 else room._campaign_menu.panel
 		var retry: Button
 		for child: Node in menu.find_children("*", "Button", true, false):
-			if child.text in ["Retry", "Retry Stage"]:
+			if child.text == "Restart":
 				retry = child
-		check(retry != null and retry.get_node("RestartPrompt").active, "Paused failed run also highlights Retry")
+		check(retry != null and retry.get_node("RestartPrompt").active, "Paused failed run also highlights Restart")
 		await photograph("level%d-pause" % number)
 		if number == 1:
 			room._resume_from_pause()
@@ -76,7 +77,9 @@ func run() -> void:
 		else:
 			room._campaign_menu.resume()
 			room._reset_button.pressed.emit()
-			check(not cue.active and not cue._audio.playing and not button.has_theme_stylebox_override("normal"), "Ocean Reset restores normal style and stops beep")
+			check(root.get_node("SceneFade").busy and room._presentation_locked, "Ocean Restart starts the shared black fade")
+			await _wait_for_scene_fade()
+			check(not cue.active and not cue._audio.playing and face.shadow_size == 0, "Restart clears the glow and stops beep")
 			room._state = room.State.COMPLETED
 			room._update_guidance()
 			check(not cue.active, "Success never pulses restart")

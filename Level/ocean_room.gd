@@ -19,6 +19,7 @@ const KEY_CRANK_STEP: float = 0.12
 const AUDIO_SAMPLE_RATE: int = 22050
 const UI_THEME = preload("res://Level/music_box_theme.gd")
 const STAGE_KEY_CONTROLS := preload("res://Level/stage_key_controls.gd")
+const RESTART_PROMPT := preload("res://Level/restart_prompt.gd")
 const GOLD := UI_THEME.GOLD
 const GUIDANCE_PIXELS_PER_UNIT := 5.0
 
@@ -73,21 +74,8 @@ func _ready() -> void:
 	var hud := CanvasLayer.new()
 	hud.name = "StageHUD"
 	add_child(hud)
-	var controls: Control = STAGE_KEY_CONTROLS.mount(hud, _fire_button, _reset_button, "FIRE FAN", "RESET")
-	_feedback = Label.new()
-	_feedback.name = "Hint"
-	_feedback.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_feedback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_feedback.add_theme_color_override("font_color", UI_THEME.CREAM)
-	_feedback.add_theme_color_override("font_shadow_color", Color.BLACK)
-	_feedback.add_theme_constant_override("shadow_offset_y", 2)
-	_feedback.add_theme_font_size_override("font_size", 24)
-	controls.add_child(_feedback)
-	_feedback.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_feedback.offset_left = -360.0
-	_feedback.offset_right = 360.0
-	_feedback.offset_top = -42.0
-	_feedback.offset_bottom = -8.0
+	var controls: Control = STAGE_KEY_CONTROLS.mount(hud, _fire_button, _reset_button, "FIRE FAN")
+	_feedback = STAGE_KEY_CONTROLS.add_hint(controls)
 	_guide = Node2D.new()
 	var unlit := CanvasItemMaterial.new()
 	unlit.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
@@ -95,7 +83,7 @@ func _ready() -> void:
 	_guide.draw.connect(_draw_guide)
 	add_child(_guide)
 	_setup_sfx()
-	_reset_prompt = preload("res://Level/restart_prompt.gd").attach(_reset_button)
+	_reset_prompt = RESTART_PROMPT.attach(_reset_button)
 	_campaign_menu = preload("res://Level/campaign_menu.gd").new()
 	_campaign_menu.room = self
 	_campaign_menu.next_scene = _next_scene
@@ -136,7 +124,6 @@ func set_presentation_locked(locked: bool) -> void:
 	if locked:
 		_release_crank()
 	_update_guidance()
-	_reset_button.disabled = locked
 
 
 func _water_level() -> float:
@@ -188,10 +175,6 @@ func _update_mechanisms() -> void:
 
 func _hint() -> String:
 	return ""
-
-
-func _failure_hint() -> String:
-	return "Missed the landing. Press R to try again."
 
 
 func fire_fan() -> void:
@@ -283,9 +266,26 @@ func _update_guidance() -> void:
 		if _state == State.RESTING:
 			_feedback.text = _hint()
 		elif _state in [State.FAILED, State.FALLING]:
-			_feedback.text = _failure_hint()
+			_feedback.text = RESTART_PROMPT.FAILURE_HINT
+	_reset_button.disabled = _presentation_locked or _state == State.COMPLETED
 	_reset_prompt.set_active(not _presentation_locked and _state in [State.FAILED, State.FALLING])
 	_guide.queue_redraw()
+
+
+func restart_stage() -> void:
+	var fade: Node = get_node("/root/SceneFade")
+	if _exiting or _presentation_locked or fade.busy:
+		return
+	set_presentation_locked(true)
+	if is_instance_valid(_campaign_menu.panel):
+		_campaign_menu.resume()
+	await fade.reset_under_black(_reset_for_restart)
+	set_presentation_locked(false)
+
+
+func _reset_for_restart() -> Node:
+	reset_level()
+	return self
 
 
 func reset_level() -> void:
@@ -381,7 +381,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		match event.keycode:
 			KEY_R:
 				if not event.echo:
-					reset_level()
+					restart_stage()
 			KEY_LEFT, KEY_RIGHT:
 				if _state == State.RESTING and not _dragging_crank:
 					var step: float = KEY_CRANK_STEP if event.keycode == KEY_RIGHT else -KEY_CRANK_STEP

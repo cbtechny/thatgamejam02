@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 const UI_THEME = preload("res://Level/music_box_theme.gd")
+const RESTART_PROMPT = preload("res://Level/restart_prompt.gd")
 
 var room: Node
 var next_scene: String
@@ -17,7 +18,7 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		get_viewport().set_input_as_handled()
-		if switching or (completed and not information):
+		if switching or get_node("/root/SceneFade").busy or (completed and not information):
 			return
 		if is_instance_valid(panel):
 			if information:
@@ -52,9 +53,7 @@ func show_menu(won: bool) -> void:
 	heading.add_theme_font_size_override("font_size", 36)
 	column.add_child(heading)
 	var primary := add_button(column, "Continue" if won else "Resume", advance if won else resume)
-	var retry_button := add_button(column, "Retry Stage", retry)
-	var retry_prompt: Node = preload("res://Level/restart_prompt.gd").attach(retry_button)
-	retry_prompt.set_active(room.get("_state") in [2, 4])
+	add_restart_button(column, retry, room.get("_state") in [2, 4])
 	add_release_controls(column)
 	primary.grab_focus()
 
@@ -71,6 +70,11 @@ static func add_button(column: Container, caption: String, action: Callable) -> 
 static func style_button(button: Button) -> void:
 	button.theme = UI_THEME.create()
 	button.focus_mode = Control.FOCUS_ALL
+
+static func add_restart_button(column: Container, action: Callable, failed: bool = false) -> Button:
+	var button := add_button(column, "Restart", action)
+	RESTART_PROMPT.attach(button).set_active(failed)
+	return button
 
 static func add_release_controls(column: Container) -> void:
 	var session: Node = column.get_node("/root/ReleaseSession")
@@ -136,7 +140,7 @@ func resume() -> void:
 	get_tree().paused = false
 
 func retry() -> void:
-	go(get_tree().current_scene.scene_file_path)
+	room.restart_stage()
 
 func advance() -> void:
 	go(next_scene)

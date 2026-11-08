@@ -82,6 +82,7 @@ func _run() -> void:
 	scene._process(0.4)
 	_expect(scene._state == Ocean.State.FAILED, "Miss requires a retry")
 	_press(KEY_R)
+	await _wait_for_scene_fade()
 	_expect(scene._current_platform == Ocean.Platform.START and is_zero_approx(scene._elapsed_time), "Retry resets the route, boards and sweep")
 	_expect(is_equal_approx(scene._beam_material.get_shader_parameter(&"beam_slope"), initial_slope), "Retry starts the lamp at its initial angle")
 

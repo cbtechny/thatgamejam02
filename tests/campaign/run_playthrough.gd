@@ -147,7 +147,7 @@ func solve_ocean(number: int) -> void:
 	key(KEY_ESCAPE)
 	await process_frame
 	await _wait_for_scene_fade()
-	await click_caption("Retry stage")
+	await click_caption("Restart")
 	await process_frame
 	await _wait_for_scene_fade()
 	await process_frame

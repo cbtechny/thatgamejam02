@@ -27,6 +27,7 @@ const MENU_OVERLAY_SCRIPT: Script = preload("res://dev/Level 1 - Alt/menu_overla
 const CAMPAIGN_MENU: Script = preload("res://Level/campaign_menu.gd")
 const STAGE_KEY_CONTROLS: Script = preload("res://Level/stage_key_controls.gd")
 const RESTART_CURTAINS: Script = preload("res://Level/level_1_restart.gd")
+const RESTART_PROMPT = preload("res://Level/restart_prompt.gd")
 
 @onready var _key: RigidBody2D = $Key0 as RigidBody2D
 @onready var _key_sprite: Sprite2D = $Key0/Sprite2D as Sprite2D
@@ -149,6 +150,7 @@ func set_presentation_locked(locked: bool) -> void:
 	_presentation_locked = locked
 	if locked:
 		_dragging_crank = false
+	_sync_key_controls()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -159,7 +161,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_show_pause_menu()
 		get_viewport().set_input_as_handled()
 		return
-	if event is InputEventKey and event.keycode == KEY_R and event.pressed and not event.echo and _missed and not _pause_menu_open:
+	if event is InputEventKey and event.keycode == KEY_R and event.pressed and not event.echo and not _pause_menu_open and not _key_snapped:
 		_retry_level()
 		get_viewport().set_input_as_handled()
 		return
@@ -287,15 +289,9 @@ func _show_pause_menu() -> void:
 	resume_button.custom_minimum_size = Vector2(300.0, 64.0)
 	resume_button.pressed.connect(_resume_from_pause)
 	panel.add_child(resume_button)
-	var retry_button: Button = Button.new()
-	retry_button.text = "Retry"
-	retry_button.custom_minimum_size = Vector2(300.0, 64.0)
-	retry_button.pressed.connect(_retry_level)
-	panel.add_child(retry_button)
+	CAMPAIGN_MENU.add_restart_button(panel, _retry_level, _missed)
 	CAMPAIGN_MENU.add_release_controls(panel)
-	_style_menu_buttons([resume_button, retry_button])
-	var retry_prompt: Node = preload("res://Level/restart_prompt.gd").attach(retry_button)
-	retry_prompt.set_active(_missed)
+	_style_menu_buttons([resume_button])
 	resume_button.call_deferred("grab_focus")
 	get_tree().paused = true
 
@@ -325,7 +321,7 @@ func _mark_missed() -> void:
 	_key_sparkles.emitting = false
 	_middle_key_sparkles.emitting = false
 	_third_piece_sparkles.emitting = false
-	_release_hint.text = "Hit R to restart"
+	_release_hint.text = RESTART_PROMPT.FAILURE_HINT
 	_show_failure_restart()
 
 
@@ -345,22 +341,11 @@ func _create_key_controls() -> void:
 	_space_keycap.pressed.connect(_release_key)
 	_restart_keycap = Button.new()
 	_restart_keycap.name = "RestartKey"
-	_restart_keycap.text = "R"
-	_restart_keycap.tooltip_text = "Restart [R]"
 	_restart_keycap.disabled = true
 	_restart_keycap.pressed.connect(_retry_level)
-	_key_controls = STAGE_KEY_CONTROLS.mount(_get_menu_ui(), _space_keycap, _restart_keycap, "RELEASE", "RESTART")
-	preload("res://Level/restart_prompt.gd").attach(_restart_keycap)
-	_key_hint = Label.new()
-	_key_hint.size = Vector2(1200, 34)
-	_key_hint.position = Vector2((_key_controls.size.x - _key_hint.size.x) * 0.5, 66)
-	_key_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_key_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_key_hint.add_theme_color_override("font_color", Color("f7f1dd"))
-	_key_hint.add_theme_color_override("font_shadow_color", Color.BLACK)
-	_key_hint.add_theme_constant_override("shadow_offset_y", 2)
-	_key_hint.add_theme_font_size_override("font_size", 22)
-	_key_controls.add_child(_key_hint)
+	_key_controls = STAGE_KEY_CONTROLS.mount(_get_menu_ui(), _space_keycap, _restart_keycap, "RELEASE")
+	RESTART_PROMPT.attach(_restart_keycap)
+	_key_hint = STAGE_KEY_CONTROLS.add_hint(_key_controls)
 	_sync_key_controls()
 
 
@@ -371,13 +356,8 @@ func _finish_missed_flight() -> void:
 		_key.freeze = true
 
 func _add_terminal_menu_buttons(panel: VBoxContainer) -> void:
-	var retry_button: Button = Button.new()
-	retry_button.text = "Retry"
-	retry_button.custom_minimum_size = Vector2(300.0, 64.0)
-	retry_button.pressed.connect(_retry_level)
-	panel.add_child(retry_button)
+	var retry_button: Button = CAMPAIGN_MENU.add_restart_button(panel, _retry_level)
 	CAMPAIGN_MENU.add_release_controls(panel)
-	_style_menu_buttons([retry_button])
 	retry_button.call_deferred("grab_focus")
 
 
@@ -434,7 +414,7 @@ func _sync_key_controls() -> void:
 	_key_controls.visible = not _pause_menu_open and not _key_snapped and (not _transitioning or restarting)
 	_key_hint.text = _release_hint.text
 	_space_keycap.disabled = _released or _presentation_locked or _missed or _transitioning
-	_restart_keycap.disabled = not _missed or _presentation_locked or _transitioning
+	_restart_keycap.disabled = _presentation_locked or _transitioning
 
 
 func _process(delta: float) -> void:

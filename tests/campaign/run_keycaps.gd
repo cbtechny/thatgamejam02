@@ -34,6 +34,7 @@ func run() -> void:
 		var room: Node = stage._room
 		var space: Button = room._space_keycap if number == 1 else room._fire_button
 		var restart: Button = room._restart_keycap if number == 1 else room._reset_button
+		check(not restart.disabled and restart.get_node("KeycapVisual")._action_label.text == "RESTART", "Restart is available and consistently labeled")
 		for extent: Vector2i in [Vector2i(1920,1080),Vector2i(1080,1080),Vector2i(1280,720)]:
 			root.size = extent
 			await process_frame
@@ -54,7 +55,7 @@ func run() -> void:
 			await capture("level%d-%d" % [number,extent.x])
 		if number == 1:
 			check(not room._release_hint.visible, "Old black instruction bar is hidden")
-			check(not space.disabled and restart.disabled, "Only valid actions are enabled")
+			check(not space.disabled, "Release is available")
 		room.set_process(false)
 		var visual: Node = space.get_node("KeycapVisual")
 		var bounds: Rect2 = space.get_global_rect()
@@ -69,6 +70,8 @@ func run() -> void:
 			restart.grab_focus()
 			key(KEY_R,true)
 			key(KEY_R,false)
+			while root.get_node("SceneFade").busy:
+				await process_frame
 			key(KEY_SPACE,true)
 			await create_timer(0.04).timeout
 			check(room._state == room.State.HOPPING, "Keyboard Space fires despite Reset focus")

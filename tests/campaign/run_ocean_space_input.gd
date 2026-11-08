@@ -45,6 +45,7 @@ func run() -> void:
 			room._process(0.4)
 			check(room._state == room.State.FAILED, "Timed miss enters failure before Reset")
 			click(room._reset_button)
+			await wait_restart()
 			check(root.gui_get_focus_owner() == room._reset_button, "Mouse Reset reproduces focused HUD button")
 			key(KEY_SPACE)
 			check(room._state == room.State.HOPPING, "Space launches after focused Reset, cycle %d level %d" % [cycle, number])
@@ -54,11 +55,13 @@ func run() -> void:
 			key(KEY_SPACE)
 			check(room._state == room.State.HOPPING and room._hop_elapsed == elapsed, "Held/repeated Space cannot reset or relaunch an active hop")
 			key(KEY_ENTER)
+			await wait_restart()
 			check(room._state == room.State.RESTING, "Enter still activates focused Reset")
 		check(room.get_node_or_null("TitleButton") == null, "Gameplay has no title button")
 		key(KEY_SPACE)
 		check(current_scene == stage and room._state == room.State.HOPPING, "Space fires during gameplay")
 		key(KEY_R)
+		await wait_restart()
 		check(room._state == room.State.RESTING, "R remains available")
 		room._campaign_menu.show_menu(false)
 		check(paused, "Pause opens normally")
@@ -71,14 +74,11 @@ func run() -> void:
 		var retry: Button
 		for button: Node in room._campaign_menu.panel.find_children("*", "Button", true, false):
 			check(button.text != "Return to Title", "Pause menu has no title button")
-			if button.text == "Retry Stage":
+			if button.text == "Restart":
 				retry = button
 		click(retry)
 		await create_timer(0.65).timeout
-		check(current_scene != stage and not root.get_node("SceneFade").busy, "Menu Retry completes its fade")
-		stage = current_scene
-		stage._process(3.0)
-		room = stage._room
+		check(current_scene == stage and not root.get_node("SceneFade").busy, "Menu Restart completes its fade in the same stage")
 		room._reset_button.grab_focus()
 		key(KEY_SPACE)
 		check(room._state == room.State.HOPPING, "Space launches after menu Retry even with HUD focus")
@@ -90,3 +90,8 @@ func run() -> void:
 	await create_timer(0.1).timeout
 	print("Ocean Space input: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
+
+
+func wait_restart() -> void:
+	while root.get_node("SceneFade").busy:
+		await process_frame

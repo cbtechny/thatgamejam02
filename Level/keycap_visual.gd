@@ -16,6 +16,7 @@ var _keyboard_down: bool = false
 var _tap_remaining: float = 0.0
 var _tap_pending: bool = false
 var _travel: float = 0.0
+var _restart_border := Color.TRANSPARENT
 
 static func attach(button: Button, caption: String, action: String, keycode: Key, metric: float = 1.0) -> Control:
 	var visual: Control = load("res://Level/keycap_visual.gd").new()
@@ -31,7 +32,7 @@ func _ready() -> void:
 	_button = get_parent() as Button
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# Keep Flat styles so the existing failure-glow helper can decorate them.
+	# The raised face supplies the visuals while the button keeps native input.
 	for state: String in ["normal", "hover", "pressed", "disabled"]:
 		var empty := StyleBoxFlat.new()
 		empty.bg_color = Color.TRANSPARENT
@@ -113,8 +114,20 @@ func _process(delta: float) -> void:
 		_style.bg_color = Color("8d9995")
 	else:
 		_style.bg_color = GOLD if _button.is_hovered() else CREAM
-	_style.border_color = GOLD if _button.has_focus() else Color("fff3d8")
+	_update_border()
 	_layout()
+
+func set_restart_glow(border: Color, shadow: Color, radius: int) -> void:
+	_restart_border = border
+	_style.shadow_size = radius
+	_style.shadow_color = shadow
+	_update_border()
+
+func _update_border() -> void:
+	if _restart_border.a > 0.0:
+		_style.border_color = _restart_border
+	else:
+		_style.border_color = GOLD if _button.has_focus() else Color("fff3d8")
 
 func _layout() -> void:
 	if not is_instance_valid(_face):

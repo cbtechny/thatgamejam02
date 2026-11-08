@@ -134,7 +134,7 @@ func run() -> void:
 		await _wait_for_scene_fade()
 		await process_frame
 		await _wait_for_scene_fade()
-		check(current_scene != stage and current_scene._room._key_collection.collected == [true, false, false], "Retry creates fresh collection state")
+		check(current_scene == stage and collection.collected == [true, false, false], "Restart resets collection without replaying the entrance")
 	paused = false
 	current_scene.free()
 	await process_frame

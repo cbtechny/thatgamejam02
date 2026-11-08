@@ -75,7 +75,7 @@ offset_right = 348.0
 offset_bottom = 58.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 6
-text = "Reset [R]"
+text = "Restart"
 
 [node name="NightMask" type="Node2D" parent="." unique_id=1500388910]
 z_index = 10
@@ -89,4 +89,4 @@ offset_bottom = 202.0
 mouse_filter = 2
 
 [connection signal="pressed" from="FireButton" to="." method="fire_fan"]
-[connection signal="pressed" from="ResetButton" to="." method="reset_level"]
+[connection signal="pressed" from="ResetButton" to="." method="restart_stage"]

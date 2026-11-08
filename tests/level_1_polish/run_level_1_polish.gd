@@ -168,7 +168,7 @@ func _check_miss_and_retry() -> void:
 		await physics_frame
 		if level._missed:
 			break
-	_expect(level._missed and not paused and level._ui.get_node_or_null("MissScreen") == null and level._release_hint.text == "Hit R to restart", "Low release reaches the quiet restart hint without pausing")
+	_expect(level._missed and not paused and level._ui.get_node_or_null("MissScreen") == null and level._release_hint.text == "Missed. Press R to restart.", "Low release reaches the quiet restart hint without pausing")
 	_expect(_all_highlights_off(level) and not level._key_sparkles.emitting and not level._middle_key_sparkles.emitting, "Miss stops misleading highlights and sparkles")
 	_expect(not level._left_fan_active, "Miss stops the launch fan without pausing the scene")
 	await _save("after-miss.png")

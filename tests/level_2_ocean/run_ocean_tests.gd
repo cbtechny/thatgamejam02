@@ -90,6 +90,7 @@ func _run() -> void:
 	_press_key(KEY_SPACE)
 	_expect(scene._state == Ocean.State.FAILED and not scene._fragment.visible and not whirr.playing, "Miss ends the run and disables the fan")
 	_press_key(KEY_R)
+	await _wait_for_scene_fade()
 	_expect(scene._state == Ocean.State.RESTING and scene._current_platform == Ocean.Platform.START and scene._fragment.visible, "Retry brings the fragment back to shore")
 
 	scene._set_crank_angle(PI * 0.5)

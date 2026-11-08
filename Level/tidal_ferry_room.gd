@@ -83,10 +83,6 @@ func _hint() -> String:
 	return "Turn the crank. Time the jump."
 
 
-func _failure_hint() -> String:
-	return "Missed. Press R to retry."
-
-
 func _draw() -> void:
 	super._draw()
 	for platform: int in range(_platform_fans.size()):
