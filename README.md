@@ -6,7 +6,7 @@
 
 Step inside a hand-painted music box for three small puzzles about timing, tides, and finding a way forward. Lift and release the key, cross the tidal ferries, then guide its final journey through the night beneath a sweeping lighthouse beam.
 
-**[Play / download on itch.io](https://anthrop0.itch.io/clockwork-orange)** · Windows · Made for [thatgamejam #02](https://itch.io/jam/thatgamejam02)
+**[Play / download on itch.io](https://ninjapiraterobotalien.itch.io/clockwork-orange)** · Windows · Made for [thatgamejam #02](https://itch.io/jam/thatgamejam02)
 
 To play, extract the ZIP and run `ClocksInOrange.exe`. Keep `ClocksInOrange.pck` beside the executable. No Godot installation needed.
 
