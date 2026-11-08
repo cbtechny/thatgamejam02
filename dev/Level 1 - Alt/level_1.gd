@@ -26,6 +26,7 @@ const FULL_KEY_TEXTURE: Texture2D = preload("res://Art/Textures/Resources/Key/ke
 const CURTAIN_SCENE: PackedScene = preload("res://dev/title/curtain.tscn")
 const MENU_OVERLAY_SCRIPT: Script = preload("res://dev/Level 1 - Alt/menu_overlay.gd")
 const CAMPAIGN_MENU: Script = preload("res://Level/campaign_menu.gd")
+const STAGE_KEY_CONTROLS: Script = preload("res://Level/stage_key_controls.gd")
 const RESTART_CURTAINS: Script = preload("res://Level/level_1_restart.gd")
 const TITLE_SCENE_PATH: String = "res://Level/title_menu.tscn"
 signal title_transition_finished
@@ -347,48 +348,21 @@ func _show_failure_restart() -> void:
 
 func _create_key_controls() -> void:
 	_release_hint.hide()
-	_key_controls = Control.new()
-	_key_controls.name = "KeyControls"
-	_key_controls.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_get_menu_ui().add_child(_key_controls)
-	_key_controls.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_key_controls.offset_left = -600.0
-	_key_controls.offset_right = 600.0
-	_key_controls.offset_top = -268.0
-	_key_controls.offset_bottom = -130.0
-	var center := CenterContainer.new()
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	center.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	center.offset_bottom = 62.0
-	_key_controls.add_child(center)
-	var row := HBoxContainer.new()
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_theme_constant_override("separation", 16)
-	center.add_child(row)
 	_space_keycap = Button.new()
 	_space_keycap.name = "SpaceKey"
 	_space_keycap.text = "Space"
-	_space_keycap.custom_minimum_size = Vector2(420, 62)
-	_space_keycap.add_theme_font_size_override("font_size", 26)
-	CAMPAIGN_MENU.style_button(_space_keycap)
 	_space_keycap.pressed.connect(_release_key)
-	row.add_child(_space_keycap)
-	preload("res://Level/keycap_visual.gd").attach(_space_keycap, "SPACE", "RELEASE", KEY_SPACE)
 	_restart_keycap = Button.new()
 	_restart_keycap.name = "RestartKey"
 	_restart_keycap.text = "R"
 	_restart_keycap.tooltip_text = "Restart [R]"
-	_restart_keycap.custom_minimum_size = Vector2(104, 62)
-	_restart_keycap.add_theme_font_size_override("font_size", 26)
 	_restart_keycap.disabled = true
-	CAMPAIGN_MENU.style_button(_restart_keycap)
 	_restart_keycap.pressed.connect(_retry_level)
-	row.add_child(_restart_keycap)
-	preload("res://Level/keycap_visual.gd").attach(_restart_keycap, "R", "RESTART", KEY_R)
+	_key_controls = STAGE_KEY_CONTROLS.mount(_get_menu_ui(), _space_keycap, _restart_keycap, "RELEASE", "RESTART")
 	preload("res://Level/restart_prompt.gd").attach(_restart_keycap)
 	_key_hint = Label.new()
-	_key_hint.position = Vector2(0, 76)
-	_key_hint.size = Vector2(1200, 46)
+	_key_hint.size = Vector2(1200, 34)
+	_key_hint.position = Vector2((_key_controls.size.x - _key_hint.size.x) * 0.5, 66)
 	_key_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_key_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_key_hint.add_theme_color_override("font_color", Color("f7f1dd"))

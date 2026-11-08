@@ -44,8 +44,8 @@ func run() -> void:
 			room._process(room._flight_duration + 0.01)
 			room._process(0.4)
 			check(room._state == room.State.FAILED, "Timed miss enters failure before Reset")
-			click(room.get_node("ResetButton"))
-			check(root.gui_get_focus_owner() == room.get_node("ResetButton"), "Mouse Reset reproduces focused HUD button")
+			click(room._reset_button)
+			check(root.gui_get_focus_owner() == room._reset_button, "Mouse Reset reproduces focused HUD button")
 			key(KEY_SPACE)
 			check(room._state == room.State.HOPPING, "Space launches after focused Reset, cycle %d level %d" % [cycle, number])
 			room._process(0.05)
@@ -78,7 +78,7 @@ func run() -> void:
 		stage = current_scene
 		stage._process(3.0)
 		room = stage._room
-		room.get_node("ResetButton").grab_focus()
+		room._reset_button.grab_focus()
 		key(KEY_SPACE)
 		check(room._state == room.State.HOPPING, "Space launches after menu Retry even with HUD focus")
 	paused = false

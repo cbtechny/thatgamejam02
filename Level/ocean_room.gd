@@ -20,6 +20,7 @@ const AUDIO_SAMPLE_RATE: int = 22050
 const UI_RESOLUTION: float = 6.0
 const TITLE_SCENE_PATH: String = "res://Level/title_menu.tscn"
 const UI_THEME = preload("res://Level/music_box_theme.gd")
+const STAGE_KEY_CONTROLS := preload("res://Level/stage_key_controls.gd")
 const INK := UI_THEME.INK
 const GOLD := UI_THEME.GOLD
 
@@ -31,6 +32,7 @@ const GOLD := UI_THEME.GOLD
 @onready var _fragment: Sprite2D = $Fragment
 @onready var _feedback: Label = $Feedback
 @onready var _fire_button: Button = $FireButton
+@onready var _reset_button: Button = $ResetButton
 
 var _stage_play_area := Rect2()
 var _scenery_bounds := Rect2(Vector2.ZERO, REFERENCE_SIZE)
@@ -68,6 +70,10 @@ var _middle_fragment_platform: int = -1
 func _ready() -> void:
 	get_viewport().size_changed.connect(_fit_viewport)
 	_fit_viewport()
+	var hud := CanvasLayer.new()
+	hud.name = "StageHUD"
+	add_child(hud)
+	STAGE_KEY_CONTROLS.mount(hud, _fire_button, _reset_button, "FIRE FAN", "RESET")
 	_prepare_controls()
 	_guide = Node2D.new()
 	var unlit := CanvasItemMaterial.new()
@@ -78,7 +84,7 @@ func _ready() -> void:
 	_label_backing = _make_label_backing(GOLD.darkened(0.3))
 	_target_backing = _make_label_backing(GOLD)
 	_setup_sfx()
-	_reset_prompt = preload("res://Level/restart_prompt.gd").attach($ResetButton, 1.5)
+	_reset_prompt = preload("res://Level/restart_prompt.gd").attach(_reset_button)
 	_campaign_menu = preload("res://Level/campaign_menu.gd").new()
 	_campaign_menu.room = self
 	_campaign_menu.next_scene = _next_scene
@@ -104,9 +110,6 @@ func _prepare_controls() -> void:
 			control.add_theme_font_size_override("font_size", int(font_size * UI_RESOLUTION))
 			control.scale = Vector2.ONE / UI_RESOLUTION
 			control.size = reference_size * UI_RESOLUTION
-			if control is Button and control.name in ["FireButton", "ResetButton"]:
-				var launch: bool = control.name == "FireButton"
-				preload("res://Level/keycap_visual.gd").attach(control, "SPACE" if launch else "R", "FIRE FAN" if launch else "RESET", KEY_SPACE if launch else KEY_R, 1.5)
 
 
 func set_stage_layout(play_area: Rect2) -> void:
@@ -135,7 +138,7 @@ func set_presentation_locked(locked: bool) -> void:
 	if locked:
 		_release_crank()
 	_update_guidance()
-	($ResetButton as Button).disabled = locked
+	_reset_button.disabled = locked
 
 
 func _water_level() -> float:
@@ -354,7 +357,7 @@ func _input(event: InputEvent) -> void:
 		_unhandled_input(event)
 		return
 	if event is InputEventKey and event.keycode in [KEY_SPACE, KEY_R]:
-		var key_button: Button = $FireButton if event.keycode == KEY_SPACE else $ResetButton
+		var key_button: Button = _fire_button if event.keycode == KEY_SPACE else _reset_button
 		key_button.get_node("KeycapVisual").set_keyboard_down(event.pressed)
 	# Space belongs to gameplay, even after a HUD button takes keyboard focus.
 	# Handle both edges so GUI ui_accept cannot trigger Reset on key release.

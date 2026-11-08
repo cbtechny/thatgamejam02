@@ -24,6 +24,7 @@ func capture(label: String) -> void:
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://.godot/keycaps-" + label + ".png")
 func run() -> void:
+	var reference_bounds: Dictionary = {}
 	for number: int in [1,2,3]:
 		change_scene_to_file("res://Level/level_1_music_box.tscn" if number == 1 else "res://dev/level_%d_ocean/level_%d_ocean.tscn" % [number,number])
 		await process_frame
@@ -31,14 +32,25 @@ func run() -> void:
 		var stage: Node = current_scene
 		stage._process(3.0)
 		var room: Node = stage._room
-		var space: Button = room._space_keycap if number == 1 else room.get_node("FireButton")
-		var restart: Button = room._restart_keycap if number == 1 else room.get_node("ResetButton")
-		for extent: Vector2i in [Vector2i(1920,1080),Vector2i(1280,720)]:
+		var space: Button = room._space_keycap if number == 1 else room._fire_button
+		var restart: Button = room._restart_keycap if number == 1 else room._reset_button
+		for extent: Vector2i in [Vector2i(1920,1080),Vector2i(1080,1080),Vector2i(1280,720)]:
 			root.size = extent
 			await process_frame
 			await process_frame
 			check(root.get_visible_rect().encloses(space.get_global_rect()), "Space keycap fits viewport")
 			check(root.get_visible_rect().encloses(restart.get_global_rect()), "R keycap fits viewport")
+			var space_bounds: Rect2 = space.get_global_rect()
+			var restart_bounds: Rect2 = restart.get_global_rect()
+			if number == 1:
+				reference_bounds[extent] = [space_bounds, restart_bounds]
+				var display: Control = stage.get_node("MusicBox/RoomClip/Room")
+				var crank_radius: float = room.CRANK_KNOB_LOCAL_POSITION.length() * room._crank.scale.x + room.CRANK_HIT_RADIUS
+				var sweep := Rect2(room._crank.position - Vector2.ONE * crank_radius, Vector2.ONE * crank_radius * 2.0)
+				check(not space_bounds.merge(restart_bounds).intersects(display.get_global_transform() * sweep), "Level 1 keycaps clear the crank's full drag area")
+			else:
+				var expected: Array = reference_bounds[extent]
+				check(space_bounds.is_equal_approx(expected[0]) and restart_bounds.is_equal_approx(expected[1]), "Level %d matches the Level 1 keycap layout" % number)
 			await capture("level%d-%d" % [number,extent.x])
 		if number == 1:
 			check(not room._release_hint.visible, "Old black instruction bar is hidden")

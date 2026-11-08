@@ -34,7 +34,7 @@ func run() -> void:
 			room._touchdown_time = room._elapsed_time
 			room._fragment.position = Vector2(-1000, -1000)
 			room._land()
-		var button: Button = room._failure_restart if number == 1 else room.get_node("ResetButton")
+		var button: Button = room._failure_restart if number == 1 else room._reset_button
 		var cue: Node = button.get_node("RestartPrompt")
 		check(cue.active and not button.disabled, "Failed run enables a usable restart cue")
 		check(cue._audio.volume_db <= -36.0 and cue._audio.bus == &"Master", "Beep is very quiet and respects Master mute")
@@ -75,7 +75,7 @@ func run() -> void:
 			check(not current_scene._room._missed and current_scene._room._failure_restart == null, "Restart clears Level One cue")
 		else:
 			room._campaign_menu.resume()
-			room.get_node("ResetButton").pressed.emit()
+			room._reset_button.pressed.emit()
 			check(not cue.active and not cue._audio.playing and not button.has_theme_stylebox_override("normal"), "Ocean Reset restores normal style and stops beep")
 			room._state = room.State.COMPLETED
 			room._update_guidance()

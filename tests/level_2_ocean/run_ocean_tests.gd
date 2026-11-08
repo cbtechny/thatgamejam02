@@ -268,11 +268,11 @@ func _check_live_entrance() -> void:
 	presentation.queue_free()
 	await process_frame
 	await _wait_for_scene_fade()
-func _click(scene: Ocean, reference_position: Vector2) -> void:
+func _click(button: Button) -> void:
 	var press: InputEventMouseButton = InputEventMouseButton.new()
 	press.button_index = MOUSE_BUTTON_LEFT
 	press.pressed = true
-	press.position = scene.get_global_transform_with_canvas() * reference_position
+	press.position = _button_center(button)
 	root.push_input(press, true)
 	await process_frame
 	await _wait_for_scene_fade()
@@ -290,7 +290,7 @@ func _check_buttons_and_navigation() -> void:
 	var scene: Ocean = presentation._room as Ocean
 	scene.set_process(false)
 	# Returning to title also works before the entrance finishes.
-	await _click(scene, _button_center(scene, "TitleButton"))
+	await _click(scene.get_node("TitleButton"))
 	await process_frame
 	await _wait_for_scene_fade()
 	_expect(not is_instance_valid(presentation), "Title exit cancels the entrance without delayed view changes")
@@ -305,9 +305,9 @@ func _check_buttons_and_navigation() -> void:
 	presentation._process(presentation.establishing_hold + presentation.zoom_duration)
 	scene = presentation._room as Ocean
 	scene.set_process(false)
-	await _click(scene, _button_center(scene, "FireButton"))
+	await _click(scene._fire_button)
 	_expect(scene._state == Ocean.State.HOPPING, "Fan button activates the same hop as Space")
-	await _click(scene, _button_center(scene, "ResetButton"))
+	await _click(scene._reset_button)
 	_expect(scene._state == Ocean.State.RESTING and scene._current_platform == Ocean.Platform.START, "Reset button cancels an active hop")
 	_expect(presentation._entrance_finished and not scene._presentation_locked, "Puzzle reset keeps the player inside the room")
 	var echo: InputEventKey = InputEventKey.new()
@@ -320,7 +320,7 @@ func _check_buttons_and_navigation() -> void:
 	scene._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
 	_expect(not scene._dragging_crank, "Losing application focus cancels crank drag")
 	scene.fire_fan()
-	await _click(scene, _button_center(scene, "TitleButton"))
+	await _click(scene.get_node("TitleButton"))
 	await process_frame
 	await _wait_for_scene_fade()
 	_expect(not is_instance_valid(scene), "Return to Title safely exits during an active hop")
@@ -348,7 +348,7 @@ func _drag_crank(scene: Ocean, finish_angle: float) -> void:
 	var release: InputEventMouseButton = InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_LEFT
 	# Release over a button, so GUI consumption cannot leave a stale drag.
-	release.position = transform * _button_center(scene, "ResetButton")
+	release.position = _button_center(scene._reset_button)
 	root.push_input(release, true)
 
 
@@ -426,6 +426,5 @@ func _wait_for_scene_fade() -> void:
 		await process_frame
 
 
-func _button_center(scene: Node, button_name: String) -> Vector2:
-	var button: Control = scene.get_node(button_name)
-	return button.position + button.size * button.scale * 0.5
+func _button_center(button: Button) -> Vector2:
+	return button.get_global_transform_with_canvas() * (button.size * 0.5)
