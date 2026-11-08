@@ -14,7 +14,7 @@ Step inside a hand-painted music box for three small puzzles about timing, tides
 and finding a way forward. Lift and release the key, cross the daytime ocean,
 then guide its final journey through the night.
 
-Made by Lilith, Chris and Packy for thatgamejam #02.
+Made by Lilith, Chris (Ninja Pirate Robot Alien) and Packy for thatgamejam #02.
 
 ### How to play
 
@@ -32,9 +32,15 @@ Keep the `.pck` file beside the executable. No Godot installation is needed.
 
 ### Credits
 
-Lilith — Writing, concept and hand-drawn art<br>
-Chris — Programming and technical setup<br>
-Packy — Production, coordination, technical art and animation<br>
+Lilith — Writing, concept, hand-drawn art<br>
+[GitHub](https://github.com/Anthropo7874) · [itch.io](https://anthrop0.itch.io/) · Threads: @uanranu
+
+Chris (Ninja Pirate Robot Alien) — Programming and technical setup<br>
+[GitHub](https://github.com/cbtechny) · [itch.io](https://ninjapiraterobotalien.itch.io/)
+
+Packy — Production, coordination, technical art, animation<br>
+[GitHub](https://github.com/n374500601)
+
 Theme music composed by Jason Grace. The supplied recording is used unmodified,
 only within this jam entry. Made with Godot Engine.
 

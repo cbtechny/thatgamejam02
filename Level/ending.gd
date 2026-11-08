@@ -17,7 +17,7 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation", 20)
 	center.add_child(column)
 	var label := Label.new()
-	label.text = "THE MUSIC BOX REMEMBERS\n\nAcross the tide, through the night.\nEvery piece has found its way home.\n\nLilith • Chris • Packy\nTheme music composed by Jason Grace\n\nThank you for playing."
+	label.text = "THE MUSIC BOX REMEMBERS\n\nAcross the tide, through the night.\nEvery piece has found its way home.\n\nLilith — Writing, concept, hand-drawn art\nGitHub: https://github.com/Anthropo7874 | itch.io: https://anthrop0.itch.io/ | Threads: @uanranu\n\nChris (Ninja Pirate Robot Alien) — Programming and technical setup\nGitHub: https://github.com/cbtechny | itch.io: https://ninjapiraterobotalien.itch.io/\n\nPacky — Production, coordination, technical art, animation\nGitHub: https://github.com/n374500601\nTheme music composed by Jason Grace.\n\nThank you for playing."
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 30)
 	column.add_child(label)

@@ -11,10 +11,10 @@ config_version=5
 [application]
 
 config/name="Clocks in Orange"
-config/icon="res://Art/Textures/game_icon_keyhole.png"
-config/windows_native_icon="res://Art/Textures/game_icon_keyhole.ico"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://Art/Textures/game_icon_keyhole.png"
+config/windows_native_icon="res://Art/Textures/game_icon_keyhole.ico"
 
 [autoload]
 

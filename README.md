@@ -34,11 +34,11 @@ See the [scene index](dev/README.md) and [test index](tests/README.md) for stand
 
 ## Team
 
-| Person | Focus |
-| --- | --- |
-| Lilith | Writing, concept, hand-drawn art |
-| Chris | Code and technical setup |
-| Packy | Production, coordination, technical art, animation |
+| Person | Focus | Links |
+| --- | --- | --- |
+| Lilith | Writing, concept, hand-drawn art | [GitHub](https://github.com/Anthropo7874) · [itch.io](https://anthrop0.itch.io/) · Threads: @uanranu |
+| Chris (Ninja Pirate Robot Alien) | Programming and technical setup | [GitHub](https://github.com/cbtechny) · [itch.io](https://ninjapiraterobotalien.itch.io/) |
+| Packy | Production, coordination, technical art, animation | [GitHub](https://github.com/n374500601) |
 
 ## Delivery and asset requirements
 
